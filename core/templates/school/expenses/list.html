@@ -1,0 +1,216 @@
+{% extends 'school/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-cash-stack"></i> Учет расходов</h2>
+        <div>
+            <!-- В карточке фильтров после формы -->
+
+        <a href="?export=excel&{{ request.GET.urlencode }}" class="btn btn-success">
+            <i class="bi bi-file-excel"></i> Экспорт в Excel
+        </a>
+ 
+            <a href="{% url 'expense-create' %}" class="btn btn-success">
+                <i class="bi bi-plus-circle"></i> Добавить расход
+            </a>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="mb-0"><i class="bi bi-funnel"></i> Фильтры</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Дата от</label>
+                    <input type="date" name="date_from" class="form-control" 
+                           value="{{ date_from|default:default_date_from }}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Дата до</label>
+                    <input type="date" name="date_to" class="form-control" 
+                           value="{{ date_to|default:default_date_to }}">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Категория</label>
+                    <select name="category" class="form-select">
+                        <option value="">Все</option>
+                        {% for value, name in category_choices %}
+                            <option value="{{ value }}" {% if category == value %}selected{% endif %}>
+                                {{ name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Способ оплаты</label>
+                    <select name="payment_method" class="form-select">
+                        <option value="">Все</option>
+                        {% for value, name in payment_method_choices %}
+                            <option value="{{ value }}" {% if payment_method == value %}selected{% endif %}>
+                                {{ name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-filter"></i> Применить
+                    </button>
+                </div>
+                <div class="col-md-12">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" 
+                               placeholder="Поиск по поставщику, примечаниям или номеру счета..." 
+                               value="{{ search }}">
+                        <button class="btn btn-outline-secondary" type="submit">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Сводная информация -->
+    <div class="alert alert-info mb-4">
+        <div class="d-flex justify-content-between">
+            <div>
+                <i class="bi bi-info-circle me-2"></i>
+                Найдено расходов: <strong>{{ expenses_count }}</strong>
+            </div>
+            <div>
+                Общая сумма: <strong>{{ total_amount|intcomma }} сом</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица расходов -->
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>
+                            <a href="?sort={% if sort == 'date' %}-{% endif %}date&{{ request.GET.urlencode|cut:'sort=date'|cut:'sort=-date' }}">
+                                Дата {% if sort == 'date' %}<i class="bi bi-caret-up"></i>{% elif sort == '-date' %}<i class="bi bi-caret-down"></i>{% endif %}
+                            </a>
+                        </th>
+                        <th>Категория</th>
+                        <th>Поставщик</th>
+                        <th>
+                            <a href="?sort={% if sort == 'amount' %}-{% endif %}amount&{{ request.GET.urlencode|cut:'sort=amount'|cut:'sort=-amount' }}">
+                                Сумма {% if sort == 'amount' %}<i class="bi bi-caret-up"></i>{% elif sort == '-amount' %}<i class="bi bi-caret-down"></i>{% endif %}
+                            </a>
+                        </th>
+                        <th>Способ оплаты</th>
+                        <th>Номер счета</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in expenses %}
+                    <tr>
+                        <td>{{ expense.date|date:"d.m.Y" }}</td>
+                        <td>{{ expense.get_category_display }}</td>
+                        <td>{{ expense.supplier|truncatechars:30 }}</td>
+                        <td>{{ expense.amount|intcomma }} сом</td>
+                        <td>{{ expense.get_payment_method_display }}</td>
+                        <td>
+                            {% if expense.invoice_number %}
+                                {{ expense.invoice_number }}
+                            {% else %}
+                                <span class="text-muted">нет</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'expense-update' expense.pk %}" class="btn btn-outline-secondary" title="Редактировать">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                {% if expense.invoice %}
+                                <a href="{{ expense.invoice.url }}" class="btn btn-outline-info" title="Скачать счет" download>
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="bi bi-cash-coin display-6 text-muted"></i>
+                            <p class="mt-3">Нет данных о расходах</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Пагинация -->
+        {% if is_paginated %}
+        <div class="card-footer">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1&{{ request.GET.urlencode }}" aria-label="First">
+                            &laquo;&laquo;
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" aria-label="Previous">
+                            &laquo;
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" aria-label="Next">
+                            &raquo;
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode }}" aria-label="Last">
+                            &raquo;&raquo;
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .table th {
+        white-space: nowrap;
+    }
+    .table td {
+        vertical-align: middle;
+    }
+    .btn-group {
+        flex-wrap: nowrap;
+    }
+    .table th a {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+</style>
+{% endblock %}

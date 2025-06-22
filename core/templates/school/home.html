@@ -1,0 +1,47 @@
+{% extends 'school/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h2>Добро пожаловать в систему учета школы "Азия Старт"</h2>
+        <p class="lead">Используйте меню навигации для работы с системой.</p>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>Быстрые действия</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2 d-md-block">
+                    <a href="{% url 'student-create' %}" class="btn btn-primary me-md-2">Добавить ученика</a>
+                    {% comment %} <a href="{% url 'income-create' %}" class="btn btn-success me-md-2">Добавить приход</a> {% endcomment %}
+                    <a href="{% url 'expense-create' %}" class="btn btn-warning">Добавить расход</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Статистика</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Всего учеников
+                        <span class="badge bg-primary rounded-pill">{{ students_count }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Обучаются
+                        <span class="badge bg-success rounded-pill">{{ active_students_count }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        В резерве
+                        <span class="badge bg-warning rounded-pill">{{ reserve_students_count }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

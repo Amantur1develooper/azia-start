@@ -1,0 +1,148 @@
+{% extends 'school/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between mb-4">
+        <a href="{% url 'student-detail' student.pk %}" class="btn btn-secondary">
+            &larr; Назад к ученику
+        </a>
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="bi bi-printer"></i> Печать квитанции
+        </button>
+    </div>
+
+    <!-- Квитанция формата A4 с вертикальным разделением -->
+    <div class="receipt-container bg-white" style="width: 210mm; height: 297mm; margin: 0 auto; border: 1px solid #ddd; display: flex;">
+        <!-- Левая часть (корешок для школы) -->
+        <div class="school-part" style="width: 50%; padding: 15mm; border-right: 2px dashed #000; font-size: 12px;">
+            <div class="text-center mb-3">
+                <h4 style="font-size: 14px; margin-bottom: 5px;">КОРЕШОК КВИТАНЦИИ</h4>
+                <p style="font-size: 11px; margin-bottom: 10px;">№ {{ payment.transaction_id }} от {{ payment.date|date:"d.m.Y" }}</p>
+            </div>
+
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 40%; font-weight: bold; padding: 2px 0;">Учебное заведение:</td>
+                    <td style="width: 60%; padding: 2px 0;">Школа "Азия Старт"</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Ученик:</td>
+                    <td style="padding: 2px 0;">{{ student.full_name }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Класс:</td>
+                    <td style="padding: 2px 0;">{{ student.grade.number }}{{ student.grade.parallel }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Сумма:</td>
+                    <td style="padding: 2px 0;">{{ payment.amount|floatformat:2 }} сом</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Способ оплаты:</td>
+                    <td style="padding: 2px 0;">{{ payment.get_payment_method_display }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Период оплаты:</td>
+                    <td style="padding: 2px 0;">
+                        {% if payment.is_full_year_payment %}
+                            Весь учебный год
+                        {% elif paid_months %}
+                            {{ paid_months }}
+                        {% else %}
+                            Разовый платеж
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+
+            <div style="margin-top: 30mm; text-align: center;">
+                <div style="border-top: 1px solid #000; width: 70%; margin: 0 auto 5px;"></div>
+                <p style="font-size: 11px; margin: 0;">(подпись кассира)</p>
+            </div>
+
+            
+        </div>
+
+        <!-- Правая часть (чек для клиента) -->
+        <div class="client-part" style="width: 50%; padding: 15mm; font-size: 12px;">
+            <div class="text-center mb-3">
+                <h4 style="font-size: 14px; margin-bottom: 5px;">КВИТАНЦИЯ ОБ ОПЛАТЕ</h4>
+                <p style="font-size: 11px; margin-bottom: 10px;">№ {{ payment.transaction_id }} от {{ payment.date|date:"d.m.Y" }}</p>
+            </div>
+
+            <table style="width: 100%;">
+                <tr>
+                    <td style="width: 40%; font-weight: bold; padding: 2px 0;">Учебное заведение:</td>
+                    <td style="width: 60%; padding: 2px 0;">Школа "Азия Старт"</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Ученик:</td>
+                    <td style="padding: 2px 0;">{{ student.full_name }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Класс:</td>
+                    <td style="padding: 2px 0;">{{ student.grade.number }}{{ student.grade.parallel }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Сумма:</td>
+                    <td style="padding: 2px 0;">{{ payment.amount|floatformat:2 }} сом</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Способ оплаты:</td>
+                    <td style="padding: 2px 0;">{{ payment.get_payment_method_display }}</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Период оплаты:</td>
+                    <td style="padding: 2px 0;">
+                        {% if payment.is_full_year_payment %}
+                            Весь учебный год ({{ payment.academic_year.year }})
+                        {% elif paid_months %}
+                            {{ paid_months }} ({{ payment.academic_year.year }})
+                        {% else %}
+                            Разовый платеж
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Остаток к оплате:</td>
+                    <td style="padding: 2px 0;">{{ remaining_payment|floatformat:2 }} сом</td>
+                </tr>
+            </table>
+
+            <div style="margin-top: 20mm; text-align: center;">
+                <p style="font-size: 11px; margin-bottom: 15px;">Клиент получил квитанцию</p>
+                <div style="border-top: 1px solid #000; width: 70%; margin: 0 auto 5px;"></div>
+                <p style="font-size: 11px; margin: 0;">(подпись)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .receipt-container, .receipt-container * {
+            visibility: visible;
+        }
+        .receipt-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 210mm;
+            height: 297mm;
+            border: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        .btn {
+            display: none !important;
+        }
+        @page {
+            size: A4;
+            margin: 0;
+        }
+    }
+</style>
+{% endblock %}

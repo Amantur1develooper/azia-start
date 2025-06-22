@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Квитанция об оплате</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        .receipt { max-width: 800px; margin: 0 auto; border: 1px solid #000; padding: 20px; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .title { font-size: 18px; font-weight: bold; }
+        .info { margin-bottom: 15px; }
+        .details { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .details th, .details td { border: 1px solid #000; padding: 8px; text-align: left; }
+        .signature { margin-top: 50px; }
+        .footer { margin-top: 30px; font-size: 12px; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <div class="header">
+            <div class="title">КВИТАНЦИЯ ОБ ОПЛАТЕ</div>
+            <div>Школа "Азия Старт"</div>
+        </div>
+        
+        <div class="info">
+            <div><strong>Номер:</strong> {{ income.transaction_id }}</div>
+            <div><strong>Дата:</strong> {{ income.date|date:"d.m.Y" }}</div>
+        </div>
+        
+        <table class="details">
+            <tr>
+                <th>Ученик:</th>
+                <td>{{ student.full_name }}</td>
+            </tr>
+            <tr>
+                <th>Класс:</th>
+                <td>{{ student.grade.number }}{{ student.grade.parallel }}</td>
+            </tr>
+            <tr>
+                <th>Статья дохода:</th>
+                <td>{{ income.income_type }}</td>
+            </tr>
+            <tr>
+                <th>Сумма оплаты:</th>
+                <td>{{ income.amount|floatformat:2 }} тенге</td>
+            </tr>
+            <tr>
+                <th>Способ оплаты:</th>
+                <td>{{ income.get_payment_method_display }}</td>
+            </tr>
+            <tr>
+                <th>Статус:</th>
+                <td>{{ income.get_status_display }}</td>
+            </tr>
+        </table>
+        
+        <div class="signature">
+            <div>Кассир: _________________________</div>
+            <div>М.П.</div>
+        </div>
+        
+        <div class="footer">
+            <p>Спасибо за оплату! Данный документ является подтверждением оплаты.</p>
+        </div>
+    </div>
+</body>
+</html>

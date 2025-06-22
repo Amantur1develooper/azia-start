@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Квитанция об оплате</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-size: 12pt;
+        }
+        .receipt {
+            width: 148mm;
+            height: 210mm;
+            margin: 0 auto;
+            padding: 10mm;
+            box-sizing: border-box;
+            position: relative;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10mm;
+        }
+        .title {
+            font-weight: bold;
+            font-size: 14pt;
+            margin-bottom: 3mm;
+        }
+        .perforation {
+            border-top: 1px dashed #000;
+            margin: 5mm 0;
+            padding-top: 5mm;
+        }
+        .cut-line {
+            border-top: 2px solid #000;
+            margin: 5mm 0;
+            padding-top: 5mm;
+        }
+        .section {
+            margin-bottom: 5mm;
+        }
+        .row {
+            margin-bottom: 3mm;
+        }
+        .signature {
+            margin-top: 15mm;
+        }
+        .footer {
+            margin-top: 5mm;
+            font-size: 10pt;
+            text-align: center;
+        }
+        .stamp {
+            position: absolute;
+            right: 10mm;
+            bottom: 20mm;
+            width: 40mm;
+            height: 40mm;
+            border: 1px solid #000;
+            text-align: center;
+            line-height: 40mm;
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt">
+        <!-- Верхняя часть (для клиента) -->
+        <div class="header">
+            <div class="title">КВИТАНЦИЯ ОБ ОПЛАТЕ</div>
+            <div>№ {{ income.transaction_id }} от {{ income.date|date:"d.m.Y" }}</div>
+        </div>
+        
+        <div class="section">
+            <div class="row">Учебное заведение: Школа "Азия Старт"</div>
+            <div class="row">Ученик: {{ income.student.full_name }}</div>
+            <div class="row">Класс: {{ income.student.grade.number }}{{ income.student.grade.parallel }}</div>
+            <div class="row">Сумма: {{ income.amount|floatformat:2 }} тенге</div>
+            <div class="row">Способ оплаты: {{ income.get_payment_method_display }}</div>
+            <div class="row">Статья дохода: {{ income.income_type }}</div>
+        </div>
+        
+        <div class="perforation"></div>
+        
+        <div class="signature">
+            <div>Клиент получил квитанцию:</div>
+            <div>_________________________</div>
+            <div>(подпись)</div>
+        </div>
+        
+        <!-- Линия отреза -->
+        <div class="cut-line"></div>
+        
+        <!-- Нижняя часть (корешок для школы) -->
+        <div class="header">
+            <div class="title">КОРЕШОК КВИТАНЦИИ</div>
+        </div>
+        
+        <div class="section">
+            <div class="row">Ученик: {{ income.student.full_name }}</div>
+            <div class="row">Класс: {{ income.student.grade.number }}{{ income.student.grade.parallel }}</div>
+            <div class="row">Сумма: {{ income.amount|floatformat:2 }} тенге</div>
+            <div class="row">Дата: {{ income.date|date:"d.m.Y" }}</div>
+            <div class="row">Номер: {{ income.transaction_id }}</div>
+        </div>
+        
+        <div class="signature">
+            <div>Кассир: _________________________</div>
+            <div>М.П.</div>
+        </div>
+        
+        <div class="stamp">Печать</div>
+    </div>
+</body>
+</html>

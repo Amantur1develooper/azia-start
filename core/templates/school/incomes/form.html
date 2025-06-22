@@ -1,0 +1,305 @@
+{% extends 'school/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">
+                            <i class="bi bi-cash-coin me-2"></i>Оформление платежа
+                        </h4>
+                        <div class="student-info text-end">
+                            <h5 class="mb-1">{{ form.initial.student.full_name }}</h5>
+                            <small class="d-block">Класс: {{ form.initial.student.grade.number }}{{ form.initial.student.grade.parallel }}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <form method="post" id="payment-form">
+                        {% csrf_token %}
+                        
+                        <!-- Основные поля платежа -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Дата платежа *</label>
+                                {{ form.date }}
+                                {% if form.date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.date.errors|first }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Сумма (сом) *</label>
+                                {{ form.amount }}
+                                {% if form.amount.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.amount.errors|first }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Период оплаты -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0">Период оплаты</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="full_year" name="full_year" 
+                                           {% if form.full_year.value %}checked{% endif %}>
+                                    <label class="form-check-label fw-bold" for="full_year">
+                                        Оплатить весь учебный год
+                                    </label>
+                                    <small class="text-muted d-block mt-1">
+                                        ({{ form.initial.student.contract_amount|default:0 }} сом)
+                                    </small>
+                                </div>
+                                
+                                <div class="month-selection {% if form.full_year.value %}d-none{% endif %}">
+                                    <label class="form-label">Выберите месяцы:</label>
+                                    <div class="row">
+                                        {% for value, name in form.months.field.choices %}
+                                            <div class="col-md-4 mb-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input month-checkbox" type="checkbox" 
+                                                           name="months" id="month_{{ value }}" value="{{ value }}"
+                                                           {% if value|stringformat:"s" in form.paid_months.value %}checked{% endif %}>
+                                                    <label class="form-check-label" for="month_{{ value }}">
+                                                        {{ name }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                
+                                {% if form.non_field_errors %}
+                                    <div class="alert alert-danger mt-3">
+                                        {{ form.non_field_errors|first }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Детали платежа -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Способ оплаты *</label>
+                                {{ form.payment_method }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Статус *</label>
+                                {{ form.status }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Статья дохода *</label>
+                            {{ form.income_type }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Номер транзакции *</label>
+                            {{ form.transaction_id }}
+                            <small class="text-muted">Уникальный идентификатор платежа</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Примечания</label>
+                            {{ form.notes }}
+                        </div>
+                        
+                        <input type="hidden" name="student" value="{{ form.initial.student.pk }}">
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'student-detail' form.initial.student.pk %}" class="btn btn-secondary me-md-2">
+                                <i class="bi bi-x-circle me-1"></i> Отмена
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i> Сохранить и скачать квитанцию
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .month-checkbox:checked + label {
+        font-weight: bold;
+        color: var(--bs-primary);
+    }
+    .card-header {
+        padding: 0.75rem 1.25rem;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fullYearCheckbox = document.getElementById('full_year');
+    const monthCheckboxes = document.querySelectorAll('.month-checkbox');
+    const monthSelectionDiv = document.querySelector('.month-selection');
+    
+    // Обработчик для чекбокса "Весь год"
+    fullYearCheckbox.addEventListener('change', function() {
+        if (this.checked) {
+            // Скрываем выбор месяцев и снимаем все галочки
+            monthSelectionDiv.classList.add('d-none');
+            monthCheckboxes.forEach(cb => {
+                cb.checked = false;
+            });
+        } else {
+            // Показываем выбор месяцев
+            monthSelectionDiv.classList.remove('d-none');
+        }
+    });
+    
+    // Обработчик для чекбоксов месяцев
+    monthCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (this.checked) {
+                fullYearCheckbox.checked = false;
+                monthSelectionDiv.classList.remove('d-none');
+            }
+        });
+    });
+    
+    // Валидация формы перед отправкой
+    document.getElementById('payment-form').addEventListener('submit', function(e) {
+        const amount = parseFloat(document.getElementById('id_amount').value);
+        if (isNaN(amount) || amount <= 0) {
+            alert('Пожалуйста, введите корректную сумму платежа');
+            e.preventDefault();
+            return false;
+        }
+        
+        if (!fullYearCheckbox.checked && !Array.from(monthCheckboxes).some(cb => cb.checked)) {
+            alert('Пожалуйста, выберите период оплаты (месяцы или весь год)');
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}{% comment %} 
+                             
+      
+                                    {% extends 'school/base.html' %}
+
+                                    {% block content %}
+                                    <div class="container">
+                                        <div class="row justify-content-center">
+                                            <div class="col-md-8">
+                                                <div class="card shadow">
+                                                    <div class="card-header bg-primary text-white">
+                                                        <h4 class="mb-0">
+                                                            <i class="bi bi-cash-coin"></i> Оформление платежа для    <h5 class="alert-heading">{{ form.initial.student.full_name }}</h5>
+                                                            <p class="mb-0"> Класс: {{ form.initial.student.grade.number }}{{ form.initial.student.grade.parallel }}
+                                                            </p>{{ student.full_name }}
+                                                        </h4>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <form method="post" id="payment-form">
+                                                            {% csrf_token %}
+                                                            
+                                                            <div class="row mb-3">
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Дата платежа</label>
+                                                                    {{ form.date }}
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Сумма (₸)</label>
+                                                                    {{ form.amount }}
+                                                                </div>
+                                                            </div>
+                                                            <!-- Добавить где-то в форме -->
+<div class="form-group">
+    <label>Период оплаты:</label>
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" id="full_year" name="full_year">
+        <label class="form-check-label" for="full_year">Оплатить весь учебный год</label>
+    </div>
+    <div class="month-selection">
+        <label>Выберите месяцы:</label>
+        {% for value, name in form.months.field.choices %}
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="months" 
+                       id="month_{{ value }}" value="{{ value }}">
+                <label class="form-check-label" for="month_{{ value }}">{{ name }}</label>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+                                                            <div class="row mb-3">
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Способ оплаты</label>
+                                                                    {{ form.payment_method }}
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Статус</label>
+                                                                    {{ form.status }}
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Статья дохода</label>
+                                                                {{ form.income_type }}
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Номер транзакции</label>
+                                                                {{ form.transaction_id }}
+                                                            </div>
+                                                            
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Примечания</label>
+                                                                {{ form.notes }}
+                                                            </div>
+                                                            
+                                                            <input type="hidden" name="student" value="{{ student.pk }}">
+                                                            
+                                                            <div class="d-grid mt-4">
+                                                                <button type="submit" class="btn btn-primary btn-lg">
+                                                                    <i class="bi bi-check-circle me-2"></i> Сохранить и скачать квитанцию
+                                                                </button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <script>
+                                        document.addEventListener('DOMContentLoaded', function() {
+                                            const fullYearCheckbox = document.getElementById('full_year');
+                                            const monthCheckboxes = document.querySelectorAll('input[name="months"]');
+                                            
+                                            fullYearCheckbox.addEventListener('change', function() {
+                                                if (this.checked) {
+                                                    monthCheckboxes.forEach(cb => {
+                                                        cb.checked = false;
+                                                        cb.disabled = true;
+                                                    });
+                                                } else {
+                                                    monthCheckboxes.forEach(cb => cb.disabled = false);
+                                                }
+                                            });
+                                            
+                                            monthCheckboxes.forEach(cb => {
+                                                cb.addEventListener('change', function() {
+                                                    if (this.checked) {
+                                                        fullYearCheckbox.checked = false;
+                                                    }
+                                                });
+                                            });
+                                        });
+                                        </script>
+                                    {% endblock %}
+                            {% endcomment %}

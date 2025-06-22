@@ -1,0 +1,171 @@
+{% extends 'school/base.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Боковая панель с классами -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <h6 class="sidebar-heading px-3 mt-4 mb-1 text-muted">
+                    <span>Классы</span>
+                </h6>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {% if not selected_grade %}active{% endif %}" 
+                           href="{% url 'student-list' %}">
+                            Все ученики
+                        </a>
+                    </li>
+                    {% for grade in grades %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if selected_grade == grade.number|stringformat:'i'|add:'-'|add:grade.parallel %}active{% endif %}" 
+                           href="?grade={{ grade.number }}-{{ grade.parallel }}">
+                            {{ grade.number }}{{ grade.parallel }} 
+                            <span class="badge bg-primary rounded-pill float-end">
+                                {{ grade.student_set.count }}
+                            </span>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Основное содержимое -->
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <a href="{% url 'class-debts-report' %}" class="btn btn-warning">
+                    <i class="bi bi-file-earmark-excel"></i> Отчет по задолженностям
+                </a>
+                <h1 class="h2">
+                    {% if selected_grade %}
+                        Ученики {{ selected_grade }} класса
+                    {% else %}
+                        Все ученики
+                    {% endif %}
+                </h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    <a href="{% url 'student-create' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-plus-circle"></i> Добавить ученика
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ФИО</th>
+                            <th>Класс</th>
+                            <th>Статус</th>
+                            <th>Оплата</th>
+                            <th>Контакты родителей</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr class="{% if student.current_year_paid %}table-success{% endif %}">
+                            <td>
+                                {{ student.full_name }}
+                                {% if student.current_year_paid %}
+                                <i class="bi bi-check-circle-fill text-success ms-2"></i>
+                                {% endif %}
+                            </td>
+                            <td>{{ student.grade.number }}{{ student.grade.parallel }}</td>
+                            <td>
+                                <span class="badge 
+                                    {% if student.status == 'studying' %}bg-success
+                                    {% elif student.status == 'reserve' %}bg-warning text-dark
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ student.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if student.current_year_paid %}
+                                <span class="badge bg-success">Оплачено</span>
+                                {% else %}
+                                <span class="badge bg-warning text-dark">Не оплачено</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ student.parent_contacts|truncatechars:30 }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'student-detail' student.pk %}" class="btn btn-outline-info" title="Просмотр">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'student-update' student.pk %}" class="btn btn-outline-secondary" title="Редактировать">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'student-add-income' student.pk %}" class="btn btn-success" title="Добавить платеж">
+                                        <i class="bi bi-cash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center">Нет учеников</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <!-- Пагинация -->
+                {% if is_paginated %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
+                                &laquo; Первая
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
+                                Предыдущая
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="page-item disabled">
+                            <span class="page-link">
+                                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                            </span>
+                        </li>
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
+                                Следующая
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
+                                Последняя &raquo;
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .table-success {
+        background-color: #e6f7e6 !important;
+    }
+    .table-success:hover {
+        background-color: #d4edda !important;
+    }
+    .bi-check-circle-fill {
+        font-size: 1.1rem;
+    }
+    .btn-group {
+        flex-wrap: nowrap;
+    }
+</style>
+{% endblock %}
