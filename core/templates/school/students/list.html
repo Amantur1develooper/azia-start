@@ -3,8 +3,8 @@
 {% block content %}
 <div class="container-fluid">
     <div class="row">
-        <!-- Боковая панель с классами -->
-        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+        <!-- Боковая панель с классами - скрывается на мобильных -->
+        <div class="col-md-3 col-lg-2 d-none d-md-block bg-light sidebar">
             <div class="position-sticky pt-3">
                 <h6 class="sidebar-heading px-3 mt-4 mb-1 text-muted">
                     <span>Классы</span>
@@ -32,28 +32,44 @@
         </div>
 
         <!-- Основное содержимое -->
-        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <a href="{% url 'class-debts-report' %}" class="btn btn-warning">
-                    <i class="bi bi-file-earmark-excel"></i> Отчет по задолженностям
-                </a>
-                <h1 class="h2">
+        <div class="col-12 col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <!-- Мобильное меню для классов (появляется только на мобильных) -->
+            <div class="d-md-none mb-3">
+                <select class="form-select" onchange="location = this.value;">
+                    <option value="{% url 'student-list' %}" {% if not selected_grade %}selected{% endif %}>Все ученики</option>
+                    {% for grade in grades %}
+                    <option value="?grade={{ grade.number }}-{{ grade.parallel }}" 
+                            {% if selected_grade == grade.number|stringformat:'i'|add:'-'|add:grade.parallel %}selected{% endif %}>
+                        {{ grade.number }}{{ grade.parallel }} ({{ grade.student_set.count }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="d-flex gap-3 justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2 order-md-1 text-center text-md-start flex-grow-1 mt-2 mt-md-0">
                     {% if selected_grade %}
                         Ученики {{ selected_grade }} класса
                     {% else %}
                         Все ученики
                     {% endif %}
                 </h1>
-                <div class="btn-toolbar mb-2 mb-md-0">
+                <div class="order-md-3 text-md-end">
                     <a href="{% url 'student-create' %}" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-plus-circle"></i> Добавить ученика
+                        <i class="bi bi-plus-circle"></i> <span class="d-none d-md-inline">Добавить ученика</span>
                     </a>
                 </div>
+                <div class="order-md-2 ">
+                    <a href="{% url 'class-debts-report' %}" class="btn btn-warning btn-sm">
+                        <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-md-inline">Отчет по задолженностям</span>
+                    </a>
+                </div>
+               
             </div>
 
             <div class="table-responsive">
                 <table class="table table-hover">
-                    <thead>
+                    <thead class="d-none d-md-table-header-group">
                         <tr>
                             <th>ФИО</th>
                             <th>Класс</th>
@@ -66,14 +82,29 @@
                     <tbody>
                         {% for student in students %}
                         <tr class="{% if student.current_year_paid %}table-success{% endif %}">
-                            <td>
-                                {{ student.full_name }}
+                            <td data-label="ФИО">
+                                <div class="d-flex flex-column">
+                                    <span>{{ student.full_name }}</span>
+                                    <small class="text-muted d-md-none">
+                                        {{ student.grade.number }}{{ student.grade.parallel }} | 
+                                        {{ student.get_status_display }}
+                                    </small>
+                                    {% if student.current_year_paid %}
+                                    <small class="d-md-none">
+                                        <span class="badge bg-success">Оплачено</span>
+                                    </small>
+                                    {% else %}
+                                    <small class="d-md-none">
+                                        <span class="badge bg-warning text-dark">Не оплачено</span>
+                                    </small>
+                                    {% endif %}
+                                </div>
                                 {% if student.current_year_paid %}
-                                <i class="bi bi-check-circle-fill text-success ms-2"></i>
+                                <i class="bi bi-check-circle-fill text-success ms-2 d-none d-md-inline"></i>
                                 {% endif %}
                             </td>
-                            <td>{{ student.grade.number }}{{ student.grade.parallel }}</td>
-                            <td>
+                            <td class="d-none d-md-table-cell">{{ student.grade.number }}{{ student.grade.parallel }}</td>
+                            <td class="d-none d-md-table-cell">
                                 <span class="badge 
                                     {% if student.status == 'studying' %}bg-success
                                     {% elif student.status == 'reserve' %}bg-warning text-dark
@@ -81,24 +112,29 @@
                                     {{ student.get_status_display }}
                                 </span>
                             </td>
-                            <td>
+                            <td class="d-none d-md-table-cell">
                                 {% if student.current_year_paid %}
                                 <span class="badge bg-success">Оплачено</span>
                                 {% else %}
                                 <span class="badge bg-warning text-dark">Не оплачено</span>
                                 {% endif %}
                             </td>
-                            <td>{{ student.parent_contacts|truncatechars:30 }}</td>
+                            <td data-label="Контакты" class="text-truncate" style="max-width: 300px;">
+                                {{ student.parent_contacts }}
+                            </td>
                             <td>
-                                <div class="btn-group btn-group-sm" role="group">
+                                <div class="btn-group btn-group-sm flex-wrap" role="group">
                                     <a href="{% url 'student-detail' student.pk %}" class="btn btn-outline-info" title="Просмотр">
                                         <i class="bi bi-eye"></i>
+                                        <span class="d-none d-md-inline"> Просмотр</span>
                                     </a>
                                     <a href="{% url 'student-update' student.pk %}" class="btn btn-outline-secondary" title="Редактировать">
                                         <i class="bi bi-pencil"></i>
+                                        <span class="d-none d-md-inline"> Редакт.</span>
                                     </a>
                                     <a href="{% url 'student-add-income' student.pk %}" class="btn btn-success" title="Добавить платеж">
                                         <i class="bi bi-cash"></i>
+                                        <span class="d-none d-md-inline"> Платеж</span>
                                     </a>
                                 </div>
                             </td>
@@ -114,35 +150,40 @@
                 <!-- Пагинация -->
                 {% if is_paginated %}
                 <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center">
+                    <ul class="pagination justify-content-center flex-wrap">
                         {% if page_obj.has_previous %}
                         <li class="page-item">
                             <a class="page-link" href="?page=1{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
-                                &laquo; Первая
+                                <span class="d-none d-md-inline">&laquo; Первая</span>
+                                <span class="d-inline d-md-none">&laquo;</span>
                             </a>
                         </li>
                         <li class="page-item">
                             <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
-                                Предыдущая
+                                <span class="d-none d-md-inline">Предыдущая</span>
+                                <span class="d-inline d-md-none">&lsaquo;</span>
                             </a>
                         </li>
                         {% endif %}
                         
                         <li class="page-item disabled">
                             <span class="page-link">
-                                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                                <span class="d-none d-md-inline">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+                                <span class="d-inline d-md-none">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
                             </span>
                         </li>
                         
                         {% if page_obj.has_next %}
                         <li class="page-item">
                             <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
-                                Следующая
+                                <span class="d-none d-md-inline">Следующая</span>
+                                <span class="d-inline d-md-none">&rsaquo;</span>
                             </a>
                         </li>
                         <li class="page-item">
                             <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
-                                Последняя &raquo;
+                                <span class="d-none d-md-inline">Последняя &raquo;</span>
+                                <span class="d-inline d-md-none">&raquo;</span>
                             </a>
                         </li>
                         {% endif %}
@@ -166,6 +207,46 @@
     }
     .btn-group {
         flex-wrap: nowrap;
+    }
+    
+    /* Стили для мобильной таблицы */
+    @media (max-width: 767.98px) {
+        table {
+            border: 0;
+        }
+        
+        table tr {
+            display: block;
+            margin-bottom: 1rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+        }
+        
+        table td {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        table td::before {
+            content: attr(data-label);
+            font-weight: bold;
+            margin-right: 1rem;
+            flex: 1;
+        }
+        
+        table td .btn-group {
+            width: 100%;
+            justify-content: space-between;
+        }
+        
+        table td .btn {
+            flex: 1;
+            margin: 0 2px;
+            padding: 0.25rem;
+        }
     }
 </style>
 {% endblock %}

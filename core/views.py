@@ -22,8 +22,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from .models import AcademicYear, Student, Grade, Income, Expense, Reservation, AuditLog
-from .forms import StudentForm, IncomeForm, ExpenseForm, ReservationForm
+from .models import AcademicYear, Employee, SalaryPayment, Student, Grade, Income, Expense, Reservation, AuditLog
+from .forms import EmployeeForm, SalaryPaymentForm, StudentForm, IncomeForm, ExpenseForm, ReservationForm
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
@@ -162,9 +162,88 @@ def is_accountant(user):
     return user.groups.filter(name='Бухгалтер').exists()
 
 # Главная страница
-# @login_required
+from django.shortcuts import render
+from .models import Student, AcademicYear
+from django.db.models import Count, Sum, Q
+
+@login_required()
 def home(request):
-    return render(request, 'school/home.html')
+    current_year = AcademicYear.objects.filter(is_current=True).first()
+
+    students = Student.objects.all()
+    studying = students.filter(status='studying')
+    reserve = students.filter(status='reserve')
+    expelled = students.filter(status='expelled')
+
+    male_count = studying.filter(pol='male').count()
+    female_count = studying.filter(pol='female').count()
+
+    fully_paid = studying.filter(current_year_paid=True).count()
+    not_paid = studying.filter(current_year_paid=False).count()
+
+    total_students = studying.count()
+    total_reserve = reserve.count()
+    total_expelled = expelled.count()
+
+    total_contract_amount = studying.aggregate(total=Sum('contract_amount'))['total'] or 0
+    total_paid_amount = sum([s.get_total_paid_for_year(current_year) for s in studying])
+    total_remaining = max(total_contract_amount - total_paid_amount, 0)
+
+    context = {
+        'total_students': total_students,
+        'male_count': male_count,
+        'female_count': female_count,
+        'fully_paid': fully_paid,
+        'not_paid': not_paid,
+        'total_reserve': total_reserve,
+        'total_expelled': total_expelled,
+        'total_contract_amount': total_contract_amount,
+        'total_paid_amount': total_paid_amount,
+        'total_remaining': total_remaining,
+    }
+
+    return render(request, 'school/home.html', context)
+
+# def home(request):
+#     current_year = AcademicYear.objects.filter(is_current=True).first()
+
+#     students = Student.objects.all()
+#     studying = students.filter(status='studying')
+#     reserve = students.filter(status='reserve')
+#     expelled = students.filter(status='expelled')
+
+#     male_count = studying.filter(pol='male').count()
+#     female_count = studying.filter(pol='female').count()
+
+#     fully_paid = studying.filter(current_year_paid=True).count()
+#     not_paid = studying.filter(current_year_paid=False).count()
+
+#     total_students = studying.count()
+#     total_reserve = reserve.count()
+#     total_expelled = expelled.count()
+
+#     # Финансовая статистика
+#     total_contract_amount = studying.aggregate(total=Sum('contract_amount'))['total'] or 0
+#     total_paid_amount = sum([s.get_total_paid_for_year(current_year) for s in studying])
+#     total_remaining = total_contract_amount - total_paid_amount
+
+#     context = {
+#         'total_students': total_students,
+#         'male_count': male_count,
+#         'female_count': female_count,
+#         'fully_paid': fully_paid,
+#         'not_paid': not_paid,
+#         'total_reserve': total_reserve,
+#         'total_expelled': total_expelled,
+#         'total_contract_amount': total_contract_amount,
+#         'total_paid_amount': total_paid_amount,
+#         'total_remaining': total_remaining,
+#     }
+
+#     return render(request, 'school/home.html', context)
+
+# def home(request):
+#     return render(request, 'school/home.html')
 from django.shortcuts import render
 from django.views.generic import ListView
 from .models import Student, Grade
@@ -1354,3 +1433,276 @@ class ExpenseCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 @user_passes_test(lambda u: is_admin(u) or is_accountant(u))
 def reports(request):
     return render(request, 'school/reports/index.html')
+
+# сотрудники
+class EmployeeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Employee
+    form_class = EmployeeForm
+    template_name = 'school/employees/form.html'
+    success_url = reverse_lazy('employee-list')
+    
+    def test_func(self):
+        return is_admin(self.request.user)
+    
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        messages.success(self.request, "Сотрудник успешно добавлен")
+        return super().form_valid(form)  # Это вернет HttpResponseRedirect
+    
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))  # Вернет HttpResponse
+# class EmployeeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+#     model = Employee
+#     form_class = EmployeeForm
+#     template_name = 'school/employees/form.html'
+#     success_url = reverse_lazy('employee-list')
+    
+#     def test_func(self):
+#         return is_admin(self.request.user)
+    
+#     def form_valid(self, form):
+#         form.instance.created_by = self.request.user
+#         messages.success(self.request, "Сотрудник успешно добавлен")
+# class EmployeeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+#     model = Employee
+#     fields = [
+#         'full_name', 'birth_date', 'gender', 'address', 'phone', 'email',
+#         'position', 'contract_type', 'contract_number', 'contract_start_date',
+#         'contract_end_date', 'monthly_salary', 'contract_file', 'hire_date', 'notes'
+#     ]
+#     template_name = 'school/employees/form.html'
+#     success_url = reverse_lazy('employee-list')
+    
+#     def test_func(self):
+#         return is_admin(self.request.user)
+    
+#     def form_valid(self, form):
+#         form.instance.created_by = self.request.user
+#         messages.success(self.request, "Сотрудник успешно добавлен")
+#         return super().form_valid(form)
+
+class EmployeeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Employee
+    form_class = EmployeeForm
+    template_name = 'school/employees/form.html'
+    success_url = reverse_lazy('employee-list')
+    
+    def test_func(self):
+        return is_admin(self.request.user)
+    
+    def form_valid(self, form):
+        messages.success(self.request, "Данные сотрудника обновлены")
+        return super().form_valid(form)
+
+# class EmployeeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+#     model = Employee
+#     fields = [
+#         'full_name', 'birth_date', 'gender', 'address', 'phone', 'email',
+#         'position', 'contract_type', 'contract_number', 'contract_start_date',
+#         'contract_end_date', 'monthly_salary', 'contract_file', 'hire_date', 
+#         'is_active', 'notes'
+#     ]
+#     template_name = 'school/employees/form.html'
+#     success_url = reverse_lazy('employee-list')
+    
+#     def test_func(self):
+#         return is_admin(self.request.user)
+    
+#     def form_valid(self, form):
+#         messages.success(self.request, "Данные сотрудника обновлены")
+#         return super().form_valid(form)
+
+class EmployeeListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = Employee
+    template_name = 'school/employees/list.html'
+    context_object_name = 'employees'
+    
+    def test_func(self):
+        return is_admin(self.request.user) or is_accountant(self.request.user)
+    
+    def get_queryset(self):
+        return Employee.objects.filter(is_active=True).select_related('position')
+    
+    
+class SalaryPaymentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = SalaryPayment
+    form_class = SalaryPaymentForm
+    template_name = 'school/employees/salary_payment_form.html'
+    
+    def test_func(self):
+        return is_admin(self.request.user) or is_accountant(self.request.user)
+    
+    def get_initial(self):
+        initial = super().get_initial()
+        employee_id = self.request.GET.get('employee')
+        if employee_id:
+            try:
+                employee = Employee.objects.get(pk=employee_id)
+                initial['employee'] = employee
+                initial['amount'] = employee.monthly_salary
+            except Employee.DoesNotExist:
+                pass
+        return initial
+    
+    def get_success_url(self):
+        employee_id = self.request.GET.get('employee')
+        if employee_id:
+            return reverse('employee-detail', kwargs={'pk': employee_id})
+        return reverse('employee-list')
+    
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user
+        messages.success(
+            self.request,
+            f"Зарплатная выплата для {form.instance.employee} успешно добавлена!"
+        )
+        return super().form_valid(form)
+# class SalaryPaymentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+#     model = SalaryPayment
+#     fields = ['employee', 'amount', 'payment_date', 
+#               'for_month', 'payment_method', 'is_bonus', 'notes']
+#     template_name = 'school/employees/salary_payment_form.html'
+#     success_url = reverse_lazy('employee-list')
+    
+#     def test_func(self):
+#         return is_admin(self.request.user) or is_accountant(self.request.user)
+    
+#     def form_valid(self, form):
+#         form.instance.created_by = self.request.user
+#         messages.success(
+#             self.request,
+#             f"Зарплатная выплата для {form.instance.employee} успешно добавлена!"
+#         )
+#         return super().form_valid(form)
+class SalaryReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    template_name = 'school/employees/salary_report.html'
+    context_object_name = 'payments'
+    
+    def test_func(self):
+        return is_admin(self.request.user) or is_accountant(self.request.user)
+    
+    def get_queryset(self):
+        queryset = SalaryPayment.objects.select_related('employee', 'employee__position', 'created_by')
+        
+        year = self.request.GET.get('year')
+        month = self.request.GET.get('month')
+        
+        if year:
+            queryset = queryset.filter(for_month__year=year)
+        if month:
+            queryset = queryset.filter(for_month__month=month)
+            
+        return queryset.order_by('-for_month', 'employee__full_name')
+    
+    def render_to_response(self, context, **response_kwargs):
+        if self.request.GET.get('export') == 'xlsx':
+            return self.export_to_excel()
+        return super().render_to_response(context, **response_kwargs)
+
+    def export_to_excel(self):
+        queryset = self.get_queryset()
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'attachment; filename=salary_report.xlsx'
+    
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Зарплатные выплаты"
+    
+    # Заголовки
+        headers = ['Сотрудник', 'Должность', 'Месяц', 'Сумма', 'Дата выплаты', 'Способ оплаты', 'Тип']
+        for col_num, header in enumerate(headers, 1):
+            ws.cell(row=1, column=col_num, value=header).font = Font(bold=True)
+    
+    # Данные
+        for row_num, payment in enumerate(queryset, 2):
+            ws.cell(row=row_num, column=1, value=payment.employee.full_name)
+            ws.cell(row=row_num, column=2, value=str(payment.employee.position))
+            ws.cell(row=row_num, column=3, value=payment.for_month.strftime('%B %Y'))
+            ws.cell(row=row_num, column=4, value=float(payment.amount))
+            ws.cell(row=row_num, column=5, value=payment.payment_date.strftime('%d.%m.%Y'))
+            ws.cell(row=row_num, column=6, value=payment.get_payment_method_display())
+            ws.cell(row=row_num, column=7, value='Премия' if payment.is_bonus else 'Зарплата')
+    
+    # Автоширина столбцов
+        for col in ws.columns:
+            max_length = 0
+            column = col[0].column_letter
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = (max_length + 2) * 1.2
+            ws.column_dimensions[column].width = adjusted_width
+    
+        wb.save(response)
+        return response
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Добавляем доступные годы для фильтра
+        years = SalaryPayment.objects.dates('for_month', 'year').order_by('-for_month')
+        unique_years = sorted(set([year.year for year in years]), reverse=True)
+        context['years'] = unique_years
+        context['selected_year'] = self.request.GET.get('year')
+
+        
+        # Добавляем месяцы для фильтра
+        context['months'] = [
+            (1, 'Январь'), (2, 'Февраль'), (3, 'Март'), 
+            (4, 'Апрель'), (5, 'Май'), (6, 'Июнь'),
+            (7, 'Июль'), (8, 'Август'), (9, 'Сентябрь'),
+            (10, 'Октябрь'), (11, 'Ноябрь'), (12, 'Декабрь')
+        ]
+        context['selected_month'] = self.request.GET.get('month')
+        
+        # Суммарная информация
+        queryset = self.get_queryset()
+        context['total_amount'] = queryset.aggregate(
+            Sum('amount')
+        )['amount__sum'] or 0
+        
+        return context
+# class SalaryReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+#     template_name = 'school/employees/salary_report.html'
+#     context_object_name = 'payments'
+    
+#     def test_func(self):
+#         return is_admin(self.request.user) or is_accountant(self.request.user)
+    
+#     def get_queryset(self):
+#         year = self.request.GET.get('year')
+#         month = self.request.GET.get('month')
+        
+#         # queryset = SalaryPayment.objects.select_related('employee', 'contract')
+        
+#         if year:
+#             queryset = queryset.filter(for_month__year=year)
+#         if month:
+#             queryset = queryset.filter(for_month__month=month)
+            
+#         return queryset.order_by('-for_month', 'employee__full_name')
+    
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['total_amount'] = self.get_queryset().aggregate(
+#             Sum('amount')
+#         )['amount__sum'] or 0
+#         return context
+    
+    
+class EmployeeDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    model = Employee
+    template_name = 'school/employees/detail.html'
+    
+    def test_func(self):
+        return is_admin(self.request.user) or is_accountant(self.request.user)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['salary_payments'] = SalaryPayment.objects.filter(
+            employee=self.object
+        ).order_by('-for_month')
+        return context

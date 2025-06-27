@@ -22,7 +22,11 @@ from django.urls import path
 from core import views
 from django.urls import path
 from core.views import CustomLoginView, login_view, logout_view, ClassDebtsReportView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, student_search
-
+from core.views import (
+    EmployeeListView, EmployeeCreateView, 
+    EmployeeUpdateView, EmployeeDetailView,
+    SalaryPaymentCreateView, SalaryReportView
+)
 from core.receipts import download_receipt_view
 urlpatterns = [
     path('', views.home, name='home'),
@@ -57,6 +61,15 @@ urlpatterns = [
     path('reports/', views.reports, name='reports'),
 
     path('admin/', admin.site.urls),
+    
+    
+    
+    path('employees/', EmployeeListView.as_view(), name='employee-list'),
+    path('employees/add/', EmployeeCreateView.as_view(), name='employee-add'),
+    path('employees/<int:pk>/', EmployeeDetailView.as_view(), name='employee-detail'),
+    path('employees/<int:pk>/edit/', EmployeeUpdateView.as_view(), name='employee-edit'),
+    path('salary-payments/add/', SalaryPaymentCreateView.as_view(), name='salary-payment-add'),
+    path('salary-report/', SalaryReportView.as_view(), name='salary-report'),
 ]
 
 #  {% load  path('students/', views.StudentListView.as_view(), name='student-list'),

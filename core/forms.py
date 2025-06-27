@@ -1,5 +1,5 @@
 from django import forms
-from .models import Student, Income, Expense, Reservation
+from .models import SalaryPayment, Student, Income, Expense, Reservation
 from django.utils import timezone 
 
 class StudentForm(forms.ModelForm):
@@ -419,3 +419,53 @@ class ReservationForm(forms.ModelForm):
     class Meta:
         model = Reservation
         fields = '__all__'
+        
+        
+from django import forms
+from .models import Employee
+
+class EmployeeForm(forms.ModelForm):
+    class Meta:
+        model = Employee
+        fields = [
+            'full_name', 'birth_date', 'gender', 'address', 'phone', 'email',
+            'position', 'contract_type', 'contract_number', 'contract_start_date',
+            'contract_end_date', 'monthly_salary', 'contract_file', 'hire_date', 
+            'is_active', 'notes'
+        ]
+        widgets = {
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),
+            'contract_start_date': forms.DateInput(attrs={'type': 'date'}),
+            'contract_end_date': forms.DateInput(attrs={'type': 'date'}),
+            'hire_date': forms.DateInput(attrs={'type': 'date'}),
+            'notes': forms.Textarea(attrs={'rows': 3}),
+            'address': forms.Textarea(attrs={'rows': 2}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Делаем поле contract_end_date необязательным
+        self.fields['contract_end_date'].required = False
+        self.fields['contract_file'].required = False
+        self.fields['email'].required = False
+        self.fields['notes'].required = False
+        
+        
+class SalaryPaymentForm(forms.ModelForm):
+    class Meta:
+        model = SalaryPayment
+        fields = ['employee', 'amount', 'payment_date', 'for_month', 
+                 'payment_method', 'is_bonus', 'notes']
+        widgets = {
+            'payment_date': forms.DateInput(attrs={'type': 'date'}),
+            'for_month': forms.DateInput(attrs={'type': 'date'}),
+            'notes': forms.Textarea(attrs={'rows': 3}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Устанавливаем текущую дату по умолчанию
+        self.fields['payment_date'].initial = timezone.now().date()
+        # Устанавливаем первый день текущего месяца по умолчанию
+        today = timezone.now().date()
+        self.fields['for_month'].initial = today.replace(day=1)

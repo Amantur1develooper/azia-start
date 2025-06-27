@@ -417,6 +417,7 @@ class Expense(models.Model):
         ('events', 'Мероприятия'),
         ('utilities', 'Коммунальные услуги'),
         ('other', 'Другие расходы'),
+        ('arenda','Аренда'),
     ]
     
     PAYMENT_METHODS = [
@@ -613,3 +614,160 @@ class AuditLog(models.Model):
     
     def __str__(self):
         return f"{self.user} - {self.action} - {self.model_name}"
+    
+#сотрудники
+class Position(models.Model):
+    """Должности сотрудников"""
+    name = models.CharField(max_length=100, verbose_name="Название должности")
+    description = models.TextField(blank=True, verbose_name="Описание")
+    
+    class Meta:
+        verbose_name = "Должность"
+        verbose_name_plural = "Должности"
+    
+    def __str__(self):
+        return self.name
+    
+    
+
+class Employee(models.Model):
+    """Сотрудники школы"""
+    GENDER_CHOICES = [
+        ('male', 'Мужской'),
+        ('female', 'Женский'),
+    ]
+    
+    CONTRACT_TYPES = [
+        ('permanent', 'Бессрочный'),
+        ('fixed_term', 'Срочный'),
+        ('temporary', 'Временный'),
+    ]
+    
+    full_name = models.CharField(max_length=200, verbose_name="ФИО сотрудника")
+    birth_date = models.DateField(verbose_name="Дата рождения")
+    gender = models.CharField(
+        max_length=10, 
+        choices=GENDER_CHOICES, 
+        verbose_name="Пол"
+    )
+    address = models.TextField(verbose_name="Адрес")
+    phone = models.CharField(max_length=20, verbose_name="Телефон")
+    email = models.EmailField(blank=True, verbose_name="Email")
+    position = models.ForeignKey(
+        Position,
+        on_delete=models.PROTECT,
+        verbose_name="Должность"
+    )
+    
+    # Поля контракта
+    contract_type = models.CharField(
+        max_length=20,
+        choices=CONTRACT_TYPES,
+        verbose_name="Тип контракта"
+    )
+    contract_number = models.CharField(
+        max_length=50, 
+        verbose_name="Номер контракта",
+        blank=True,
+        null=True
+    )
+    contract_start_date = models.DateField(
+        verbose_name="Дата начала контракта"
+    )
+    contract_end_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Дата окончания контракта"
+    )
+    monthly_salary = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        verbose_name="Месячная зарплата (сом)"
+    )
+    contract_file = models.FileField(
+        upload_to='employee_contracts/',
+        blank=True,
+        null=True,
+        verbose_name="Файл контракта"
+    )
+    
+    hire_date = models.DateField(verbose_name="Дата приема на работу")
+    is_active = models.BooleanField(default=True, verbose_name="Активный сотрудник")
+    notes = models.TextField(blank=True, verbose_name="Примечания")
+    
+    class Meta:
+        verbose_name = "Сотрудник"
+        verbose_name_plural = "Сотрудники"
+        ordering = ['full_name']
+    
+    def __str__(self):
+        return f"{self.full_name} ({self.position})"
+    
+    @property
+    def contract_status(self):
+        """Статус контракта"""
+        if not self.is_active:
+            return "Неактивен"
+        if self.contract_type == 'permanent':
+            return "Бессрочный"
+        if self.contract_end_date and timezone.now().date() > self.contract_end_date:
+            return "Истек"
+        return "Действует"
+
+class SalaryPayment(models.Model):
+    """Зарплатные выплаты (как расходы)"""
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.PROTECT,
+        verbose_name="Сотрудник"
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        verbose_name="Сумма выплаты"
+    )
+    payment_date = models.DateField(verbose_name="Дата выплаты")
+    for_month = models.DateField(verbose_name="За месяц")  # Хранит первый день месяца
+    payment_method = models.CharField(
+        max_length=15,
+        choices=Expense.PAYMENT_METHODS,
+        verbose_name="Способ оплаты"
+    )
+    is_bonus = models.BooleanField(
+        default=False,
+        verbose_name="Премиальная выплата"
+    )
+    notes = models.TextField(blank=True, verbose_name="Примечания")
+    created_by = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        verbose_name="Кто создал"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата создания"
+    )
+    
+    class Meta:
+        verbose_name = "Зарплатная выплата"
+        verbose_name_plural = "Зарплатные выплаты"
+        ordering = ['-payment_date']
+    
+    def __str__(self):
+        return f"Выплата {self.employee} - {self.amount} за {self.for_month.strftime('%B %Y')}"
+    
+    def save(self, *args, **kwargs):
+        # Автоматически создаем связанный расход при создании выплаты
+        if not self.pk:
+            Expense.objects.create(
+                date=self.payment_date,
+                category='salary',
+                supplier=f"Зарплата {self.employee.full_name}",
+                amount=self.amount,
+                payment_method=self.payment_method,
+                notes=f"Зарплатная выплата за {self.for_month.strftime('%B %Y')}. {self.notes}",
+                created_by=self.created_by
+            )
+        super().save(*args, **kwargs)

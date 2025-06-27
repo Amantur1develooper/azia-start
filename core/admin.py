@@ -101,3 +101,39 @@ class AuditLogAdmin(admin.ModelAdmin):
 # Перерегистрируем стандартную модель User
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
+
+# сотрудники
+
+
+from django.contrib import admin
+from .models import Position, Employee, SalaryPayment
+
+@admin.register(Position)
+class PositionAdmin(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
+
+@admin.register(Employee)
+class EmployeeAdmin(admin.ModelAdmin):
+    list_display = ('full_name', 'position', 'phone', 'email', 'is_active')
+    list_filter = ('position', 'is_active', 'contract_type')
+    search_fields = ('full_name', 'phone', 'email', 'contract_number')
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('full_name', 'birth_date', 'gender', 'address', 'phone', 'email')
+        }),
+        ('Работа', {
+            'fields': ('position', 'hire_date', 'is_active', 'notes')
+        }),
+        ('Контракт', {
+            'fields': ('contract_type', 'contract_number', 'contract_start_date', 
+                      'contract_end_date', 'monthly_salary', 'contract_file')
+        }),
+    )
+
+@admin.register(SalaryPayment)
+class SalaryPaymentAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'amount', 'for_month', 'payment_date', 'is_bonus')
+    list_filter = ('is_bonus', 'payment_method')
+    search_fields = ('employee__full_name', 'notes')
+    date_hierarchy = 'payment_date'
