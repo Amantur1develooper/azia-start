@@ -129,9 +129,7 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
-                                <a href="{% url 'expense-update' expense.pk %}" class="btn btn-outline-secondary" title="Редактировать">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
+                             
                                 {% if expense.invoice %}
                                 <a href="{{ expense.invoice.url }}" class="btn btn-outline-info" title="Скачать счет" download>
                                     <i class="bi bi-download"></i>

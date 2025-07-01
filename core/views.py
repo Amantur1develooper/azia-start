@@ -7,7 +7,10 @@ from openpyxl.styles import Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 from core.pdf_utils import generate_receipt
 from .receipts import generate_receipt_pdf
-#  generate_html_receipt, generate_pdf_from_html
+from django.contrib.auth.views import LoginView
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib import messages
 import os
 from django.views import View
 from django.template.loader import get_template  # Добавьте этот импорт
@@ -316,14 +319,12 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
 # class StudentDetailView(LoginRequiredMixin, DetailView):
 #     model = Student
 #     template_name = 'school/students/detail.html'
-class StudentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+
+class StudentCreateView(LoginRequiredMixin, CreateView):  # Убрали UserPassesTestMixin
     model = Student
     form_class = StudentForm
     template_name = 'school/students/form.html'
     success_url = reverse_lazy('student-list')
-    
-    def test_func(self):
-        return is_admin(self.request.user)
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -338,10 +339,29 @@ class StudentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
             f"Ученик {form.instance.full_name} успешно добавлен!"
         )
         return super().form_valid(form)
-from django.contrib.auth.views import LoginView
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-from django.contrib import messages
+# class StudentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+#     model = Student
+#     form_class = StudentForm
+#     template_name = 'school/students/form.html'
+#     success_url = reverse_lazy('student-list')
+    
+#     def test_func(self):
+#         return is_admin(self.request.user)
+    
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+#         context['title'] = 'Добавление нового ученика'
+#         context['submit_text'] = 'Создать ученика'
+#         return context
+    
+#     def form_valid(self, form):
+#         form.instance.created_by = self.request.user
+#         messages.success(
+#             self.request,
+#             f"Ученик {form.instance.full_name} успешно добавлен!"
+#         )
+#         return super().form_valid(form)
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -411,7 +431,7 @@ from datetime import datetime
 from django.http import HttpResponse
 import csv
 
-class IncomeListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class IncomeListView(LoginRequiredMixin, ListView):
     model = Income
     template_name = 'school/incomes/list.html'
     context_object_name = 'incomes'
@@ -1058,7 +1078,7 @@ class ReceiptPrintView(LoginRequiredMixin, DetailView):
 #         return context
 from django.db.models import Sum, Q
 from datetime import datetime, timedelta
-class ExpenseListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class ExpenseListView(LoginRequiredMixin, ListView):
     model = Expense
     template_name = 'school/expenses/list.html'
     context_object_name = 'expenses'
@@ -1397,7 +1417,7 @@ class ExpenseListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 #         return is_admin(self.request.user) or is_accountant(self.request.user)
     
     
-class ExpenseCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class ExpenseCreateView(LoginRequiredMixin, CreateView):
     model = Expense
     form_class = ExpenseForm
     template_name = 'school/expenses/form.html'
@@ -1435,7 +1455,7 @@ def reports(request):
     return render(request, 'school/reports/index.html')
 
 # сотрудники
-class EmployeeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class EmployeeCreateView(LoginRequiredMixin, CreateView):
     model = Employee
     form_class = EmployeeForm
     template_name = 'school/employees/form.html'
@@ -1512,7 +1532,7 @@ class EmployeeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 #         messages.success(self.request, "Данные сотрудника обновлены")
 #         return super().form_valid(form)
 
-class EmployeeListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class EmployeeListView(LoginRequiredMixin, ListView):
     model = Employee
     template_name = 'school/employees/list.html'
     context_object_name = 'employees'
@@ -1524,7 +1544,7 @@ class EmployeeListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         return Employee.objects.filter(is_active=True).select_related('position')
     
     
-class SalaryPaymentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class SalaryPaymentCreateView(LoginRequiredMixin, CreateView):
     model = SalaryPayment
     form_class = SalaryPaymentForm
     template_name = 'school/employees/salary_payment_form.html'
@@ -1574,7 +1594,7 @@ class SalaryPaymentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateVie
 #             f"Зарплатная выплата для {form.instance.employee} успешно добавлена!"
 #         )
 #         return super().form_valid(form)
-class SalaryReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+class SalaryReportView(LoginRequiredMixin, ListView):
     template_name = 'school/employees/salary_report.html'
     context_object_name = 'payments'
     
@@ -1693,7 +1713,7 @@ class SalaryReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
 #         return context
     
     
-class EmployeeDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+class EmployeeDetailView(LoginRequiredMixin, DetailView):
     model = Employee
     template_name = 'school/employees/detail.html'
     
