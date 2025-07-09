@@ -33,7 +33,7 @@ from openpyxl.styles import Font, Alignment, PatternFill
 from openpyxl.utils import get_column_letter
 from django.contrib.auth import logout
 
-class ClassDebtsReportView(LoginRequiredMixin, UserPassesTestMixin, View):
+class ClassDebtsReportView(LoginRequiredMixin, View):
     def test_func(self):
         return is_admin(self.request.user) or is_accountant(self.request.user)
     

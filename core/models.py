@@ -418,6 +418,7 @@ class Expense(models.Model):
         ('utilities', 'Коммунальные услуги'),
         ('other', 'Другие расходы'),
         ('arenda','Аренда'),
+        ('kichin','Кухня'),
     ]
     
     PAYMENT_METHODS = [
