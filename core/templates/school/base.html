@@ -367,6 +367,7 @@
                             <li><a class="dropdown-item" href="{% url 'expense-list' %}">Расходы</a></li>
                         </ul>
                     </li>
+                  
                     <li class="nav-item">
                         {% comment %} <a class="nav-link" href="{% url 'reports' %}">Отчеты</a> {% endcomment %}
                         <a class="nav-link" href="{% url 'employee-list' %}">Сотрудники</a>
@@ -377,6 +378,9 @@
                         <a class="nav-link" href="/admin/">Настройки</a>
                     </li>
                     {% endif %}
+                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'thanks' %}">Лицевая часть</a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}

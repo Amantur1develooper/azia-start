@@ -21,6 +21,7 @@ from django.conf.urls.static import static
 from django.urls import path
 from core import views
 from django.urls import path
+from django.views.generic import TemplateView
 from core.views import CustomLoginView, login_view, logout_view, ClassDebtsReportView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, student_search
 from core.views import (
     EmployeeListView, EmployeeCreateView, 
@@ -62,7 +63,7 @@ urlpatterns = [
 
     path('admin/', admin.site.urls),
     
-    
+    path('thanks/', TemplateView.as_view(template_name='index.html'), name='thanks'),
     
     path('employees/', EmployeeListView.as_view(), name='employee-list'),
     path('employees/add/', EmployeeCreateView.as_view(), name='employee-add'),
