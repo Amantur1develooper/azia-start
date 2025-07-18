@@ -409,7 +409,86 @@ class Income(models.Model):
     
 #     def __str__(self):
 #         return f"{self.student} - {self.amount}"
+# models.py
+from django.db import models
 
+class Teacher(models.Model):
+    first_name = models.CharField(max_length=100, verbose_name="Имя")
+    last_name = models.CharField(max_length=100, verbose_name="Фамилия")
+    subject = models.CharField(max_length=100, verbose_name="Предмет")
+    description = models.TextField(verbose_name="Описание")
+    image = models.ImageField(upload_to='teachers/', verbose_name="Фото")
+    is_main = models.BooleanField(default=False, verbose_name="Главный учитель?")
+    order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения")
+
+    class Meta:
+        verbose_name = "Учитель"
+        verbose_name_plural = "Учителя"
+        ordering = ['order', 'last_name']
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - {self.subject}"
+    
+    
+from django.db import models
+
+class Student2(models.Model):
+    first_name = models.CharField(max_length=100, verbose_name="Имя")
+    last_name = models.CharField(max_length=100, verbose_name="Фамилия")
+    level = models.CharField(max_length=20, verbose_name="Класс")
+    achievements = models.TextField(verbose_name="Достижения")
+    image = models.ImageField(upload_to='students/', verbose_name="Фото")
+    is_featured = models.BooleanField(default=False, verbose_name="Показывать на главной?")
+    order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения")
+
+    class Meta:
+        verbose_name = "Лучший ученик"
+        verbose_name_plural = "Лучшие ученики"
+        ordering = ['order', 'last_name']
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} - {self.level} класс"
+    
+    
+from django.db import models
+from django.utils import timezone
+
+class News(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Заголовок")
+    content = models.TextField(verbose_name="Содержание")
+    image = models.ImageField(upload_to='news/', verbose_name="Изображение")
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Дата публикации")
+    is_published = models.BooleanField(default=True, verbose_name="Опубликовано")
+    
+    class Meta:
+        verbose_name = "Новость"
+        verbose_name_plural = "Новости"
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return self.title
+    
+    
+# models.py
+class TelegramSubscriber(models.Model):
+    name = models.CharField(max_length=100, blank=True)
+    chat_id = models.CharField(max_length=100, unique=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.name or self.chat_id}"
+
+
+class Application(models.Model):
+    child_name = models.CharField(max_length=100)
+    child_surname = models.CharField(max_length=100)
+    child_class = models.CharField(max_length=20)
+    parent_phone = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)
+    class Meta:
+        verbose_name = "Заявка на обучение"
+        verbose_name_plural = "Заявки на обучение"
+       
 class Expense(models.Model):
     CATEGORIES = [
         ('salary', 'Зарплата'),

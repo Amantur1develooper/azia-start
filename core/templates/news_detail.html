@@ -1,0 +1,190 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+<section class="news-detail">
+  <div class="container">
+    <div class="news-detail__inner">
+      <div class="news-detail__main">
+        <h1 class="news-detail__title">{{ news.title }}</h1>
+        
+        <div class="news-detail__meta">
+          <span class="news-detail__date">{{ news.created_at|date:"d M Y" }}</span>
+          <span class="news-detail__category">Новости школы</span>
+        </div>
+        
+        <div class="news-detail__image-container">
+          <img 
+            class="news-detail__image" 
+            src="{{ news.image.url }}" 
+            alt="{{ news.title }}"
+          >
+        </div>
+        
+        <div class="news-detail__content">
+          {{ news.content|linebreaks }}
+        </div>
+        
+        <div class="news-detail__back">
+          <a href="{% url 'news_list' %}" class="news-detail__back-link">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Вернуться к списку новостей
+          </a>
+        </div>
+      </div>
+      
+      <div class="news-detail__sidebar">
+        <h3 class="news-detail__sidebar-title">Последние новости</h3>
+        
+        <div class="news-detail__recent">
+          {% for recent in recent_news %}
+          <a href="{% url 'news_detail' recent.id %}" class="news-detail__recent-item">
+            <div class="news-detail__recent-image-container">
+              <img 
+                class="news-detail__recent-image" 
+                src="{{ recent.image.url }}" 
+                alt="{{ recent.title }}"
+              >
+            </div>
+            <div class="news-detail__recent-content">
+              <h4 class="news-detail__recent-title">{{ recent.title }}</h4>
+              <span class="news-detail__recent-date">{{ recent.created_at|date:"d M Y" }}</span>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .news-detail {
+    padding: 80px 0;
+  }
+  
+  .news-detail__inner {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  
+  @media (min-width: 992px) {
+    .news-detail__inner {
+      grid-template-columns: 2fr 1fr;
+    }
+  }
+  
+  .news-detail__title {
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+  }
+  
+  .news-detail__meta {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    color: #777;
+    font-size: 0.9rem;
+  }
+  
+  .news-detail__image-container {
+    margin-bottom: 30px;
+    border-radius: 15px;
+    overflow: hidden;
+  }
+  
+  .news-detail__image {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
+  .news-detail__content {
+    line-height: 1.8;
+    font-size: 1.1rem;
+    color: #444;
+    margin-bottom: 40px;
+  }
+  
+  .news-detail__content p {
+    margin-bottom: 20px;
+  }
+  
+  .news-detail__back {
+    margin-top: 40px;
+  }
+  
+  .news-detail__back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: #3498db;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+  }
+  
+  .news-detail__back-link:hover {
+    color: #2980b9;
+  }
+  
+  .news-detail__sidebar {
+    background: #f9f9f9;
+    border-radius: 15px;
+    padding: 25px;
+  }
+  
+  .news-detail__sidebar-title {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #3498db;
+  }
+  
+  .news-detail__recent {
+    display: grid;
+    gap: 20px;
+  }
+  
+  .news-detail__recent-item {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 15px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease;
+  }
+  
+  .news-detail__recent-item:hover {
+    transform: translateX(5px);
+  }
+  
+  .news-detail__recent-image-container {
+    border-radius: 10px;
+    overflow: hidden;
+    height: 70px;
+  }
+  
+  .news-detail__recent-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .news-detail__recent-title {
+    font-size: 1rem;
+    margin: 0 0 5px 0;
+    color: #2c3e50;
+  }
+  
+  .news-detail__recent-date {
+    font-size: 0.8rem;
+    color: #777;
+  }
+</style>
+{% endblock %}

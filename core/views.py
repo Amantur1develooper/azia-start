@@ -5,6 +5,7 @@ from django.conf import settings
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
+import requests
 from core.pdf_utils import generate_receipt
 from .receipts import generate_receipt_pdf
 from django.contrib.auth.views import LoginView
@@ -25,13 +26,103 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from .models import AcademicYear, Employee, SalaryPayment, Student, Grade, Income, Expense, Reservation, AuditLog
+from .models import AcademicYear, Employee, News, SalaryPayment, Student, Grade, Income, Expense, Reservation, AuditLog, Student2, Teacher
 from .forms import EmployeeForm, SalaryPaymentForm, StudentForm, IncomeForm, ExpenseForm, ReservationForm
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 from openpyxl.utils import get_column_letter
 from django.contrib.auth import logout
+# views.py
+from django.shortcuts import render, redirect
+from .models import Application
+from django.views.generic import ListView, DetailView
+from .models import News
+from .models import TelegramSubscriber
+class NewsListView(ListView):
+    model = News
+    template_name = 'news_list.html'
+    context_object_name = 'news_list'
+    paginate_by = 6  # Показывать по 6 новостей на странице
+    
+    def get_queryset(self):
+        return News.objects.all().order_by('-created_at')
+
+class NewsDetailView(DetailView):
+    model = News
+    template_name = 'news_detail.html'
+    context_object_name = 'news'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Добавляем последние новости для боковой колонки
+        context['recent_news'] = News.objects.exclude(id=self.object.id).order_by('-created_at')[:3]
+        return context
+    
+TELEGRAM_BOT_TOKEN = "7392373379:AAFmvBHQE6uCWJ817i9H3M9fKEYgUwaNoaE"
+
+
+def application_view(request):
+    if request.method == 'POST':
+        child_name = request.POST.get('child_name')
+        child_surname = request.POST.get('child_surname')
+        child_class = request.POST.get('child_class')
+        parent_phone = request.POST.get('parent_phone')
+        
+        Application.objects.create(
+            child_name=child_name,
+            child_surname=child_surname,
+            child_class=child_class,
+            parent_phone=parent_phone
+        )
+         # Формируем сообщение
+        message = (
+            f"📥 Новая заявка:\n"
+            f"👶 Ребёнок: {child_name} {child_surname}\n"
+            f"📚 Класс: {child_class}\n"
+            f"📞 Телефон родителя: {parent_phone}"
+        )
+
+        # Отправка всем активным подписчикам
+        subscribers = TelegramSubscriber.objects.filter(is_active=True)
+        for subscriber in subscribers:
+            try:
+                requests.post(
+                    f'https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage',
+                    data={'chat_id': subscriber.chat_id, 'text': message}
+                )
+            except Exception as e:
+                print(f"Ошибка при отправке для {subscriber.chat_id}: {e}")
+
+    teachers = Teacher.objects.all()
+     # Проверяем, есть ли главный учитель для отображения по умолчанию
+    main_teacher = teachers.filter(is_main=True).first()
+    if not main_teacher and teachers.exists():
+        main_teacher = teachers.first()
+    best_students = Student2.objects.filter(is_featured=True).order_by('order')[:4]  # Ограничив
+    news_list = News.objects.filter(is_published=True).order_by('-created_at')[:3]
+    return render(request, 'index.html',{'main_teacher':main_teacher, 
+                                         'teachers':teachers,
+                                         'best_students': best_students,
+                                          'news_list': news_list,})
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+def get_teacher(request, teacher_id):
+    teacher = get_object_or_404(Teacher, id=teacher_id)
+    
+    data = {
+        'success': True,
+        'teacher': {
+            'id': teacher.id,
+            'first_name': teacher.first_name,
+            'last_name': teacher.last_name,
+            'subject': teacher.subject,
+            'description': teacher.description,
+            'image': teacher.image.url,
+        }
+    }
+    return JsonResponse(data)
 
 class ClassDebtsReportView(LoginRequiredMixin, View):
     def test_func(self):

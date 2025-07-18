@@ -1,0 +1,169 @@
+{% extends 'base2.html' %}
+
+{% block content %}
+<section class="news-list">
+  <div class="container">
+    <h1 class="news-list__title">Все новости школы</h1>
+    
+    <div class="news-list__grid">
+      {% for news in news_list %}
+      <a href="{% url 'news_detail' news.id %}" class="news-list__card">
+        <div class="news-list__image-container">
+          <img 
+            class="news-list__image" 
+            src="{{ news.image.url }}" 
+            alt="{{ news.title }}"
+          >
+          <div class="news-list__date">
+            <span class="news-list__day">{{ news.created_at|date:"d" }}</span>
+            <span class="news-list__month">{{ news.created_at|date:"M" }}</span>
+          </div>
+        </div>
+        <div class="news-list__content">
+          <h3 class="news-list__heading">{{ news.title }}</h3>
+          <p class="news-list__text">{{ news.content|truncatechars:150 }}</p>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    
+    <!-- Пагинация -->
+    {% if is_paginated %}
+    <div class="news-list__pagination">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="news-list__pagination-link">Назад</a>
+      {% endif %}
+      
+      <span class="news-list__pagination-current">
+        Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+      </span>
+      
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="news-list__pagination-link">Вперед</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<style>
+  .news-list {
+    padding: 80px 0;
+  }
+  
+  .news-list__title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 50px;
+    color: #2980b9;
+  }
+  
+  .news-list__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 50px;
+  }
+  
+  .news-list__card {
+    display: block;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .news-list__card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+  }
+  
+  .news-list__image-container {
+    position: relative;
+    height: 250px;
+    overflow: hidden;
+  }
+  
+  .news-list__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+  
+  .news-list__card:hover .news-list__image {
+    transform: scale(1.05);
+  }
+  
+  .news-list__date {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(231, 76, 60, 0.9);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+  }
+  
+  .news-list__day {
+    display: block;
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+  
+  .news-list__month {
+    display: block;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+  }
+  
+  .news-list__content {
+    padding: 20px;
+  }
+  
+  .news-list__heading {
+    margin: 0 0 10px 0;
+    font-size: 1.4rem;
+    color: #2c3e50;
+  }
+  
+  .news-list__text {
+    margin: 0;
+    color: #555;
+    line-height: 1.5;
+  }
+  
+  .news-list__pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .news-list__pagination-link {
+    background: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .news-list__pagination-link:hover {
+    background: #2980b9;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  
+  .news-list__pagination-current {
+    font-weight: 500;
+    color: #555;
+  }
+</style>
+{% endblock %}

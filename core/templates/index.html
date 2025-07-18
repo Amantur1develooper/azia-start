@@ -27,6 +27,838 @@
       Школа Азия Старт – расширение прав и возможностей лидеров завтрашнего дня
     </title>
   </head>
+  <style>
+    @charset 'UTF-8';
+/* Slider */
+.slick-loading .slick-list {
+  background: #fff url("./ajax-loader.gif") center center no-repeat;
+}
+
+/* Icons */
+@font-face {
+  font-family: "slick";
+  font-weight: normal;
+  font-style: normal;
+
+  src: url("./fonts/slick.eot");
+  src: url("./fonts/slick.eot?#iefix") format("embedded-opentype"),
+    url("./fonts/slick.woff") format("woff"),
+    url("./fonts/slick.ttf") format("truetype"),
+    url("./fonts/slick.svg#slick") format("svg");
+}
+/* Arrows */
+.slick-prev,
+.slick-next {
+  font-size: 0;
+  line-height: 0;
+
+  position: absolute;
+  top: 50%;
+
+  display: none;
+
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  -webkit-transform: translate(0, -50%);
+  -ms-transform: translate(0, -50%);
+  transform: translate(0, -50%);
+
+  cursor: pointer;
+
+  color: transparent;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+.slick-prev:hover,
+.slick-prev:focus,
+.slick-next:hover,
+.slick-next:focus {
+  color: transparent;
+  outline: none;
+  background: transparent;
+}
+.slick-prev:hover:before,
+.slick-prev:focus:before,
+.slick-next:hover:before,
+.slick-next:focus:before {
+  opacity: 1;
+}
+.slick-prev.slick-disabled:before,
+.slick-next.slick-disabled:before {
+  opacity: 0.25;
+}
+
+.slick-prev:before,
+.slick-next:before {
+  font-family: "slick";
+  font-size: 20px;
+  line-height: 1;
+
+  opacity: 0.75;
+  color: white;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.slick-prev {
+  left: -25px;
+}
+[dir="rtl"] .slick-prev {
+  right: -25px;
+  left: auto;
+}
+.slick-prev:before {
+  content: "←";
+}
+[dir="rtl"] .slick-prev:before {
+  content: "→";
+}
+
+.slick-next {
+  right: -25px;
+}
+[dir="rtl"] .slick-next {
+  right: auto;
+  left: -25px;
+}
+.slick-next:before {
+  content: "→";
+}
+[dir="rtl"] .slick-next:before {
+  content: "←";
+}
+
+/* Dots */
+.slick-dotted.slick-slider {
+  margin-bottom: 30px;
+}
+
+.slick-dots {
+  /* position: absolute;
+  bottom: 25px; */
+  margin-top: 50px !important;
+
+  display: block;
+
+  width: 100%;
+  padding: 0;
+  margin: 0;
+
+  list-style: none;
+
+  text-align: center;
+}
+@media only screen and (max-width: 600px) {
+  .slick-dots {
+    margin-top: 25px !important;
+  }
+}
+.slick-dots li {
+  position: relative;
+
+  display: inline-block;
+
+  width: 25px !important;
+  height: 25px !important;
+  margin: 0 7px !important;
+  padding: 0;
+
+  cursor: pointer;
+}
+.slick-dots li button {
+  font-size: 0;
+  line-height: 0;
+
+  display: block;
+
+  width: 25px !important;
+  height: 25px !important;
+  padding: 0px !important;
+
+  cursor: pointer;
+
+  color: transparent;
+  border: 0;
+  outline: none;
+  background: transparent;
+}
+.slick-dots li button:hover,
+.slick-dots li button:focus {
+  outline: none;
+}
+.slick-dots li button:hover:before,
+.slick-dots li button:focus:before {
+  opacity: 1;
+}
+.slick-dots li button:before {
+  font-family: "slick";
+  font-size: 6px;
+  line-height: 20px;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 15px !important;
+  height: 15px !important;
+
+  content: "";
+  text-align: center;
+
+  opacity: 0.25;
+  color: black;
+  background-color: #0b0a08 !important;
+  border-radius: 100px;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.slick-dots li.slick-active button:before {
+  opacity: 1 !important;
+  color: #0b0a08 !important;
+}
+.slick-next {
+  display: none !important;
+}
+.slick-prev {
+  display: none !important;
+}
+
+  </style>
+  <style>
+    /* Slider */
+.slick-slider
+{
+    position: relative;
+
+    display: block;
+    box-sizing: border-box;
+
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+
+    -webkit-touch-callout: none;
+    -khtml-user-select: none;
+    -ms-touch-action: pan-y;
+        touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.slick-list
+{
+    position: relative;
+
+    display: block;
+    overflow: hidden;
+
+    margin: 0;
+    padding: 0;
+}
+.slick-list:focus
+{
+    outline: none;
+}
+.slick-list.dragging
+{
+    cursor: pointer;
+    cursor: hand;
+}
+
+.slick-slider .slick-track,
+.slick-slider .slick-list
+{
+    -webkit-transform: translate3d(0, 0, 0);
+       -moz-transform: translate3d(0, 0, 0);
+        -ms-transform: translate3d(0, 0, 0);
+         -o-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+}
+
+.slick-track
+{
+    position: relative;
+    top: 0;
+    left: 0;
+
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.slick-track:before,
+.slick-track:after
+{
+    display: table;
+
+    content: '';
+}
+.slick-track:after
+{
+    clear: both;
+}
+.slick-loading .slick-track
+{
+    visibility: hidden;
+}
+
+.slick-slide
+{
+    display: none;
+    float: left;
+
+    height: 100%;
+    min-height: 1px;
+}
+[dir='rtl'] .slick-slide
+{
+    float: right;
+}
+.slick-slide img
+{
+    display: block;
+}
+.slick-slide.slick-loading img
+{
+    display: none;
+}
+.slick-slide.dragging img
+{
+    pointer-events: none;
+}
+.slick-initialized .slick-slide
+{
+    display: block;
+}
+.slick-loading .slick-slide
+{
+    visibility: hidden;
+}
+.slick-vertical .slick-slide
+{
+    display: block;
+
+    height: auto;
+
+    border: 1px solid transparent;
+}
+.slick-arrow.slick-hidden {
+    display: none;
+}
+
+  </style>
+  <style>.teacher__button.active {
+  background-color: #f0f0f0;
+  border-left: 4px solid #4CAF50;
+  font-weight: bold;
+}
+
+.teacher__button {
+  width: 100%;
+  padding: 15px;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.teacher__button:hover {
+  background-color: #f9f9f9;
+}</style>
+<style>.student__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.student__item.first {
+  grid-column: 1 / -1;
+}
+
+.student__card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.student__card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.student__image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  display: block;
+}
+
+.student__info {
+  padding: 20px;
+}
+
+.student__name {
+  margin: 0 0 5px 0;
+  font-size: 1.4rem;
+  color: #2c3e50;
+}
+
+.student__class {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  color: #3498db;
+  font-weight: 500;
+}
+
+.student__achievements {
+  margin: 0;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .student__list {
+    grid-template-columns: 1fr;
+  }
+  
+  .student__image {
+    height: 200px;
+  }
+}</style>
+<style>
+  .student-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.student-modal__content {
+  background: white;
+  border-radius: 15px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.student-modal__close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+}
+
+.student-modal__image {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+}
+
+.student-modal__info {
+  padding: 30px;
+}
+
+.student-modal__name {
+  font-size: 2rem;
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+}
+
+.student-modal__class {
+  font-size: 1.3rem;
+  color: #3498db;
+  margin: 0 0 20px 0;
+}
+
+.student-modal__achievements {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #555;
+}
+</style>
+<style>.news {
+  padding: 80px 0;
+  background-color: #f9f9f9;
+}
+
+.news__title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 50px;
+  color: #2c3e50;
+  position: relative;
+}
+
+.news__title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: #3498db;
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.news__slider {
+  display: flex;
+  overflow: hidden;
+  position: relative;
+   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+{% comment %} .news__slide {
+  min-width: 100%;
+  transition: transform 0.5s ease;
+} {% endcomment %}
+
+.news__card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.news__card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+.news__image-container {
+  overflow: hidden;
+}
+
+.news__image {
+  transition: transform 0.5s ease;
+}
+
+.news__card:hover .news__image {
+  transform: scale(1.05);
+}
+
+@media (min-width: 768px) {
+  .news__card {
+    flex-direction: row;
+  }
+}
+@media (max-width: 767px) {
+  .news {
+    padding: 50px 0;
+  }
+  
+  .news__title {
+    font-size: 2rem;
+  }
+  
+  .news__date {
+    top: 10px;
+    left: 10px;
+    padding: 8px 12px;
+  }
+  
+  .news__day {
+    font-size: 1.5rem;
+  }
+  
+  .news__month {
+    font-size: 1rem;
+  }
+  
+  .news__content {
+    padding: 20px;
+  }
+  
+  .news__heading {
+    font-size: 1.5rem;
+  }
+}
+.news__image-container {
+  position: relative;
+  flex: 1;
+}
+
+.news__image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .news__image {
+    height: 100%;
+  }
+}
+
+.news__date {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(231, 76, 60, 0.9);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+}
+.text_color{
+  color:#2980b9
+}
+.about__title{
+  color: #3498db;
+}
+.news__day {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.right__info {
+  max-width: 100%;
+  overflow: hidden;
+}
+.right__wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.right__img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain; /* показываем всю картинку полностью */
+  border-radius: 16px; /* можно убрать, если не нужны скругления */
+  display: block;
+  margin: 0 auto 20px auto;
+}
+ .news__slider-wrapper {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+  
+  .news__slider {
+    display: flex;
+    transition: transform 0.5s ease;
+    width: 100%;
+  }
+  
+  .news__slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    padding: 0 15px;
+  }
+.right__img {
+  width: 200px; /* фиксированная ширина */
+  height: 200px; /* фиксированная высота */
+  object-fit: contain; /* обрезка, чтобы фото красиво влезло */
+  border-radius: 16px; /* круглое фото */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* мягкая тень */
+  display: block;
+  margin: 0 auto 20px auto; /* по центру с отступом снизу */
+}
+
+.right__text {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 300px; /* или нужное вам значение */
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 10; /* Ограничить до 10 строк */
+  -webkit-box-orient: vertical;
+}
+
+.news__month {
+  display: block;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.news__content {
+  padding: 30px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.news__heading {
+  margin: 0 0 15px 0;
+  font-size: 1.8rem;
+  color: #2c3e50;
+}
+
+.news__text {
+  margin: 0 0 20px 0;
+  color: #555;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.news__link {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.news__link:hover {
+  color: #2980b9;
+}
+
+.news__link::after {
+  content: '→';
+  margin-left: 8px;
+  transition: transform 0.3s ease;
+}
+
+.news__link:hover::after {
+  transform: translateX(5px);
+}
+
+.news__controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+  gap: 30px;
+}
+
+.news__prev, .news__next {
+  background: none;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #3498db;
+  border: 2px solid #3498db;
+  transition: all 0.3s ease;
+}
+
+.news__prev:hover, .news__next:hover {
+  background: #3498db;
+  color: white;
+}
+
+.news__dots {
+  display: flex;
+  gap: 10px;
+}
+
+.news__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ddd;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.news__dot.active {
+  background: #3498db;
+}
+ </style>
+ <style>
+  /* Новые стили для слайдера */
+  .news-container {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .news-slider {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+  }
+  
+  .news-slide {
+    min-width: 100%;
+    padding: 0 15px;
+    box-sizing: border-box;
+  }
+  
+  .news-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    gap: 20px;
+  }
+  
+  .news-dots {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .news-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ddd;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .news-dot.active {
+    background: #3498db;
+  }
+  
+  .news-prev, .news-next {
+    background: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #3498db;
+    border: 2px solid #3498db;
+    transition: all 0.3s ease;
+  }
+  
+  .news-prev:hover, .news-next:hover {
+    background: #3498db;
+    color: white;
+  }
+</style>
+
   <body>
     <header class="header">
       <div class="container">
@@ -173,7 +1005,7 @@
 
       <section class="about" id="about">
         <div class="about__container">
-          <h2 class="about__title">О Азия-Старт</h2>
+          <h2 class="about__title" style="color:#2980b9" >О Азия-Старт</h2>
           <div class="about__top top">
             <div class="top__left">
               <p class="top__text">
@@ -234,91 +1066,140 @@
         </div>
       </section>
 
-      <section class="whyus">
-        <div class="container">
-          <h2 class="whyus__title">Почему мы</h2>
-          <ul class="whyus__list">
-            <li class="whyus__item item">
-              <h3 class="item__title">Индивидуальный подход</h3>
-              <button class="item__plus item__plus--one"></button>
-              <div class="item__box item__box--one box">
-                <h4 class="box__title">Индивидуальный подход</h4>
-                <p class="box__text">
-                  Мы понимаем, что каждый ребенок уникален. Наша команда
-                  преподавателей разрабатывает индивидуальные образовательные
-                  планы, учитывая потребности и интересы каждого ученика.
-                </p>
-              </div>
-            </li>
-
-            <li class="whyus__item item">
-              <h3 class="item__title">Комфортная обстановка</h3>
-              <button class="item__plus item__plus--two"></button>
-              <div class="item__box item__box--two box">
-                <h4 class="box__title">Комфортная обстановка</h4>
-                <p class="box__text">
-                  Яркие и просторные классы, современное оборудование и уютная
-                  атмосфера — все это способствует максимальной концентрации на
-                  обучении.
-                </p>
-              </div>
-            </li>
-
-            <li class="whyus__item item">
-              <h3 class="item__title">Профессиональные преподаватели</h3>
-              <button class="item__plus item__plus--three"></button>
-              <div class="item__box item__box--three box">
-                <h4 class="box__title">Профессиональные преподаватели</h4>
-                <p class="box__text">
-                  Наша команда состоит из опытных и преданных своему делу
-                  преподавателей, готовых делиться знаниями и вдохновлять на
-                  успех.
-                </p>
-              </div>
-            </li>
-
-            <li class="whyus__item item">
-              <h3 class="item__title">Развивающая программа</h3>
-              <button class="item__plus item__plus--four"></button>
-              <div class="item__box item__box--four box">
-                <h4 class="box__title">Развивающая программа</h4>
-                <p class="box__text">
-                  Мы не только предлагаем качественное образование, но и
-                  стимулируем творчество, лидерство и разносторонние навыки
-                  учеников.
-                </p>
-              </div>
-            </li>
-
-            <li class="whyus__item item">
-              <h3 class="item__title">Личностное развитие</h3>
-              <button class="item__plus item__plus--five"></button>
-              <div class="item__box item__box--five box">
-                <h4 class="box__title">Личностное развитие</h4>
-                <p class="box__text">
-                  В "Азия старт" мы верим, что образование должно быть
-                  всесторонним. Мы помогаем формировать личностные качества и
-                  навыки, которые пригодятся в будущем..
-                </p>
-              </div>
-            </li>
-
-            <li class="whyus__item item">
-              <h3 class="item__title">Запишитесь уже сегодня</h3>
-              <p class="item__text">
-                Для нас важен каждый ученик, и мы готовы предложить лучшее
-                образование для успешного будущего вашего ребенка. Начните путь
-                к знаниям и достижениям вместе с "Азия старт"!
-              </p>
-              <button class="item__btn">Записаться</button>
-            </li>
-          </ul>
+      
+<section class="whyus">
+  <div class="container">
+    <h2 class="whyus__title">Почему мы</h2>
+    <ul class="whyus__list">
+      <li class="whyus__item item">
+        <h3 class="item__title">
+          Индивидуальный подход
+          <button class="item__plus"></button>
+        </h3>
+        <div class="item__box box">
+          <h4 class="box__title">Индивидуальный подход</h4>
+          <p class="box__text">
+            Мы понимаем, что каждый ребенок уникален. Наша команда
+            преподавателей разрабатывает индивидуальные образовательные
+            планы, учитывая потребности и интересы каждого ученика.
+          </p>
         </div>
-      </section>
+      </li>
 
-      <section class="teacher" id="teacher">
-        <div class="teacher__container">
-          <h2 class="teacher__title">Наши учителя</h2>
+      <li class="whyus__item item">
+        <h3 class="item__title">
+          Комфортная обстановка
+          <button class="item__plus"></button>
+        </h3>
+        <div class="item__box box">
+          <h4 class="box__title">Комфортная обстановка</h4>
+          <p class="box__text">
+            Яркие и просторные классы, современное оборудование и уютная
+            атмосфера — все это способствует максимальной концентрации на
+            обучении.
+          </p>
+        </div>
+      </li>
+
+      <li class="whyus__item item">
+        <h3 class="item__title">
+          Профессиональные преподаватели
+          <button class="item__plus"></button>
+        </h3>
+        <div class="item__box box">
+          <h4 class="box__title">Профессиональные преподаватели</h4>
+          <p class="box__text">
+            Наша команда состоит из опытных и преданных своему делу
+            преподавателей, готовых делиться знаниями и вдохновлять на
+            успех.
+          </p>
+        </div>
+      </li>
+
+      <li class="whyus__item item">
+        <h3 class="item__title">
+          Развивающая программа
+          <button class="item__plus"></button>
+        </h3>
+        <div class="item__box box">
+          <h4 class="box__title">Развивающая программа</h4>
+          <p class="box__text">
+            Мы не только предлагаем качественное образование, но и
+            стимулируем творчество, лидерство и разносторонние навыки
+            учеников.
+          </p>
+        </div>
+      </li>
+
+      <li class="whyus__item item">
+        <h3 class="item__title">
+          Личностное развитие
+          <button class="item__plus"></button>
+        </h3>
+        <div class="item__box box">
+          <h4 class="box__title">Личностное развитие</h4>
+          <p class="box__text">
+            В "Азия старт" мы верим, что образование должно быть
+            всесторонним. Мы помогаем формировать личностные качества и
+            навыки, которые пригодятся в будущем.
+          </p>
+        </div>
+      </li>
+
+      <li class="whyus__item item">
+        <h3 class="item__title">Запишитесь уже сегодня</h3>
+        <p class="item__text">
+          Для нас важен каждый ученик, и мы готовы предложить лучшее
+          образование для успешного будущего вашего ребенка. Начните путь
+          к знаниям и достижениям вместе с "Азия старт"!
+        </p>
+        <button class="item__btn">Записаться</button>
+      </li>
+    </ul>
+  </div>
+</section>
+
+
+   
+          <section class="teacher" id="teacher">
+  <div class="teacher__container">
+    <h2 class="teacher__title" style="color:#2980b9">Наши учителя</h2>
+    <div class="teacher__inner">
+      <div class="teacher__left">
+        <ul class="teacher__list">
+          {% for teacher in teachers %}
+          <li class="teacher__item">
+            <button class="teacher__button" data-id="{{ teacher.id }}">
+              {{ teacher.subject }}
+            </button>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="teacher__right right">
+        {% if main_teacher %}
+        <div class="right__cover" id="teacher-{{ main_teacher.id }}">
+          <div class="right__wrap">
+            <img
+              class="right__img right__wrap"
+              src="{{ main_teacher.image.url }}"
+              alt="{{ main_teacher.first_name }}"
+            />
+            <div class="right__info">
+              <h3 class="right__title">{{ main_teacher.first_name }} {{ main_teacher.last_name }}</h3>
+              <span class="right__desc">{{ main_teacher.subject }}</span>
+              <p class="right__text" >
+                {{ main_teacher.description }}
+              </p>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
           <div class="teacher__inner">
             <div class="teacher__left">
               <ul class="teacher__list"></ul>
@@ -329,31 +1210,132 @@
         </div>
       </section>
 
-      <section class="student" id="student">
-        <div class="student__container">
-          <h2 class="student__title">Лучшие ученики</h2>
-          <ul class="student__list">
-            <li class="student__item first">
-              <h3 class="first__title">Лучшие ученики этого месяца</h3>
-              <p class="first__text">
-                Эти талантливые и целеустремленные ученики проявили выдающиеся
-                навыки и заслуженно заняли места в нашем списке лидеров. Их
-                усердие, учебные достижения и вклад в образовательное сообщество
-                делают нас гордыми.
-              </p>
-            </li>
-          </ul>
+     <section class="student" id="student">
+  <div class="student__container">
+    <h2 class="student__title">Лучшие ученики</h2>
+    <ul class="student__list">
+      <li class="student__item first">
+        <h3 class="first__title">Лучшие ученики этого месяца</h3>
+        <p class="first__text">
+          Эти талантливые и целеустремленные ученики проявили выдающиеся
+          навыки и заслуженно заняли места в нашем списке лидеров. Их
+          усердие, учебные достижения и вклад в образовательное сообщество
+          делают нас гордыми.
+        </p>
+      </li>
+      
+      {% for student in best_students %}
+      <li class="student__item">
+        <div class="student__card">
+          <img 
+            class="student__image" 
+            src="{{ student.image.url }}" 
+            alt="{{ student.first_name }} {{ student.last_name }}"
+          >
+          <div class="student__info">
+            <h3 class="student__name">{{ student.first_name }} {{ student.last_name }}</h3>
+            <p class="student__class">{{ student.level }} класс</p>
+            <p class="student__achievements">{{ student.achievements|truncatechars:100 }}</p>
+          </div>
         </div>
-      </section>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
 
-      <section class="news" id="news">
-        <div class="container">
-          <h2 class="news__title">Новости школы</h2>
-          <ul class="news__list"></ul>
+
+<style>
+  /* Стили для кнопки "Все новости" */
+  .news__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .news__all-link {
+    background: #3498db;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .news__all-link:hover {
+    background: #2980b9;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+  
+  /* Делаем всю карточку кликабельной */
+  .news__link-wrapper {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+</style>
+
+<section class="news" id="news">
+  <div class="container">
+     <div class="news__header">
+    <h2 class="news__title" style="color:#2980b9">Новости школы</h2>
+     <a href="{% url 'news_list' %}" class="news__all-link">Все новости</a>
+     </div>
+    <div class="news-container">
+      <div class="news-slider">
+        {% for news in news_list %}
+        <div class="news-slide">
+          <div class="news__card">
+            <div class="news__image-container">
+              <img 
+                class="news__image" 
+                src="{{ news.image.url }}" 
+                alt="{{ news.title }}"
+              >
+              <div class="news__date">
+                <span class="news__day">{{ news.created_at|date:"d" }}</span>
+                <span class="news__month">{{ news.created_at|date:"M" }}</span>
+              </div>
+            </div>
+            <div class="news__content">
+              <h3 class="news__heading">{{ news.title }}</h3>
+              <p class="news__text">{{ news.content|truncatechars:150 }}</p>
+              <a href="{% url 'news_detail' news.id %}" class="news__link">Читать далее</a>
+            </div>
+          </div>
         </div>
-      </section>
+        {% endfor %}
+      </div>
+    </div>
+    
+    {% if news_list|length > 1 %}
+    <div class="news-navigation">
+      <button class="news-prev" aria-label="Предыдущая новость">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      
+      <div class="news-dots">
+        {% for i in news_list %}
+        <div class="news-dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></div>
+        {% endfor %}
+      </div>
+      
+      <button class="news-next" aria-label="Следующая новость">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    {% endif %}
+  </div>
+</section>
 
-      <section class="filial" id="filial">
+      <section class="filial" id="filial"> 
         <div class="filial__container">
           <h2 class="filial__title">Наши филлиалы</h2>
           <ul class="filial__list map">
@@ -405,7 +1387,7 @@
 
       <section class="question" id="question">
         <div class="question__container">
-          <h2 class="question__title">Частые вопросы</h2>
+          <h2 class="question__title" style="color:#2980b9">Частые вопросы</h2>
           <ul class="question__list">
             <li class="question__item">
               <details class="question__detal">
@@ -483,62 +1465,68 @@
           </ul>
         </div>
       </section>
-
-      <section class="modal">
-        <div class="container">
-          <div class="modal__info info">
-            <div class="info__top">
-              <h2 class="info__title">
-                Лучшее время для присоединения вашего ребёнка к нашей школе!
-              </h2>
-              <p class="info__text">
-                Оставьте данные и мы свяжемся с вами в ближайшее время.
-              </p>
-            </div>
-            <button class="info__exit"></button>
-            <form class="info__form form" method="post">
-              <div class="form__inner">
-                <input
-                  class="form__input form__input--name"
-                  type="text"
-                  name="name"
-                  placeholder="Имя вашего ребёнка"
-                  aria-label="your name"
-                />
-
-                <input
-                  class="form__input form__input--surname"
-                  type="text"
-                  name="surname"
-                  placeholder="Фамилия вашего ребёнка"
-                  aria-label="your surname"
-                />
-
-                <input
-                  class="form__input form__input--class"
-                  type="text"
-                  name="class"
-                  placeholder="Класс вашего ребёнка"
-                  aria-label="your class"
-                />
-
-                <input
-                  class="form__input form__input--phone"
-                  type="tel"
-                  name="phone"
-                  placeholder="Ваш телефон номер"
-                  aria-label="your phone"
-                />
-              </div>
-              <button class="form__sent" type="submit">Отправить</button>
-            </form>
+<section class="modal">
+      <div class="container">
+        <div class="modal__info info">
+          <div class="info__top">
+            <h2 class="info__title">
+              Лучшее время для присоединения вашего ребёнка к нашей школе!
+            </h2>
             <p class="info__text">
-              Нажимая кнопку «Отправить» вы соглашаетесь с
-              <span>политикой конфиденциальности</span>
+              Оставьте данные и мы свяжемся с вами в ближайшее время.
             </p>
           </div>
+          <button class="info__exit"></button>
+          <!-- Измененная форма для Django -->
+          <form class="info__form form" method="post">
+            {% csrf_token %}
+            <div class="form__inner">
+              <input
+                class="form__input form__input--name"
+                type="text"
+                name="child_name"
+                placeholder="Имя вашего ребёнка"
+                aria-label="your name"
+                required
+              />
+
+              <input
+                class="form__input form__input--surname"
+                type="text"
+                name="child_surname"
+                placeholder="Фамилия вашего ребёнка"
+                aria-label="your surname"
+                required
+              />
+
+              <input
+                class="form__input form__input--class"
+                type="text"
+                name="child_class"
+                placeholder="Класс вашего ребёнка"
+                aria-label="your class"
+                required
+              />
+
+              <input
+                class="form__input form__input--phone"
+                type="tel"
+                name="parent_phone"
+                placeholder="Ваш телефон номер"
+                aria-label="your phone"
+                required
+              />
+            </div>
+            <button class="form__sent" type="submit">Отправить</button>
+          </form>
+          <p class="info__text">
+            Нажимая кнопку «Отправить» вы соглашаетесь с
+            <span>политикой конфиденциальности</span>
+          </p>
         </div>
-      </section>
+      </div>
+    </section>
+    
     </main>
 
     <footer class="footer">
@@ -649,10 +1637,353 @@
         </div>
       </div>
     </footer>
+    <div class="student-modal">
+  <div class="student-modal__content">
+    <button class="student-modal__close">&times;</button>
+    <img class="student-modal__image" src="" alt="">
+    <div class="student-modal__info">
+      <h2 class="student-modal__name"></h2>
+      <p class="student-modal__class"></p>
+      <p class="student-modal__achievements"></p>
+    </div>
+  </div>
+</div>
 
+<script>
+  // Простой и надежный слайдер
+  document.addEventListener('DOMContentLoaded', function() {
+    const slider = document.querySelector('.news-slider');
+    const slides = document.querySelectorAll('.news-slide');
+    const dots = document.querySelectorAll('.news-dot');
+    const prevBtn = document.querySelector('.news-prev');
+    const nextBtn = document.querySelector('.news-next');
+    
+    if (slides.length > 1) {
+      let currentIndex = 0;
+      const slideWidth = slides[0].offsetWidth;
+      
+      // Функция для переключения слайдов
+      function goToSlide(index) {
+        // Ограничиваем индекс
+        if (index < 0) index = slides.length - 1;
+        if (index >= slides.length) index = 0;
+        
+        // Сдвигаем слайдер
+        slider.style.transform = `translateX(-${index * slideWidth}px)`;
+        currentIndex = index;
+        
+        // Обновляем активную точку
+        dots.forEach(dot => dot.classList.remove('active'));
+        dots[index].classList.add('active');
+      }
+      
+      // Обработчики для точек
+      dots.forEach(dot => {
+        dot.addEventListener('click', function() {
+          const index = parseInt(this.dataset.index);
+          goToSlide(index);
+        });
+      });
+      
+      // Кнопка "Следующая"
+      nextBtn.addEventListener('click', function() {
+        goToSlide(currentIndex + 1);
+      });
+      
+      // Кнопка "Предыдущая"
+      prevBtn.addEventListener('click', function() {
+        goToSlide(currentIndex - 1);
+      });
+      
+      // Автоматическое переключение
+      let autoSlide = setInterval(() => {
+        goToSlide(currentIndex + 1);
+      }, 5000);
+      
+      // Остановка автопереключения при наведении
+      slider.addEventListener('mouseenter', () => clearInterval(autoSlide));
+      slider.addEventListener('mouseleave', () => {
+        autoSlide = setInterval(() => {
+          goToSlide(currentIndex + 1);
+        }, 5000);
+      });
+      
+      // Пересчет при изменении размера окна
+      window.addEventListener('resize', () => {
+        const newSlideWidth = slides[0].offsetWidth;
+        slider.style.transform = `translateX(-${currentIndex * newSlideWidth}px)`;
+      });
+    } else {
+      // Скрываем навигацию, если всего 1 новость
+      document.querySelector('.news-navigation').style.display = 'none';
+    }
+  });
+</script>
+<script>
+  // Исправленный слайдер новостей
+  document.addEventListener('DOMContentLoaded', function() {
+    const sliderWrapper = document.querySelector('.news__slider-wrapper');
+    const slider = document.querySelector('.news__slider');
+    const slides = document.querySelectorAll('.news__slide');
+    const dots = document.querySelectorAll('.news__dot');
+    const prevBtn = document.querySelector('.news__prev');
+    const nextBtn = document.querySelector('.news__next');
+    
+    if (slides.length > 1) {
+      // Устанавливаем ширину слайдера
+      slider.style.width = `${slides.length * 100}%`;
+      
+      let currentIndex = 0;
+      
+      // Функция для переключения слайдов
+      function goToSlide(index) {
+        // Ограничиваем индекс
+        if (index < 0) {
+          index = slides.length - 1;
+        } else if (index >= slides.length) {
+          index = 0;
+        }
+        
+        // Сдвигаем слайдер
+        slider.style.transform = `translateX(-${index * (100 / slides.length)}%)`;
+        currentIndex = index;
+        
+        // Обновляем активную точку
+        dots.forEach(dot => dot.classList.remove('active'));
+        dots[index].classList.add('active');
+      }
+      
+      // Обработчики для точек
+      dots.forEach(dot => {
+        dot.addEventListener('click', function() {
+          const index = parseInt(this.dataset.index);
+          goToSlide(index);
+        });
+      });
+      
+      // Кнопка "Следующая"
+      nextBtn.addEventListener('click', function() {
+        goToSlide(currentIndex + 1);
+      });
+      
+      // Кнопка "Предыдущая"
+      prevBtn.addEventListener('click', function() {
+        goToSlide(currentIndex - 1);
+      });
+      
+      // Автоматическое переключение
+      let autoSlide = setInterval(() => {
+        goToSlide(currentIndex + 1);
+      }, 5000);
+      
+      // Остановка автопереключения при наведении
+      sliderWrapper.addEventListener('mouseenter', () => clearInterval(autoSlide));
+      sliderWrapper.addEventListener('mouseleave', () => {
+        autoSlide = setInterval(() => {
+          goToSlide(currentIndex + 1);
+        }, 5000);
+      });
+      
+      // Инициализация слайдера
+      goToSlide(0);
+    } else {
+      // Скрываем контролы, если всего 1 новость
+      document.querySelector('.news__controls').style.display = 'none';
+    }
+  });
+</script>
+<script>
+
+</script>
+<script>
+// Почему мы - открытие/закрытие блока с текстом
+  document.querySelectorAll('.item__plus').forEach(button => {
+    button.addEventListener('click', function() {
+      // Находим соответствующий блок текста
+      const box = this.parentElement.nextElementSibling;
+      
+      // Переключаем классы
+      this.classList.toggle('active');
+      box.classList.toggle('showing');
+      
+      // Закрываем другие открытые блоки
+      document.querySelectorAll('.item__box').forEach(b => {
+        if (b !== box && b.classList.contains('showing')) {
+          b.classList.remove('showing');
+          // Находим соответствующий плюс и убираем активный класс
+          const plus = b.previousElementSibling.querySelector('.item__plus');
+          if (plus) plus.classList.remove('active');
+        }
+      });
+    });
+  });
+  
+  // Закрытие по клику вне элемента
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.whyus__item') && !e.target.closest('.item__plus')) {
+      document.querySelectorAll('.item__box').forEach(box => {
+        box.classList.remove('showing');
+      });
+      document.querySelectorAll('.item__plus').forEach(plus => {
+        plus.classList.remove('active');
+      });
+    }
+  });
+  // Слайдер новостей
+
+
+</script>
+<script>// Показ подробной информации об ученике
+document.querySelectorAll('.student__card').forEach(card => {
+  card.addEventListener('click', function() {
+    const name = this.querySelector('.student__name').textContent;
+    const className = this.querySelector('.student__class').textContent;
+    const achievements = this.querySelector('.student__achievements').textContent;
+    const imageSrc = this.querySelector('.student__image').src;
+    
+    const modal = document.querySelector('.student-modal');
+    modal.querySelector('.student-modal__image').src = imageSrc;
+    modal.querySelector('.student-modal__name').textContent = name;
+    modal.querySelector('.student-modal__class').textContent = className;
+    modal.querySelector('.student-modal__achievements').textContent = achievements;
+    
+    modal.style.display = 'flex';
+  });
+});
+
+// Закрытие модального окна
+document.querySelector('.student-modal__close').addEventListener('click', function() {
+  document.querySelector('.student-modal').style.display = 'none';
+});
+
+// Закрытие по клику вне окна
+document.querySelector('.student-modal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    this.style.display = 'none';
+  }
+});</script>
+<script>document.querySelectorAll('.teacher__button').forEach(button => {
+  button.addEventListener('click', function() {
+    // Удаляем активный класс у всех кнопок
+    document.querySelectorAll('.teacher__button').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Добавляем активный класс текущей кнопке
+    this.classList.add('active');
+    
+    // ... остальной код запроса ...
+  });
+});
+
+// Делаем первую кнопку активной при загрузке
+document.querySelector('.teacher__button')?.classList.add('active');
+  // Обработка переключения учителей
+  document.querySelectorAll('.teacher__button').forEach(button => {
+    button.addEventListener('click', function() {
+      const teacherId = this.getAttribute('data-id');
+      
+      // Отправляем запрос на сервер для получения информации об учителе
+      fetch(`/get_teacher/${teacherId}/`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const teacher = data.teacher;
+            const teacherContainer = document.querySelector('.teacher__right');
+            
+            teacherContainer.innerHTML = `
+              <div class="right__cover" id="teacher-${teacher.id}">
+                <div class="right__wrap">
+                  <img
+                    class="right__img right__wrap"
+                    src="${teacher.image}"
+                    alt="${teacher.first_name}"
+                  />
+                  <div class="right__info">
+                    <h3 class="right__title">${teacher.first_name} ${teacher.last_name}</h3>
+                    <span class="right__desc">${teacher.subject}</span>
+                    <p class="right__text" >${teacher.description}</p>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        })
+        .catch(error => console.error('Ошибка:', error));
+    });
+  });
+  document.querySelectorAll('.teacher__button').forEach(button => {
+  button.addEventListener('click', function() {
+    // Удаляем активный класс у всех кнопок
+    document.querySelectorAll('.teacher__button').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Добавляем активный класс текущей кнопке
+    this.classList.add('active');
+    
+    // ... остальной код запроса ...
+  });
+});
+
+// Делаем первую кнопку активной при загрузке
+document.querySelector('.teacher__button')?.classList.add('active');
+</script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
     <script src="{% static 'mock/slick/slick.min.js' %}"></script>
     <script src="{% static 'js/carousel.js' %}"></script>
+    <script>
+      // Удален код обработки формы (fetch запросы)
+      // Оставлен только необходимый функционал
+      
+      // Header drop
+      const elHeaderDroop = document.querySelector(".header__drop");
+      const elOpenDroopBtn = document.querySelector(".sent__btn");
+      const elCloseDroopBtn = document.querySelector(".drop__exit");
+
+      elOpenDroopBtn.addEventListener("click", function () {
+        elHeaderDroop.classList.add("header__drop--on");
+      });
+      
+      elCloseDroopBtn.addEventListener("click", function () {
+        elHeaderDroop.classList.remove("header__drop--on");
+      });
+      
+      elHeaderDroop.addEventListener("click", function (evt) {
+        if (evt.target.className === "header__drop drop header__drop--on") {
+          elHeaderDroop.classList.remove("header__drop--on");
+        }
+      });
+
+      // Modal form
+      const elModal = document.querySelector(".modal");
+      const elOpenModalBtn = document.querySelector(".hero__btn");
+      const elSecondOpenModalBtn = document.querySelector(".item__btn");
+      const elCloseModalBtn = document.querySelector(".info__exit");
+
+      elOpenModalBtn.addEventListener("click", function () {
+        elModal.classList.add("modal-on");
+      });
+
+      elSecondOpenModalBtn.addEventListener("click", function () {
+        elModal.classList.add("modal-on");
+      });
+
+      elCloseModalBtn.addEventListener("click", function () {
+        elModal.classList.remove("modal-on");
+      });
+    </script>
+    
+    <script>
+      class Accordion {
+        // ... (код Accordion без изменений) ...
+      }
+
+      document.querySelectorAll("details").forEach((el) => {
+        new Accordion(el);
+      });
+</script>
+
     <script src="{% static 'js/Accardion.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
   </body>

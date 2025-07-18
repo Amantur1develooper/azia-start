@@ -1,0 +1,1085 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Откройте для себя школу Азия Старт, где мы воспитываем молодые умы и расширяем возможности будущих лидеров посредством качественного образования. Присоединяйтесь к нам и создайте светлое будущее для вашего ребенка."
+    />
+    <meta
+      name="keywords"
+      content="Asia Start School ,Asia Start, asiastart education kg, aziya start, Азия Старт, азия старт, частная школа кг"
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="http://www.asiastart.net/" />
+    <link rel="icon" type="image/jpg" href="{% static 'images/img/Азия.png' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'mock/slick/slick.css' %}" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{% static 'mock/slick/slick-theme.css' %} "
+    />
+    <link rel="stylesheet" href="{% static '/css/main.min.css' %}"/>
+    <title>
+      Школа Азия Старт – расширение прав и возможностей лидеров завтрашнего дня
+    </title>
+  </head>
+  <style>
+    @charset 'UTF-8';
+/* Slider */
+.slick-loading .slick-list {
+  background: #fff url("./ajax-loader.gif") center center no-repeat;
+}
+
+/* Icons */
+@font-face {
+  font-family: "slick";
+  font-weight: normal;
+  font-style: normal;
+
+  src: url("./fonts/slick.eot");
+  src: url("./fonts/slick.eot?#iefix") format("embedded-opentype"),
+    url("./fonts/slick.woff") format("woff"),
+    url("./fonts/slick.ttf") format("truetype"),
+    url("./fonts/slick.svg#slick") format("svg");
+}
+/* Arrows */
+.slick-prev,
+.slick-next {
+  font-size: 0;
+  line-height: 0;
+
+  position: absolute;
+  top: 50%;
+
+  display: none;
+
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  -webkit-transform: translate(0, -50%);
+  -ms-transform: translate(0, -50%);
+  transform: translate(0, -50%);
+
+  cursor: pointer;
+
+  color: transparent;
+  border: none;
+  outline: none;
+  background: transparent;
+}
+.slick-prev:hover,
+.slick-prev:focus,
+.slick-next:hover,
+.slick-next:focus {
+  color: transparent;
+  outline: none;
+  background: transparent;
+}
+.slick-prev:hover:before,
+.slick-prev:focus:before,
+.slick-next:hover:before,
+.slick-next:focus:before {
+  opacity: 1;
+}
+.slick-prev.slick-disabled:before,
+.slick-next.slick-disabled:before {
+  opacity: 0.25;
+}
+
+.slick-prev:before,
+.slick-next:before {
+  font-family: "slick";
+  font-size: 20px;
+  line-height: 1;
+
+  opacity: 0.75;
+  color: white;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.slick-prev {
+  left: -25px;
+}
+[dir="rtl"] .slick-prev {
+  right: -25px;
+  left: auto;
+}
+.slick-prev:before {
+  content: "←";
+}
+[dir="rtl"] .slick-prev:before {
+  content: "→";
+}
+
+.slick-next {
+  right: -25px;
+}
+[dir="rtl"] .slick-next {
+  right: auto;
+  left: -25px;
+}
+.slick-next:before {
+  content: "→";
+}
+[dir="rtl"] .slick-next:before {
+  content: "←";
+}
+
+/* Dots */
+.slick-dotted.slick-slider {
+  margin-bottom: 30px;
+}
+
+.slick-dots {
+  /* position: absolute;
+  bottom: 25px; */
+  margin-top: 50px !important;
+
+  display: block;
+
+  width: 100%;
+  padding: 0;
+  margin: 0;
+
+  list-style: none;
+
+  text-align: center;
+}
+@media only screen and (max-width: 600px) {
+  .slick-dots {
+    margin-top: 25px !important;
+  }
+}
+.slick-dots li {
+  position: relative;
+
+  display: inline-block;
+
+  width: 25px !important;
+  height: 25px !important;
+  margin: 0 7px !important;
+  padding: 0;
+
+  cursor: pointer;
+}
+.slick-dots li button {
+  font-size: 0;
+  line-height: 0;
+
+  display: block;
+
+  width: 25px !important;
+  height: 25px !important;
+  padding: 0px !important;
+
+  cursor: pointer;
+
+  color: transparent;
+  border: 0;
+  outline: none;
+  background: transparent;
+}
+.slick-dots li button:hover,
+.slick-dots li button:focus {
+  outline: none;
+}
+.slick-dots li button:hover:before,
+.slick-dots li button:focus:before {
+  opacity: 1;
+}
+.slick-dots li button:before {
+  font-family: "slick";
+  font-size: 6px;
+  line-height: 20px;
+
+  position: absolute;
+  top: 0;
+  left: 0;
+
+  width: 15px !important;
+  height: 15px !important;
+
+  content: "";
+  text-align: center;
+
+  opacity: 0.25;
+  color: black;
+  background-color: #0b0a08 !important;
+  border-radius: 100px;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.slick-dots li.slick-active button:before {
+  opacity: 1 !important;
+  color: #0b0a08 !important;
+}
+.slick-next {
+  display: none !important;
+}
+.slick-prev {
+  display: none !important;
+}
+
+  </style>
+  <style>
+    /* Slider */
+.slick-slider
+{
+    position: relative;
+
+    display: block;
+    box-sizing: border-box;
+
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+
+    -webkit-touch-callout: none;
+    -khtml-user-select: none;
+    -ms-touch-action: pan-y;
+        touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.slick-list
+{
+    position: relative;
+
+    display: block;
+    overflow: hidden;
+
+    margin: 0;
+    padding: 0;
+}
+.slick-list:focus
+{
+    outline: none;
+}
+.slick-list.dragging
+{
+    cursor: pointer;
+    cursor: hand;
+}
+
+.slick-slider .slick-track,
+.slick-slider .slick-list
+{
+    -webkit-transform: translate3d(0, 0, 0);
+       -moz-transform: translate3d(0, 0, 0);
+        -ms-transform: translate3d(0, 0, 0);
+         -o-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+}
+
+.slick-track
+{
+    position: relative;
+    top: 0;
+    left: 0;
+
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.slick-track:before,
+.slick-track:after
+{
+    display: table;
+
+    content: '';
+}
+.slick-track:after
+{
+    clear: both;
+}
+.slick-loading .slick-track
+{
+    visibility: hidden;
+}
+
+.slick-slide
+{
+    display: none;
+    float: left;
+
+    height: 100%;
+    min-height: 1px;
+}
+[dir='rtl'] .slick-slide
+{
+    float: right;
+}
+.slick-slide img
+{
+    display: block;
+}
+.slick-slide.slick-loading img
+{
+    display: none;
+}
+.slick-slide.dragging img
+{
+    pointer-events: none;
+}
+.slick-initialized .slick-slide
+{
+    display: block;
+}
+.slick-loading .slick-slide
+{
+    visibility: hidden;
+}
+.slick-vertical .slick-slide
+{
+    display: block;
+
+    height: auto;
+
+    border: 1px solid transparent;
+}
+.slick-arrow.slick-hidden {
+    display: none;
+}
+
+  </style>
+  <style>.teacher__button.active {
+  background-color: #f0f0f0;
+  border-left: 4px solid #4CAF50;
+  font-weight: bold;
+}
+
+.teacher__button {
+  width: 100%;
+  padding: 15px;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.teacher__button:hover {
+  background-color: #f9f9f9;
+}</style>
+<style>.student__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.student__item.first {
+  grid-column: 1 / -1;
+}
+
+.student__card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.student__card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.student__image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  display: block;
+}
+
+.student__info {
+  padding: 20px;
+}
+
+.student__name {
+  margin: 0 0 5px 0;
+  font-size: 1.4rem;
+  color: #2c3e50;
+}
+
+.student__class {
+  margin: 0 0 15px 0;
+  font-size: 1.1rem;
+  color: #3498db;
+  font-weight: 500;
+}
+
+.student__achievements {
+  margin: 0;
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .student__list {
+    grid-template-columns: 1fr;
+  }
+  
+  .student__image {
+    height: 200px;
+  }
+}</style>
+<style>
+  .student-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.8);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.student-modal__content {
+  background: white;
+  border-radius: 15px;
+  max-width: 800px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+}
+
+.student-modal__close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #333;
+}
+
+.student-modal__image {
+  width: 100%;
+  height: 350px;
+  object-fit: cover;
+}
+
+.student-modal__info {
+  padding: 30px;
+}
+
+.student-modal__name {
+  font-size: 2rem;
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+}
+
+.student-modal__class {
+  font-size: 1.3rem;
+  color: #3498db;
+  margin: 0 0 20px 0;
+}
+
+.student-modal__achievements {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #555;
+}
+</style>
+<style>.news {
+  padding: 80px 0;
+  background-color: #f9f9f9;
+}
+
+.news__title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 50px;
+  color: #2c3e50;
+  position: relative;
+}
+
+.news__title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: #3498db;
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.news__slider {
+  display: flex;
+  overflow: hidden;
+  position: relative;
+   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+{% comment %} .news__slide {
+  min-width: 100%;
+  transition: transform 0.5s ease;
+} {% endcomment %}
+
+.news__card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.news__card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+.news__image-container {
+  overflow: hidden;
+}
+
+.news__image {
+  transition: transform 0.5s ease;
+}
+
+.news__card:hover .news__image {
+  transform: scale(1.05);
+}
+
+@media (min-width: 768px) {
+  .news__card {
+    flex-direction: row;
+  }
+}
+@media (max-width: 767px) {
+  .news {
+    padding: 50px 0;
+  }
+  
+  .news__title {
+    font-size: 2rem;
+  }
+  
+  .news__date {
+    top: 10px;
+    left: 10px;
+    padding: 8px 12px;
+  }
+  
+  .news__day {
+    font-size: 1.5rem;
+  }
+  
+  .news__month {
+    font-size: 1rem;
+  }
+  
+  .news__content {
+    padding: 20px;
+  }
+  
+  .news__heading {
+    font-size: 1.5rem;
+  }
+}
+.news__image-container {
+  position: relative;
+  flex: 1;
+}
+
+.news__image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .news__image {
+    height: 100%;
+  }
+}
+
+.news__date {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(231, 76, 60, 0.9);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+}
+.text_color{
+  color:#2980b9
+}
+.about__title{
+  color: #3498db;
+}
+.news__day {
+  display: block;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.right__info {
+  max-width: 100%;
+  overflow: hidden;
+}
+.right__wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.right__img {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain; /* показываем всю картинку полностью */
+  border-radius: 16px; /* можно убрать, если не нужны скругления */
+  display: block;
+  margin: 0 auto 20px auto;
+}
+ .news__slider-wrapper {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+  
+  .news__slider {
+    display: flex;
+    transition: transform 0.5s ease;
+    width: 100%;
+  }
+  
+  .news__slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    box-sizing: border-box;
+    padding: 0 15px;
+  }
+.right__img {
+  width: 200px; /* фиксированная ширина */
+  height: 200px; /* фиксированная высота */
+  object-fit: contain; /* обрезка, чтобы фото красиво влезло */
+  border-radius: 16px; /* круглое фото */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* мягкая тень */
+  display: block;
+  margin: 0 auto 20px auto; /* по центру с отступом снизу */
+}
+
+.right__text {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-height: 300px; /* или нужное вам значение */
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 10; /* Ограничить до 10 строк */
+  -webkit-box-orient: vertical;
+}
+
+.news__month {
+  display: block;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+
+.news__content {
+  padding: 30px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.news__heading {
+  margin: 0 0 15px 0;
+  font-size: 1.8rem;
+  color: #2c3e50;
+}
+
+.news__text {
+  margin: 0 0 20px 0;
+  color: #555;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.news__link {
+  color: #3498db;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.news__link:hover {
+  color: #2980b9;
+}
+
+.news__link::after {
+  content: '→';
+  margin-left: 8px;
+  transition: transform 0.3s ease;
+}
+
+.news__link:hover::after {
+  transform: translateX(5px);
+}
+
+.news__controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+  gap: 30px;
+}
+
+.news__prev, .news__next {
+  background: none;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #3498db;
+  border: 2px solid #3498db;
+  transition: all 0.3s ease;
+}
+
+.news__prev:hover, .news__next:hover {
+  background: #3498db;
+  color: white;
+}
+
+.news__dots {
+  display: flex;
+  gap: 10px;
+}
+
+.news__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ddd;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.news__dot.active {
+  background: #3498db;
+}
+ </style>
+ <style>
+  /* Новые стили для слайдера */
+  .news-container {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .news-slider {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+  }
+  
+  .news-slide {
+    min-width: 100%;
+    padding: 0 15px;
+    box-sizing: border-box;
+  }
+  
+  .news-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    gap: 20px;
+  }
+  
+  .news-dots {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .news-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ddd;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .news-dot.active {
+    background: #3498db;
+  }
+  
+  .news-prev, .news-next {
+    background: none;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #3498db;
+    border: 2px solid #3498db;
+    transition: all 0.3s ease;
+  }
+  
+  .news-prev:hover, .news-next:hover {
+    background: #3498db;
+    color: white;
+  }
+</style>
+
+  <body>
+    <header class="header">
+      <div class="container">
+        <div class="header__drop drop">
+          <div class="drop__info">
+            <button class="drop__exit"></button>
+
+            <div class="drop__innner">
+              <a class="drop__link" href="{% url 'thanks' %}">
+                <img
+                  alt="site logo6578"
+                  class="drop__img"
+                  src="{% static 'Asia.svg' %}"
+                />
+              </a>
+
+              <div class="drop__nav nav">
+                <ul class="nav__list">
+                  <li class="nav__item">
+                    <a class="nav__link" href="#about">О нас</a>
+                  </li>
+                  <li class="nav__item">
+                    <a class="nav__link" href="#teacher">Наши учителя</a>
+                  </li>
+                  <li class="nav__item">
+                    <a class="nav__link" href="#student">Лучшие ученики</a>
+                  </li>
+                  <li class="nav__item">
+                    <a class="nav__link" href="#news">Новости</a>
+                  </li>
+                  <li class="nav__item">
+                    <a class="nav__link" href="#filial">Адреса</a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <ul class="drop__list">
+              <li class="drop__item">
+                <a class="drop__link" href="#about">О нас</a>
+              </li>
+              <li class="drop__item">
+                <a class="drop__link" href="#teacher">Наши учителя</a>
+              </li>
+              <li class="drop__item">
+                <a class="drop__link" href="#student">Лучшие ученикис</a>
+              </li>
+              <li class="drop__item">
+                <a class="drop__link" href="#news">Новости</a>
+              </li>
+              <li class="drop__item">
+                <a class="drop__link" href="#filial">Адреса</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="header__inner inner">
+          <a class="inner__link" href="{% url 'thanks' %}">
+            <img
+              alt="site logo"
+              class="header__img"
+              src="{% static 'Asia.svg' %}"
+            />
+          </a>
+
+          <div class="header__nav nav">
+            <ul class="nav__list">
+              <li class="nav__item">
+                <a class="nav__link" href="#about">О нас</a>
+              </li>
+              <li class="nav__item">
+                <a class="nav__link" href="#teacher">Наши учителя</a>
+              </li>
+              <li class="nav__item">
+                <a class="nav__link" href="#student">Лучшие ученики</a>
+              </li>
+              <li class="nav__item">
+                <a class="nav__link" href="#news">Новости</a>
+              </li>
+              <li class="nav__item">
+                <a class="nav__link" href="#filial">Адреса</a>
+              </li>
+            </ul>
+          </div>
+
+          <div class="header__sent sent">
+            <button class="sent__btn" aria-label="sent button">
+              <img src="{% static 'images/icon/button-line.png' %}" alt="sent button" />
+            </button>
+            <a
+              class="sent__link"
+              href="#"
+              target="blank"
+              >djhsflk</a
+            >
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    {% block content %}
+        
+    {% endblock content %}
+        
+    <footer class="footer">
+      <div class="container">
+        <div class="footer__inner">
+          <div class="footer__top">
+            <a class="footer__logo" href="#">
+              <img
+                alt="site logo"
+                class="footer__img"
+                src="{% static 'Asia.svg' %}"
+              />
+            </a>
+
+            <div class="footer__nav footer__nav--first nav">
+              <ul class="nav__list">
+                <li class="nav__item">
+                  <a class="nav__link" href="#about">О нас</a>
+                </li>
+                <li class="nav__item">
+                  <a class="nav__link" href="#teacher">Наши учителя</a>
+                </li>
+                <li class="nav__item">
+                  <a class="nav__link" href="#student">Лучшие ученики</a>
+                </li>
+                <li class="nav__item">
+                  <a class="nav__link" href="#news">Новости</a>
+                </li>
+                <li class="nav__item">
+                  <a class="nav__link" href="#question">FAQ</a>
+                </li>
+              </ul>
+            </div>
+
+            <div class="footer__icon icon">
+              <ul class="icon__list">
+                <li class="icon__item">
+                  <a
+                    class="icon__social"
+                    href="https://www.youtube.com/@user-jh2hk6uy7u"
+                    target="blank"
+                  >
+                    <img src="{% static 'images/img/youtube.svg' %}" alt="youtube" />
+                  </a>
+                </li>
+                <li class="icon__item">
+                  <a
+                    class="icon__social"
+                    href="https://www.facebook.com/people/%D0%A7%D0%B0%D1%81%D1%82%D0%BD%D0%B0%D1%8F-%D1%88%D0%BA%D0%BE%D0%BB%D0%B0-%D0%90%D0%B7%D0%B8%D1%8F-%D0%A1%D1%82%D0%B0%D1%80%D1%82/100035441186573/"
+                    target="blank"
+                  >
+                    <img src="{% static 'images/img/facebook.svg' %}" alt="facebook" />
+                  </a>
+                </li>
+                <li class="icon__item">
+                  <a
+                    class="icon__social"
+                    href="https://whatsapp.com/channel/0029VaCetGvKAwEhlgEdCh3g"
+                    target="blank"
+                  >
+                    <img src="{% static 'images/img/whatsapp.svg' %}" alt="whatsapp" />
+                  </a>
+                </li>
+                <li class="icon__item">
+                  <a
+                    class="icon__social"
+                    href="https://www.instagram.com/asiastart_school/"
+                    target="blank"
+                  >
+                    <img src="{% static 'images/img/instagram.svg' %}" alt="instagram" />
+                  </a>
+                </li>
+                <li class="icon__item">
+                  <a
+                    class="icon__social"
+                    href="https://t.me/aziyastart_school"
+                    target="blank"
+                  >
+                    <img src="{% static 'images/img/telegram.svg' %}" alt="telegram" />
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="footer__nav footer__nav--second nav">
+            <ul class="nav__list">
+              <li class="nav__item">
+                <a class="nav__link" href="">О нас</a>
+              </li>
+              <li class="nav__item">
+                <a class="nav__link" href="">Наши учителя</a>
+              </li>
+              <li class="nav__item">
+                <a class="nav__link" href="">Лучшие ученики</a>
+              </li>
+              <li class="nav__item">
+                <a class="nav__link" href="">Новости</a>
+              </li>
+              <li class="nav__item">
+                <a class="nav__link" href="">FAQ</a>
+              </li>
+            </ul>
+          </div>
+
+          <p class="footer__text">© 2023 Азия-Старт. Все права защищены</p>
+          <a class="footer__smooth" href="#"></a>
+        </div>
+      </div>
+    </footer>
+    <div class="student-modal">
+  <div class="student-modal__content">
+    <button class="student-modal__close">&times;</button>
+    <img class="student-modal__image" src="" alt="">
+    <div class="student-modal__info">
+      <h2 class="student-modal__name"></h2>
+      <p class="student-modal__class"></p>
+      <p class="student-modal__achievements"></p>
+    </div>
+  </div>
+</div>

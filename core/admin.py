@@ -1,10 +1,11 @@
+from datetime import timezone
 from django.contrib import admin
 
 # Register your models here.
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from .models import AcademicYear, Grade, Student, Income, Expense, Reservation, AuditLog
+from .models import AcademicYear, Application, Grade, Student, Income, Expense, Reservation, AuditLog, Student2, Teacher, TelegramSubscriber
 from import_export.admin import ImportExportModelAdmin
 
 from django.contrib import admin
@@ -112,7 +113,58 @@ from .models import Position, Employee, SalaryPayment
 class PositionAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+    
+admin.site.register(Teacher)    
+admin.site.register(Application)
+from django.contrib import admin
+from .models import Student
 
+@admin.register(Student2)
+class StudentAdmin2(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'level', 'is_featured', 'order')
+    list_editable = ('is_featured', 'order')
+    list_filter = ('is_featured', 'level')
+    search_fields = ('first_name', 'last_name', 'achievements')
+    fieldsets = (
+        (None, {
+            'fields': ('first_name', 'last_name', 'level')
+        }),
+        ('Дополнительно', {
+            'fields': ('achievements', 'image', 'is_featured', 'order')
+        }),
+    )
+from django.contrib import admin
+from .models import News
+from datetime import datetime
+import pytz
+
+admin.site.register(TelegramSubscriber)
+
+@admin.register(News)
+class NewsAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'is_published')
+    list_editable = ('is_published',)
+    list_filter = ('is_published', 'created_at')
+    search_fields = ('title', 'content')
+    date_hierarchy = 'created_at'
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'content', 'image')
+        }),
+        ('Дополнительно', {
+            'fields': ('is_published', 'created_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    readonly_fields = ('created_at',)
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            # При создании новости автоматически устанавливаем текущую дату
+            tz = pytz.timezone('Asia/Bishkek')  # Example for UTC+06:00
+            obj.created_at = datetime.now(tz)
+            # obj.created_at = timezone
+        super().save_model(request, obj, form, change)
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
     list_display = ('full_name', 'position', 'phone', 'email', 'is_active')
