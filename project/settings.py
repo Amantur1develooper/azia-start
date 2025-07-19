@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*','11ed-46-251-215-144.ngrok-free.app']
 LOGIN_URL = '/accounts/login/'
-LOGIN_REDIRECT_URL = '/'  # куда после входа
+LOGIN_REDIRECT_URL = '/s/'  # куда после входа
 
 
 # Application definition

@@ -30,7 +30,7 @@ from core.views import (
 )
 from core.receipts import download_receipt_view
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('s/', views.home, name='home'),
      path('accounts/', include('django.contrib.auth.urls')),
     # Студенты
     path('logout/', logout_view, name='logout'),
@@ -65,7 +65,7 @@ urlpatterns = [
     
     path('news/', views.NewsListView.as_view(), name='news_list'),
     path('news/<int:pk>/', views.NewsDetailView.as_view(), name='news_detail'),
-    path('thanks/', application_view, name='thanks'),
+    path('', application_view, name='thanks'),
     path('get_teacher/<int:teacher_id>/', views.get_teacher, name='get_teacher'),
     path('employees/', EmployeeListView.as_view(), name='employee-list'),
     path('employees/add/', EmployeeCreateView.as_view(), name='employee-add'),
