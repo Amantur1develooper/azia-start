@@ -993,8 +993,8 @@ class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                 message = f"Уважаемые родители!\n\nПрикрепляем квитанцию об оплате для {income.student.full_name}."
                 
                 # Генерация HTML квитанции и конвертация в PDF
-                html_receipt = generate_html_receipt(income)
-                pdf_content = generate_pdf_from_html(html_receipt)
+                # html_receipt = generate_html_receipt(income)
+                # pdf_content = generate_pdf_from_html(html_receipt)
                 
                 email = EmailMessage(
                     subject,
@@ -1004,7 +1004,7 @@ class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                 )
                 email.attach(
                     f"receipt_{income.transaction_id}.pdf",
-                    pdf_content,
+                    # pdf_content,
                     'application/pdf'
                 )
                 email.send()

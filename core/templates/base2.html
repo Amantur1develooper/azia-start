@@ -1083,3 +1083,46 @@
     </div>
   </div>
 </div>
+    <script>
+      // Удален код обработки формы (fetch запросы)
+      // Оставлен только необходимый функционал
+      
+      // Header drop
+      const elHeaderDroop = document.querySelector(".header__drop");
+      const elOpenDroopBtn = document.querySelector(".sent__btn");
+      const elCloseDroopBtn = document.querySelector(".drop__exit");
+
+      elOpenDroopBtn.addEventListener("click", function () {
+        elHeaderDroop.classList.add("header__drop--on");
+      });
+      
+      elCloseDroopBtn.addEventListener("click", function () {
+        elHeaderDroop.classList.remove("header__drop--on");
+      });
+      
+      elHeaderDroop.addEventListener("click", function (evt) {
+        if (evt.target.className === "header__drop drop header__drop--on") {
+          elHeaderDroop.classList.remove("header__drop--on");
+        }
+      });
+
+      // Modal form
+      const elModal = document.querySelector(".modal");
+      const elOpenModalBtn = document.querySelector(".hero__btn");
+      const elSecondOpenModalBtn = document.querySelector(".item__btn");
+      const elCloseModalBtn = document.querySelector(".info__exit");
+
+      elOpenModalBtn.addEventListener("click", function () {
+        elModal.classList.add("modal-on");
+      });
+
+      elSecondOpenModalBtn.addEventListener("click", function () {
+        elModal.classList.add("modal-on");
+      });
+
+      elCloseModalBtn.addEventListener("click", function () {
+        elModal.classList.remove("modal-on");
+      });
+    </script>
+    
+    
