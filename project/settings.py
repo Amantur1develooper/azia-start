@@ -28,6 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*','asiastartschool.org',' www.asiastartschool.org']
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/s/'  # куда после входа
+CSRF_TRUSTED_ORIGINS = ['https://asiastartschool.org','https://www.asiastartschool.org']
 
 
 # Application definition
