@@ -1817,3 +1817,149 @@ class EmployeeDetailView(LoginRequiredMixin, DetailView):
             employee=self.object
         ).order_by('-for_month')
         return context
+
+
+from django.views.generic import ListView
+from .models import Document
+
+class DocumentListView(ListView):
+    model = Document
+    template_name = 'documents.html'
+    context_object_name = 'documents'
+    
+    def get_queryset(self):
+        # Группируем документы по категориям
+        documents = super().get_queryset()
+        categories = {}
+        for doc in documents:
+            if doc.category not in categories:
+                categories[doc.category] = []
+            categories[doc.category].append(doc)
+        return categories
+    
+from django.views.generic import ListView, DetailView
+from .models import GalleryEvent
+from django.views.generic import ListView
+from .models import GalleryEvent
+from django.db.models import Count
+from django.views.generic import ListView
+from .models import GalleryEvent
+from django.db.models import Count
+
+class GalleryListView(ListView):
+    model = GalleryEvent
+    template_name = 'gallery.html'
+    context_object_name = 'events'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        # Получаем базовый queryset
+        queryset = GalleryEvent.objects.annotate(
+            image_count=Count('images')
+        ).filter(image_count__gt=0)
+        
+        # Фильтрация по году
+        year = self.request.GET.get('year')
+        if year and year != 'all':
+            queryset = queryset.filter(date__year=year)
+        
+        return queryset.order_by('-date')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Получаем уникальные года из событий
+        years = GalleryEvent.objects.annotate(
+            image_count=Count('images')
+        ).filter(image_count__gt=0).values_list('date__year', flat=True).distinct().order_by('-date__year')
+        
+        # Добавляем в контекст
+        context['years'] = years
+        context['current_year'] = self.request.GET.get('year', 'all')
+        
+        return context
+class GalleryListView(ListView):
+    model = GalleryEvent
+    template_name = 'gallery.html'
+    context_object_name = 'events'
+    paginate_by = 12
+    
+    def get_queryset(self):
+        # Убираем аннотацию image_count
+        queryset = GalleryEvent.objects.filter(images__isnull=False).distinct()
+        
+        # Фильтрация по году
+        year = self.request.GET.get('year')
+        if year and year != 'all':
+            queryset = queryset.filter(date__year=year)
+        
+        return queryset.order_by('-date')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Получаем уникальные года из событий
+        years = GalleryEvent.objects.values_list('date__year', flat=True).distinct().order_by('-date__year')
+        
+        # Добавляем в контекст
+        context['years'] = years
+        context['current_year'] = self.request.GET.get('year', 'all')
+        
+        return context
+# class GalleryListView(ListView):
+#     model = GalleryEvent
+#     template_name = 'gallery.html'
+#     context_object_name = 'events'
+#     paginate_by = 12
+#     def get_queryset(self):
+#         queryset = GalleryEvent.objects.annotate(
+#             image_count=Count('images')
+#         ).filter(image_count__gt=0)
+        
+#         # Фильтрация по году
+#         year = self.request.GET.get('year')
+#         if year and year != 'all':
+#             queryset = queryset.filter(date__year=year)
+        
+#         return queryset.order_by('-date')
+#     # def get_queryset(self):
+#     #     return GalleryEvent.objects.annotate(
+#     #         image_count=Count('images')
+#     #     ).filter(image_count__gt=0).order_by('-date')
+#     def get_context_data(self, **kwargs):
+#         context = super().get_context_data(**kwargs)
+        
+#         # Получаем уникальные года из событий
+#         # years = GalleryEvent.objects.annotate(
+#         #     year=ExtractYear('date')
+#         # ).values_list('year', flat=True).distinct().order_by('-year')
+#         years = GalleryEvent.objects.values_list('date__year', flat=True).distinct().order_by('-date__year')
+#         # Добавляем в контекст
+#         context['years'] = years
+#         context['current_year'] = self.request.GET.get('year', 'all')
+        
+#         return context
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+        
+    #     # Получаем уникальные года из событий
+    #     years = GalleryEvent.objects.dates('date', 'year').order_by('-date')
+    #     year_list = [year.year for year in years]
+        
+    #     # Добавляем в контекст
+    #     context['years'] = year_list
+    #     context['current_year'] = self.request.GET.get('year', 'all')
+        
+    #     return context
+# class GalleryListView(ListView):
+#     model = GalleryEvent
+#     template_name = 'gallery.html'
+#     context_object_name = 'events'
+#     paginate_by = 12
+
+class GalleryDetailView(DetailView):
+    model = GalleryEvent
+    template_name = 'gallery_detail.html'
+    context_object_name = 'event'
+    slug_field = 'slug'
+    slug_url_kwarg = 'slug'

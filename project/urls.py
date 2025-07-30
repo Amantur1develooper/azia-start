@@ -22,7 +22,7 @@ from django.urls import path
 from core import views
 from django.urls import path
 from django.views.generic import TemplateView
-from core.views import CustomLoginView, application_view, login_view, logout_view, ClassDebtsReportView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, student_search
+from core.views import CustomLoginView, DocumentListView, GalleryDetailView, GalleryListView, application_view, login_view, logout_view, ClassDebtsReportView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, student_search
 from core.views import (
     EmployeeListView, EmployeeCreateView, 
     EmployeeUpdateView, EmployeeDetailView,
@@ -37,6 +37,7 @@ urlpatterns = [
     path('students/<int:student_id>/payments/<int:payment_id>/receipt/', 
      ReceiptPrintView.as_view(), 
      name='print-receipt'),
+    path('documents/', DocumentListView.as_view(), name='documents'),
     path('accounts/login/', login_view, name='login'),
     path('reports/class-debts/', ClassDebtsReportView.as_view(), name='class-debts-report'),
     path('students/', StudentListView.as_view(), name='student-list'),
@@ -47,6 +48,10 @@ urlpatterns = [
     path('incomes/<int:pk>/download/', DownloadReceiptView.as_view(), name='download-receipt'),
     path('incomes/<int:pk>/receipt/', download_receipt_view, name='download-receipt'),
     # Доходы
+    
+  
+    path('gallery/', GalleryListView.as_view(), name='gallery'),
+    path('gallery/<slug:slug>/', GalleryDetailView.as_view(), name='gallery_detail'),
     
     path('incomes/export/', views.IncomeListView.as_view(), name='income-export'),
     

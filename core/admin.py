@@ -137,9 +137,46 @@ from django.contrib import admin
 from .models import News
 from datetime import datetime
 import pytz
+from django.contrib import admin
+from .models import Document
 
+@admin.register(Document)
+class DocumentAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category', 'created_at')
+    search_fields = ('title', 'category')
+    list_filter = ('category', 'created_at')
 admin.site.register(TelegramSubscriber)
 
+from django.contrib import admin
+from .models import GalleryEvent, GalleryImage
+from django.utils.html import format_html
+
+class GalleryImageInline(admin.TabularInline):
+    model = GalleryImage
+    extra = 1
+    fields = ('image', 'preview', 'caption', 'order')
+    readonly_fields = ('preview',)
+    
+    def preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" height="100" />', obj.image.url)
+        return "-"
+    preview.short_description = "Превью"
+
+@admin.register(GalleryEvent)
+class GalleryEventAdmin(admin.ModelAdmin):
+    list_display = ('title', 'date', 'created_at')
+    search_fields = ('title', 'description')
+    list_filter = ('date',)
+    prepopulated_fields = {'slug': ('title',)}
+    inlines = [GalleryImageInline]
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'slug', 'date', 'cover_image', 'description')
+        }),
+    )
+    
+    
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
     list_display = ('title', 'created_at', 'is_published')

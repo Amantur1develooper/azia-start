@@ -468,6 +468,21 @@ class News(models.Model):
     def __str__(self):
         return self.title
     
+from django.db import models
+
+class Document(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Название документа")
+    file = models.FileField(upload_to='documents/', verbose_name="Файл")
+    category = models.CharField(max_length=100, verbose_name="Категория", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+
+    class Meta:
+        verbose_name = "Документ"
+        verbose_name_plural = "Документы"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
     
 # models.py
 class TelegramSubscriber(models.Model):
@@ -851,3 +866,45 @@ class SalaryPayment(models.Model):
                 created_by=self.created_by
             )
         super().save(*args, **kwargs)
+        
+from django.db import models
+from django.utils.text import slugify
+
+class GalleryEvent(models.Model):
+    title = models.CharField(max_length=200, verbose_name="Название события")
+    slug = models.SlugField(max_length=200, unique=True, blank=True)
+    description = models.TextField(verbose_name="Описание", blank=True)
+    date = models.DateField(verbose_name="Дата события")
+    cover_image = models.ImageField(upload_to='gallery/covers/', verbose_name="Обложка")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = "Событие галереи"
+        verbose_name_plural = "События галереи"
+        ordering = ['-date']
+    
+    
+    
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+    @property
+    def image_count(self):
+        return self.images.count()
+    def __str__(self):
+        return self.title
+
+class GalleryImage(models.Model):
+    event = models.ForeignKey(GalleryEvent, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='gallery/images/', verbose_name="Изображение")
+    caption = models.CharField(max_length=255, blank=True, verbose_name="Подпись")
+    order = models.PositiveIntegerField(default=0, verbose_name="Порядок")
+    
+    class Meta:
+        verbose_name = "Изображение галереи"
+        verbose_name_plural = "Изображения галереи"
+        ordering = ['order']
+    
+    def __str__(self):
+        return f"Изображение {self.id} для {self.event.title}"

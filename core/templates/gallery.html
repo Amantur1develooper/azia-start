@@ -1,0 +1,463 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    .gallery__info {
+  padding: 20px;
+  position: relative;
+}
+
+.gallery__count {
+  position: absolute;
+  top: -15px;
+  right: 15px;
+  background: #3498db;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.gallery__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-top: 30px;
+}
+
+.gallery__empty p {
+  font-size: 1.2rem;
+  color: #7f8c8d;
+  margin: 0;
+}/* Gallery Page */
+.gallery {
+  padding: 80px 0;
+}
+
+.gallery__title {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.gallery__title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: #3498db;
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.gallery__filters {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.gallery__filter {
+  padding: 8px 20px;
+  background: #f1f1f1;
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.gallery__filter.active,
+.gallery__filter:hover {
+  background: #3498db;
+  color: white;
+}
+
+.gallery__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+.gallery__item {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.gallery__item:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+}
+
+.gallery__image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  display: block;
+}
+
+.gallery__info {
+  padding: 20px;
+}
+
+.gallery__name {
+  margin: 0 0 5px 0;
+  font-size: 1.3rem;
+  color: #2c3e50;
+}
+
+.gallery__date {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  display: block;
+}
+
+.gallery__pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+  gap: 20px;
+}
+
+.gallery__pagination-prev,
+.gallery__pagination-next {
+  padding: 10px 20px;
+  background: #3498db;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.gallery__pagination-prev:hover,
+.gallery__pagination-next:hover {
+  background: #2980b9;
+}
+
+.gallery__pagination-current {
+  font-size: 1.1rem;
+}
+
+/* Gallery Detail */
+.gallery-detail {
+  padding: 80px 0;
+}
+
+.gallery-detail__title {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.gallery-detail__date {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #7f8c8d;
+  margin-bottom: 40px;
+}
+
+.gallery-detail__description {
+  max-width: 800px;
+  margin: 0 auto 40px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #555;
+}
+
+.gallery-detail__images {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.gallery-detail__image-item {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.gallery-detail__image-item:hover {
+  transform: translateY(-5px);
+}
+
+.gallery-detail__image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  display: block;
+  cursor: pointer;
+}
+
+.gallery-detail__caption {
+  padding: 15px;
+  margin: 0;
+  font-size: 1rem;
+  color: #555;
+  text-align: center;
+  background: #f8f9fa;
+}
+
+.gallery-detail__back {
+  display: inline-block;
+  margin-top: 40px;
+  padding: 10px 20px;
+  background: #3498db;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.gallery-detail__back:hover {
+  background: #2980b9;
+}
+
+/* Gallery Modal */
+.gallery-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-modal__close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  font-size: 3rem;
+  color: white;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.gallery-modal__prev,
+.gallery-modal__next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  color: white;
+  background: rgba(0,0,0,0.5);
+  border: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallery-modal__prev {
+  left: 30px;
+}
+
+.gallery-modal__next {
+  right: 30px;
+}
+
+.gallery-modal__content {
+  max-width: 90%;
+  max-height: 90%;
+  text-align: center;
+}
+
+.gallery-modal__image {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+}
+
+.gallery-modal__caption {
+  color: white;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  max-width: 800px;
+}
+
+@media (max-width: 768px) {
+  .gallery__list,
+  .gallery-detail__images {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  
+  .gallery__image,
+  .gallery-detail__image {
+    height: 200px;
+  }
+  
+  .gallery-modal__prev,
+  .gallery-modal__next {
+    width: 40px;
+    height: 40px;
+    font-size: 1.5rem;
+  }
+  
+  .gallery-modal__close {
+    font-size: 2rem;
+    top: 10px;
+    right: 15px;
+  }
+  .gallery__filter {
+  display: inline-block;
+  padding: 8px 20px;
+  background: #f1f1f1;
+  border-radius: 30px;
+  font-size: 1rem;
+  color: #333;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  margin: 5px;
+}
+
+.gallery__filter.active,
+.gallery__filter:hover {
+  background: #3498db;
+  color: white;
+}
+}</style>
+<section class="gallery">
+  <div class="container">
+    <h2 class="gallery__title" style="color:#2980b9">Фотогалерея</h2>
+    
+    <div class="gallery__filters">
+      <a 
+        href="?year=all" 
+        class="gallery__filter {% if current_year == 'all' %}active{% endif %}"
+      >
+        Все
+      </a>
+      
+      {% for year in years %}
+      <a 
+        href="?year={{ year }}" 
+        class="gallery__filter {% if current_year == year|stringformat:'s' %}active{% endif %}"
+      >
+        {{ year }}
+      </a>
+      {% endfor %}
+    </div>
+    
+    <div class="gallery__list">
+      {% for event in events %}
+      <a 
+        href="{% url 'gallery_detail' event.slug %}" 
+        class="gallery__item"
+      >
+        <img 
+          src="{{ event.cover_image.url }}" 
+          alt="{{ event.title }}"
+          class="gallery__image"
+        >
+        <div class="gallery__info">
+          <h3 class="gallery__name">{{ event.title }}</h3>
+          <span class="gallery__date">{{ event.date|date:"d.m.Y" }}</span>
+          <span class="gallery__count">
+            {{ event.images.count }} фото
+          </span>
+        </div>
+      </a>
+      {% empty %}
+      <div class="gallery__empty">
+        <p>Пока нет событий в галерее</p>
+      </div>
+      {% endfor %}
+    </div>
+    
+    {% if is_paginated %}
+    <div class="gallery__pagination">
+      {% if page_obj.has_previous %}
+        <a 
+          href="?page={{ page_obj.previous_page_number }}{% if current_year != 'all' %}&year={{ current_year }}{% endif %}" 
+          class="gallery__pagination-prev"
+        >
+          ←
+        </a>
+      {% endif %}
+      
+      <span class="gallery__pagination-current">
+        Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+      </span>
+      
+      {% if page_obj.has_next %}
+        <a 
+          href="?page={{ page_obj.next_page_number }}{% if current_year != 'all' %}&year={{ current_year }}{% endif %}" 
+          class="gallery__pagination-next"
+        >
+          →
+        </a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const filters = document.querySelectorAll('.gallery__filter');
+  const urlParams = new URLSearchParams(window.location.search);
+  const currentYear = urlParams.get('year') || 'all';
+  
+  function filterByYear(year) {
+    const newUrl = new URL(window.location.href);
+    
+    // Обновляем параметр year
+    if (year === 'all') {
+      newUrl.searchParams.delete('year');
+    } else {
+      newUrl.searchParams.set('year', year);
+    }
+    
+    // Сбрасываем страницу при смене фильтра
+    newUrl.searchParams.delete('page');
+    
+    // Переходим на новый URL
+    window.location.href = newUrl.toString();
+  }
+  
+  filters.forEach(filter => {
+    filter.addEventListener('click', function() {
+      const filterValue = this.dataset.filter;
+      filterByYear(filterValue);
+    });
+  });
+  
+  // Применяем фильтр при загрузке
+  if (currentYear !== 'all') {
+    const items = document.querySelectorAll('.gallery__item');
+    
+    items.forEach(item => {
+      if (item.dataset.year !== currentYear) {
+        item.style.display = 'none';
+      }
+    });
+  }
+});
+</script>
+{% endblock %}
