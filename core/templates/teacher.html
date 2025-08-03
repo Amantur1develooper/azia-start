@@ -3,256 +3,427 @@
 {% block content %}
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <!-- Существующие метатеги и стили -->
+<head>
     <style>
-      /* Новые стили для раздела учителей */
-      .teachers-section {
-        padding: 80px 0;
-        background-color: #f9f9f9;
-      }
-      
-      .teachers__header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 40px;
-      }
-      
-      .teachers__title {
-        font-size: 2.5rem;
-        color: #2980b9;
-        position: relative;
-      }
-      
-      .teachers__title::after {
-        content: '';
-        display: block;
-        width: 80px;
-        height: 4px;
-        background: #3498db;
-        position: absolute;
-        bottom: -15px;
-        left: 0;
-      }
-      
-      .teachers__all-link {
-        background: #3498db;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 30px;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-      }
-      
-      .teachers__all-link:hover {
-        background: #2980b9;
-        transform: translateY(-3px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      }
-      
-      .teachers-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 30px;
-      }
-      
-      .teacher-card {
-        background: white;
-        border-radius: 15px;
-        overflow: hidden;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-      
-      .teacher-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-      }
-      
-      .teacher-card__image {
-        width: 100%;
-        height: 250px;
-        object-fit: cover;
-        display: block;
-      }
-      
-      .teacher-card__info {
-        padding: 20px;
-      }
-      
-      .teacher-card__name {
-        margin: 0 0 5px 0;
-        font-size: 1.4rem;
-        color: #2c3e50;
-      }
-      
-      .teacher-card__subject {
-        margin: 0 0 15px 0;
-        font-size: 1.1rem;
-        color: #3498db;
-        font-weight: 500;
-      }
-      
-      .teacher-card__description {
-        margin: 0;
-        font-size: 1rem;
-        color: #555;
-        line-height: 1.5;
-        max-height: 100px;
-        overflow: hidden;
-        position: relative;
-      }
-      
-      .teacher-card__description::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 40px;
-        background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,1));
-      }
-      
-      .teacher-card__dropdown {
-        display: none;
-        padding: 20px;
-        border-top: 1px solid #eee;
-      }
-      
-      .teacher-card__full-description {
-        font-size: 1rem;
-        color: #555;
-        line-height: 1.6;
-      }
-      
-      .teacher-card__toggle {
-        background: #3498db;
-        color: white;
-        border: none;
-        border-radius: 30px;
-        padding: 8px 16px;
-        margin-top: 15px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      
-      .teacher-card__toggle:hover {
-        background: #2980b9;
-      }
-      
-      .teacher-card__toggle::after {
-        content: '▼';
-        margin-left: 8px;
-        font-size: 0.8rem;
-        transition: transform 0.3s ease;
-      }
-      
-      .teacher-card__toggle.active::after {
-        transform: rotate(180deg);
-      }
-      
-      @media (max-width: 768px) {
+        /* Обновленные стили для раздела учителей */
+        .teachers-section {
+            padding: 80px 0;
+            background-color: #f9f9f9;
+        }
+        
+        .teachers__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .teachers__title {
+            font-size: 2.5rem;
+            color: #2980b9;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .teachers__title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: #3498db;
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+        }
+        
         .teachers-grid {
-          grid-template-columns: 1fr;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .teacher-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .teacher-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
         }
         
         .teacher-card__image {
-          height: 200px;
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
         }
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Существующий header -->
-
-    <section class="teachers-section" id="teachers">
-      <div class="container">
-        <div class="teachers__header">
-          <h2 class="teachers__title">Наши учителя</h2>
-          
-        </div>
         
-        <div class="teachers-grid">
-          {% for teacher in teachers %}
-          <div class="teacher-card">
-            <img 
-              class="teacher-card__image" 
-              src="{{ teacher.image.url }}" 
-              alt="{{ teacher.first_name }} {{ teacher.last_name }}"
-            >
-            <div class="teacher-card__info">
-              <h3 class="teacher-card__name">{{ teacher.first_name }} {{ teacher.last_name }}</h3>
-              <p class="teacher-card__subject">{{ teacher.subject }}</p>
-              <p class="teacher-card__description">
-                {{ teacher.description|truncatechars:150 }}
-              </p>
-              <button class="teacher-card__toggle" data-teacher="{{ teacher.id }}">Подробнее</button>
+        .teacher-card__info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .teacher-card__name {
+            margin: 0 0 5px 0;
+            font-size: 1.4rem;
+            color: #2c3e50;
+        }
+        
+        .teacher-card__subject {
+            margin: 0 0 15px 0;
+            font-size: 1.1rem;
+            color: #3498db;
+            font-weight: 500;
+        }
+        
+        .teacher-card__description {
+            margin: 0 0 15px 0;
+            font-size: 1rem;
+            color: #555;
+            line-height: 1.5;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+        
+        .teacher-card__toggle {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-top: auto;
+        }
+        
+        .teacher-card__toggle:hover {
+            background: #2980b9;
+        }
+        
+        /* Стили для модального окна */
+        .teacher-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .teacher-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .teacher-modal__content {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        
+        .teacher-modal__close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            border: none;
+            font-size: 1.5rem;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .teacher-modal__close:hover {
+            background: #e74c3c;
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        .teacher-modal__columns {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .teacher-modal__image-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            max-height: 300px;
+        }
+        
+        .teacher-modal__image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .teacher-modal__info {
+            flex: 2;
+            padding: 30px;
+            overflow-y: auto;
+            max-height: calc(90vh - 300px);
+        }
+        
+        .teacher-modal__name {
+            font-size: 2rem;
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        
+        .teacher-modal__subject {
+            font-size: 1.3rem;
+            color: #3498db;
+            margin: 0 0 20px 0;
+            font-weight: 600;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f1f1;
+        }
+        
+        .teacher-modal__description {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #555;
+            padding: 10px 0;
+        }
+        
+        .teacher-modal__description p {
+            margin-bottom: 15px;
+        }
+        
+        @media (min-width: 768px) {
+            .teacher-modal__columns {
+                flex-direction: row;
+            }
+            
+            .teacher-modal__image-container {
+                max-height: none;
+                height: auto;
+                max-width: 40%;
+            }
+            
+            .teacher-modal__info {
+                max-height: calc(90vh - 60px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .teachers-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .teacher-card__image {
+                height: 200px;
+            }
+            
+            .teachers__header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .teachers__title {
+                font-size: 2rem;
+            }
+            
+            .teacher-modal__info {
+                padding: 20px;
+            }
+            
+            .teacher-modal__name {
+                font-size: 1.8rem;
+            }
+            
+            .teacher-modal__subject {
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .teacher-modal.active .teacher-modal__content {
+            animation: fadeIn 0.4s ease forwards;
+        }
+        
+        /* Блокировка прокрутки фона */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <section class="teachers-section" id="teachers">
+        <div class="container">
+            <div class="teachers__header">
+                <h2 class="teachers__title">Наши учителя</h2>
             </div>
-            <div class="teacher-card__dropdown" id="dropdown-{{ teacher.id }}">
-              <p class="teacher-card__full-description">
-                {{ teacher.description }}
-              </p>
+            
+            <div class="teachers-grid">
+                {% for teacher in teachers %}
+                <div class="teacher-card" 
+                     data-id="{{ teacher.id }}"
+                     data-name="{{ teacher.first_name }} {{ teacher.last_name }}"
+                     data-subject="{{ teacher.subject }}"
+                     data-description="{{ teacher.description }}"
+                     data-image="{{ teacher.image.url }}">
+                    <img 
+                        class="teacher-card__image" 
+                        src="{{ teacher.image.url }}" 
+                        alt="{{ teacher.first_name }} {{ teacher.last_name }}"
+                    >
+                    <div class="teacher-card__info">
+                        <h3 class="teacher-card__name">{{ teacher.first_name }} {{ teacher.last_name }}</h3>
+                        <p class="teacher-card__subject">{{ teacher.subject }}</p>
+                        <p class="teacher-card__description">
+                            {{ teacher.description|truncatechars:150 }}
+                        </p>
+                        <button 
+                            class="teacher-card__toggle" 
+                            data-teacher="{{ teacher.id }}"
+                        >
+                            Подробнее
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
             </div>
-          </div>
-          {% endfor %}
         </div>
-      </div>
     </section>
 
-    <!-- Существующий остальной контент -->
+    <!-- Модальное окно для отображения полной информации -->
+    <div class="teacher-modal" id="teacherModal">
+        <div class="teacher-modal__content">
+            <button class="teacher-modal__close">&times;</button>
+            <div class="teacher-modal__columns">
+                <div class="teacher-modal__image-container">
+                    <img class="teacher-modal__image" id="modalImage" src="" alt="">
+                </div>
+                <div class="teacher-modal__info">
+                    <h2 class="teacher-modal__name" id="modalName"></h2>
+                    <p class="teacher-modal__subject" id="modalSubject"></p>
+                    <div class="teacher-modal__description" id="modalDescription"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
-      // JavaScript для работы выпадающих элементов
-      document.addEventListener('DOMContentLoaded', function() {
-        const toggleButtons = document.querySelectorAll('.teacher-card__toggle');
-        
-        toggleButtons.forEach(button => {
-          button.addEventListener('click', function() {
-            const teacherId = this.getAttribute('data-teacher');
-            const dropdown = document.getElementById(`dropdown-${teacherId}`);
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('teacherModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalName = document.getElementById('modalName');
+            const modalSubject = document.getElementById('modalSubject');
+            const modalDescription = document.getElementById('modalDescription');
+            const closeBtn = document.querySelector('.teacher-modal__close');
+            const teacherCards = document.querySelectorAll('.teacher-card');
             
-            // Закрываем все открытые dropdowns
-            document.querySelectorAll('.teacher-card__dropdown').forEach(d => {
-              if (d.id !== `dropdown-${teacherId}`) {
-                d.style.display = 'none';
-                const btn = d.previousElementSibling.querySelector('.teacher-card__toggle');
-                if (btn) btn.classList.remove('active');
-              }
+            // Обработчики для открытия модального окна
+            document.querySelectorAll('.teacher-card__toggle').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const teacherId = this.getAttribute('data-teacher');
+                    openModal(teacherId);
+                });
             });
             
-            // Переключаем текущий dropdown
-            if (dropdown.style.display === 'block') {
-              dropdown.style.display = 'none';
-              this.classList.remove('active');
-            } else {
-              dropdown.style.display = 'block';
-              this.classList.add('active');
-              
-              // Плавная прокрутка к раскрытому элементу
-              dropdown.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+            // Обработчики для открытия по клику на карточку
+            teacherCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const teacherId = this.getAttribute('data-id');
+                    openModal(teacherId);
+                });
+            });
+            
+            // Закрытие модального окна
+            closeBtn.addEventListener('click', closeModal);
+            
+            // Закрытие при клике вне модального окна
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // Закрытие по клавише Esc
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+            
+            // Функция открытия модального окна
+            function openModal(teacherId) {
+                const teacherCard = document.querySelector(`.teacher-card[data-id="${teacherId}"]`);
+                if (!teacherCard) return;
+                
+                // Получаем данные из атрибутов карточки
+                const image = teacherCard.getAttribute('data-image');
+                const name = teacherCard.getAttribute('data-name');
+                const subject = teacherCard.getAttribute('data-subject');
+                const description = teacherCard.getAttribute('data-description');
+                
+                // Заполняем модальное окно данными
+                modalImage.src = image;
+                modalImage.alt = name;
+                modalName.textContent = name;
+                modalSubject.textContent = subject;
+                modalDescription.innerHTML = `<p>${description.replace(/\n/g, '</p><p>')}</p>`;
+                
+                // Показываем модальное окно
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
             }
-          });
+            
+            // Функция закрытия модального окна
+            function closeModal() {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
         });
-        
-        // Закрытие dropdown при клике вне карточки
-        document.addEventListener('click', function(e) {
-          if (!e.target.closest('.teacher-card') && !e.target.matches('.teacher-card__toggle')) {
-            document.querySelectorAll('.teacher-card__dropdown').forEach(d => {
-              d.style.display = 'none';
-            });
-            document.querySelectorAll('.teacher-card__toggle').forEach(b => {
-              b.classList.remove('active');
-            });
-          }
-        });
-      });
     </script>
-  </body>
+</body>
 </html>
 {% endblock content %}
