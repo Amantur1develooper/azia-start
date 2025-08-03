@@ -2,7 +2,8 @@
 {% load static %}
 
 {% block content %}
-<style>/* Documents Page */
+<style>
+/* Documents Page */
 .documents {
   padding: 80px 0;
 }
@@ -12,6 +13,7 @@
   font-size: 2.5rem;
   margin-bottom: 40px;
   position: relative;
+  color: #2980b9;
 }
 
 .documents__title::after {
@@ -36,9 +38,9 @@
 
 .documents__search-input {
   width: 100%;
-  padding: 15px 50px 15px 20px;
+  padding: 15px 20px;
   border: 2px solid #3498db;
-  border-radius: 50px;
+  border-radius: 30px;
   font-size: 1.1rem;
   transition: all 0.3s ease;
   background: #f8f9fa;
@@ -51,19 +53,8 @@
   box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
 }
 
-.documents__search::after {
-  content: '🔍';
-  position: absolute;
-  right: 20px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.2rem;
-  color: #7f8c8d;
-}
-
 .documents__category {
   margin-bottom: 50px;
-  transition: all 0.3s ease;
 }
 
 .documents__category-title {
@@ -87,16 +78,14 @@
 
 .documents__list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 25px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
 
 .documents__item {
   background: white;
   border-radius: 12px;
   padding: 20px;
-  display: flex;
-  align-items: center;
   box-shadow: 0 5px 15px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
   position: relative;
@@ -119,7 +108,7 @@
 }
 
 .documents__icon {
-  margin-right: 20px;
+  margin-right: 15px;
   flex-shrink: 0;
   width: 50px;
   height: 50px;
@@ -132,7 +121,7 @@
 
 .documents__info {
   flex-grow: 1;
-  min-width: 0; /* Для корректного переноса текста */
+  min-width: 0;
 }
 
 .documents__name {
@@ -140,32 +129,51 @@
   font-size: 1.2rem;
   color: #2c3e50;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .documents__date {
   font-size: 0.9rem;
   color: #7f8c8d;
   display: block;
+  margin-bottom: 10px;
 }
 
-.documents__download {
+.documents__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.documents__preview {
   background: #3498db;
   color: white;
-  padding: 10px 20px;
-  border-radius: 8px;
+  padding: 8px 15px;
+  border-radius: 5px;
   text-decoration: none;
   font-weight: 600;
   transition: all 0.3s ease;
-  flex-shrink: 0;
-  text-align: center;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.documents__preview:hover {
+  background: #2980b9;
+}
+
+.documents__download {
+  background: #2ecc71;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
 }
 
 .documents__download:hover {
-  background: #2980b9;
-  transform: scale(1.05);
+  background: #27ae60;
 }
 
 .documents__no-results {
@@ -197,6 +205,74 @@
   margin: 0;
 }
 
+/* Document Modal */
+.document-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.9);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.document-modal__close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 2rem;
+  color: white;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 1010;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.document-modal__content {
+  width: 90%;
+  height: 90%;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.document-modal__iframe {
+  flex-grow: 1;
+  border: none;
+}
+
+.document-modal__footer {
+  padding: 15px;
+  background: #f8f9fa;
+  text-align: center;
+  border-top: 1px solid #eee;
+}
+
+.document-modal__download-btn {
+  background: #3498db;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.document-modal__download-btn:hover {
+  background: #2980b9;
+}
+
 @media (max-width: 768px) {
   .documents__list {
     grid-template-columns: 1fr;
@@ -205,61 +281,86 @@
   .documents__item {
     flex-direction: column;
     text-align: center;
-    padding: 15px;
   }
   
   .documents__icon {
-    margin-right: 0;
-    margin-bottom: 15px;
+    margin: 0 auto 15px;
   }
   
+  .documents__actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .documents__preview,
   .documents__download {
-    margin-top: 15px;
     width: 100%;
   }
   
-  .documents__name {
-    white-space: normal;
+  .document-modal__close {
+    top: 10px;
+    right: 10px;
+    font-size: 1.5rem;
   }
-}</style>
+}
+</style>
+
 <section class="documents">
   <div class="container">
-    <h2 class="documents__title" style="color:#2980b9">Документы школы</h2>
+    <h2 class="documents__title">Документы школы</h2>
     
-   
+    <div class="documents__search">
+      <input 
+        type="text" 
+        class="documents__search-input" 
+        placeholder="Поиск документов..."
+        id="document-search"
+        aria-label="Поиск документов"
+      >
+    </div>
     
     <div class="documents__categories" id="documents-container">
       {% for category, docs in object_list.items %}
-      <div class="documents__category" data-category="{{ category|lower }}">
+      <div class="documents__category">
         <h3 class="documents__category-title">{{ category }}</h3>
         <div class="documents__list">
           {% for document in docs %}
           <div class="documents__item" 
                data-title="{{ document.title|lower }}"
                data-date="{{ document.created_at|date:'Y-m-d' }}">
-            <div class="documents__icon">
-              <img 
-                src="{% static 'images/icon/document.svg' %}" 
-                alt="Документ"
-                width="40"
-                height="40"
+            <div class="documents__content">
+              <div class="documents__icon">
+                <img 
+                  src="{% static 'images/icon/document.svg' %}" 
+                  alt="Документ"
+                  width="40"
+                  height="40"
+                >
+              </div>
+              <div class="documents__info">
+                <h4 class="documents__name">{{ document.title }}</h4>
+                <span class="documents__date">
+                  {{ document.created_at|date:"d.m.Y" }}
+                </span>
+              </div>
+            </div>
+            <div class="documents__actions">
+              <a 
+                href="{{ document.file.url }}" 
+                class="documents__preview"
+                target="_blank"
               >
+                Просмотреть
+              </a>
+              <a 
+                href="{{ document.file.url }}" 
+                class="documents__download"
+                download
+                target="_blank"
+              >
+                Скачать
+              </a>
             </div>
-            <div class="documents__info">
-              <h4 class="documents__name">{{ document.title }}</h4>
-              <span class="documents__date">
-                {{ document.created_at|date:"d.m.Y" }}
-              </span>
-            </div>
-            <a 
-              href="{{ document.file.url }}" 
-              class="documents__download"
-              download
-              target="_blank"
-              aria-label="Скачать документ {{ document.title }}"
-            >
-              Скачать
-            </a>
           </div>
           {% endfor %}
         </div>
@@ -276,57 +377,41 @@
     </div>
   </div>
 </section>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+  // Поиск документов
   const searchInput = document.getElementById('document-search');
-  const documentsContainer = document.getElementById('documents-container');
+
+
   const noResults = document.getElementById('no-results');
-  const allItems = document.querySelectorAll('.documents__item');
-  const allCategories = document.querySelectorAll('.documents__category');
+  
   
   if (searchInput) {
-    // Функция для выполнения поиска
-    function performSearch() {
-      const searchTerm = searchInput.value.trim().toLowerCase();
+    searchInput.addEventListener('input', function() {
+      const searchTerm = this.value.trim().toLowerCase();
       let foundItems = 0;
       
-      // Сброс всех элементов
-      allItems.forEach(item => {
-        item.style.display = 'flex';
-      });
-      allCategories.forEach(category => {
-        category.style.display = 'block';
-      });
-      
-      // Если поле поиска пустое, показываем все
-      if (searchTerm === '') {
-        noResults.style.display = 'none';
-        return;
-      }
-      
-      // Поиск по документам
-      allItems.forEach(item => {
+      // Перебираем все элементы документов
+      document.querySelectorAll('.documents__item').forEach(item => {
         const title = item.getAttribute('data-title');
         
-        if (title.includes(searchTerm)) {
+        if (searchTerm === '' || title.includes(searchTerm)) {
           item.style.display = 'flex';
           foundItems++;
           
           // Показываем родительскую категорию
-          const category = item.closest('.documents__category');
-          if (category) {
-            category.style.display = 'block';
-          }
+          item.closest('.documents__category').style.display = 'block';
         } else {
           item.style.display = 'none';
         }
       });
       
       // Скрываем пустые категории
-      allCategories.forEach(category => {
+      document.querySelectorAll('.documents__category').forEach(category => {
         const visibleItems = category.querySelectorAll('.documents__item[style="display: flex;"]');
         if (visibleItems.length === 0) {
           category.style.display = 'none';
@@ -334,21 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       
       // Показываем сообщение, если ничего не найдено
-      if (foundItems === 0) {
-        noResults.style.display = 'block';
-      } else {
-        noResults.style.display = 'none';
-      }
-    }
-    
-    // Обработчик ввода
-    searchInput.addEventListener('input', performSearch);
-    
-    // Обработчик очистки (если пользователь использует крестик в поле ввода)
-    searchInput.addEventListener('search', function() {
-      if (this.value === '') {
-        performSearch();
-      }
+      noResults.style.display = foundItems === 0 && searchTerm !== '' ? 'block' : 'none';
     });
   }
 });

@@ -94,7 +94,7 @@ def application_view(request):
             except Exception as e:
                 print(f"Ошибка при отправке для {subscriber.chat_id}: {e}")
 
-    teachers = Teacher.objects.all()
+    teachers = Teacher.objects.filter(is_publish=True)
      # Проверяем, есть ли главный учитель для отображения по умолчанию
     main_teacher = teachers.filter(is_main=True).first()
     if not main_teacher and teachers.exists():
@@ -1957,6 +1957,9 @@ class GalleryListView(ListView):
 #     context_object_name = 'events'
 #     paginate_by = 12
 
+def teacher_view1(request):
+    model = Teacher.objects.all()
+    return render(request,'teacher.html',{'teachers':model})
 class GalleryDetailView(DetailView):
     model = GalleryEvent
     template_name = 'gallery_detail.html'

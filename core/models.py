@@ -1,3 +1,4 @@
+import os
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
@@ -419,6 +420,7 @@ class Teacher(models.Model):
     description = models.TextField(verbose_name="Описание")
     image = models.ImageField(upload_to='teachers/', verbose_name="Фото")
     is_main = models.BooleanField(default=False, verbose_name="Главный учитель?")
+    is_publish = models.BooleanField(default=False, blank=True, null=True, verbose_name='На лицевую часть публиковать?')
     order = models.PositiveIntegerField(default=0, verbose_name="Порядок отображения")
 
     class Meta:
@@ -483,7 +485,38 @@ class Document(models.Model):
 
     def __str__(self):
         return self.title
+    # @property
+    # def file_extension(self):
+    #     name, extension = os.path.splitext(self.file.name)
+    #     return extension.lower()[1:]  # Убираем точку
     
+    # @property
+    # def preview_url(self):
+    #     # Для всех форматов используем Microsoft Viewer
+    #     return f"https://view.officeapps.live.com/op/embed.aspx?src={self.file.url}"
+    # @property
+    # def file_extension(self):
+    #     import os
+    #     _, ext = os.path.splitext(self.file.name)
+    #     return ext.lower()[1:]  # Убираем точку
+    
+    # @property
+    # def preview_url(self):
+    #     url = ""
+    #     if self.file_extension == 'pdf':
+    #         url = self.file.url
+    #     else:
+    #         url = f"https://docs.google.com/gview?url={self.file.url}&embedded=true"
+    
+    #     print(f"Preview URL for {self.title}: {url}")  # Для отладки
+        # return url
+    # def preview_url(self):
+    #     if self.file_extension == 'pdf':
+    #         return self.file.url
+    #     else:
+    #         # Для форматов, которые не поддерживаются напрямую
+    #         return f"https://docs.google.com/gview?url={self.file.url}&embedded=true"
+   
 # models.py
 class TelegramSubscriber(models.Model):
     name = models.CharField(max_length=100, blank=True)
