@@ -22,7 +22,7 @@ from django.urls import path
 from core import views
 from django.urls import path
 from django.views.generic import TemplateView
-from core.views import CustomLoginView, DocumentListView, GalleryDetailView, GalleryListView, application_view, login_view, logout_view, ClassDebtsReportView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, student_search, teacher_view1
+from core.views import CustomLoginView, DocumentListView, GalleryDetailView, GalleryListView, application_view, best_student, login_view, logout_view, ClassDebtsReportView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, student_search, teacher_view1
 from core.views import (
     EmployeeListView, EmployeeCreateView, 
     EmployeeUpdateView, EmployeeDetailView,
@@ -67,7 +67,7 @@ urlpatterns = [
     path('reports/', views.reports, name='reports'),
 
     path('admin/', admin.site.urls),
-
+    path('best_student/', best_student, name='best_student'),
     path('teachers/',teacher_view1, name='teacher_view1'),
     path('news/', views.NewsListView.as_view(), name='news_list'),
     path('news/<int:pk>/', views.NewsDetailView.as_view(), name='news_detail'),

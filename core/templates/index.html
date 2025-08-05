@@ -969,7 +969,7 @@
               <img src="{% static 'images/icon/button-line.png' %}" alt="sent button" />
             </button>
             <a
-              class="sent__link"
+              class="sent__link hero__btn"
               href="#"
               target="blank"
               >Записаться</a
@@ -1236,9 +1236,16 @@
 
      <section class="student" id="student">
   <div class="student__container">
+    <div class="news__header" >
     <h2 class="student__title">Лучшие ученики</h2>
+   
+    <a href="{% url 'best_student' %}" class="news__all-link">Все ученики</a>
+  </div>
     <ul class="student__list">
-      <li class="student__item first">
+      <li class="student__item" style="padding: 27px;">
+        <div > 
+
+       
         <h3 class="first__title">Лучшие ученики этого месяца</h3>
         <p class="first__text">
           Эти талантливые и целеустремленные ученики проявили выдающиеся
@@ -1246,6 +1253,7 @@
           усердие, учебные достижения и вклад в образовательное сообщество
           делают нас гордыми.
         </p>
+         </div>
       </li>
       
       {% for student in best_students %}
@@ -1643,7 +1651,7 @@
     </footer>
     <div class="student-modal">
   <div class="student-modal__content">
-    <button class="student-modal__close">&times;</button>
+    <button class="student-modal__close">&times;Х</button>
     <img class="student-modal__image" src="" alt="">
     <div class="student-modal__info">
       <h2 class="student-modal__name"></h2>

@@ -968,7 +968,7 @@
               <img src="{% static 'images/icon/button-line.png' %}" alt="sent button" />
             </button>
             <a
-              class="sent__link"
+              class="sent__link hero__btn"
               href="#"
               target="blank"
               >Записаться</a
@@ -1101,6 +1101,17 @@
     </div>
   </div>
 </div>
+ <div class="student-modal">
+  <div class="student-modal__content">
+    <button class="student-modal__close">&times;Х</button>
+    <img class="student-modal__image" src="" alt="">
+    <div class="student-modal__info">
+      <h2 class="student-modal__name"></h2>
+      <p class="student-modal__class"></p>
+      <p class="student-modal__achievements"></p>
+    </div>
+  </div>
+</div>
     <script>
       // Удален код обработки формы (fetch запросы)
       // Оставлен только необходимый функционал
@@ -1142,5 +1153,6 @@
         elModal.classList.remove("modal-on");
       });
     </script>
-    
+     <script src="{% static 'js/Accardion.js' %}"></script>
+    <script src="{% static 'js/main.js' %}"></script>
     

@@ -1,0 +1,596 @@
+{% extends 'base2.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <style>
+        /* Стили для раздела лучших учеников */
+        .students-section {
+            padding: 80px 0;
+            background-color: #f9f9f9;
+        }
+        
+        .students__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .students__title {
+            font-size: 2.5rem;
+            color: #2980b9;
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .students__title::after {
+            content: '';
+            display: block;
+            width: 80px;
+            height: 4px;
+            background: #3498db;
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+        }
+        
+        .students__intro {
+            width: 100%;
+            max-width: 800px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 30px;
+            background: #f0f8ff;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .student-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .student-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .student-card__image-container {
+            position: relative;
+            overflow: hidden;
+            height: 250px;
+        }
+        
+        .student-card__image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.5s ease;
+        }
+        
+        .student-card:hover .student-card__image {
+            transform: scale(1.05);
+        }
+        
+        .student-card__info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .student-card__name {
+            margin: 0 0 5px 0;
+            font-size: 1.4rem;
+            color: #2c3e50;
+        }
+        
+        .student-card__level {
+            margin: 0 0 15px 0;
+            font-size: 1.1rem;
+            color: #3498db;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        
+        .student-card__level::before {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            background: #3498db;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .student-card__achievements {
+            margin: 0 0 15px 0;
+            font-size: 1rem;
+            color: #555;
+            line-height: 1.5;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            flex-grow: 1;
+        }
+        
+        .student-card__button {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .student-card__button:hover {
+            background: #2980b9;
+        }
+        
+        .student-card__featured-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 2;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        
+        /* Стили для модального окна */
+        .student-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .student-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .student-modal__content {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+        
+        .student-modal__close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            border: none;
+            font-size: 1.5rem;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+        
+        .student-modal__close:hover {
+            background: #e74c3c;
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        .student-modal__columns {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .student-modal__image-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            max-height: 350px;
+        }
+        
+        .student-modal__image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .student-modal__info {
+            flex: 2;
+            padding: 30px;
+            overflow-y: auto;
+            max-height: calc(90vh - 350px);
+        }
+        
+        .student-modal__name {
+            font-size: 2rem;
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+        }
+        
+        .student-modal__level {
+            font-size: 1.3rem;
+            color: #3498db;
+            margin: 0 0 20px 0;
+            font-weight: 600;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f1f1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .student-modal__level::before {
+            content: '';
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            background: #3498db;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .student-modal__achievements {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #555;
+            padding: 10px 0;
+        }
+        
+        .student-modal__achievements p {
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .student-modal__achievements p::before {
+            content: '★';
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: #f1c40f;
+        }
+        
+        @media (min-width: 768px) {
+            .student-modal__columns {
+                flex-direction: row;
+            }
+            
+            .student-modal__image-container {
+                max-height: none;
+                height: auto;
+                max-width: 40%;
+            }
+            
+            .student-modal__info {
+                max-height: calc(90vh - 60px);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .students-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .student-card__image-container {
+                height: 200px;
+            }
+            
+            .students__header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .students__title {
+                font-size: 2rem;
+            }
+            
+            .student-modal__info {
+                padding: 20px;
+            }
+            
+            .student-modal__name {
+                font-size: 1.8rem;
+            }
+            
+            .student-modal__level {
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .student-modal.active .student-modal__content {
+            animation: fadeIn 0.4s ease forwards;
+        }
+        
+        /* Блокировка прокрутки фона */
+        body.modal-open {
+            overflow: hidden;
+        }
+        
+        /* Фильтры */
+        .students__filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .students__filter-btn {
+            background: #ecf0f1;
+            border: none;
+            border-radius: 30px;
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .students__filter-btn:hover,
+        .students__filter-btn.active {
+            background: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <section class="students-section" id="students">
+        <div class="container">
+            <div class="students__header">
+                <h2 class="students__title">Лучшие ученики</h2>
+            </div>
+            
+            <div class="students__intro">
+                <p>Мы гордимся нашими учениками, которые демонстрируют выдающиеся успехи в учебе, творчестве и спорте. На этой странице представлены самые талантливые и трудолюбивые ученики нашей школы, чьи достижения вдохновляют всех нас.</p>
+            </div>
+            
+            <div class="students__filters">
+                <button class="students__filter-btn active" data-filter="all">Все</button>
+                <button class="students__filter-btn" data-filter="1">1-4 классы</button>
+                <button class="students__filter-btn" data-filter="5">5-9 классы</button>
+                <button class="students__filter-btn" data-filter="10">10-11 классы</button>
+            </div>
+            
+            <div class="students-grid">
+                {% for student in students %}
+                <div class="student-card" 
+                     data-id="{{ student.id }}"
+                     data-name="{{ student.first_name }} {{ student.last_name }}"
+                     data-level="{{ student.level }}"
+                     data-achievements="{{ student.achievements }}"
+                     data-image="{{ student.image.url }}"
+                     data-featured="{{ student.is_featured|yesno:'true,false' }}">
+                     
+                    {% if student.is_featured %}
+                    <div class="student-card__featured-badge">Звезда месяца</div>
+                    {% endif %}
+                    
+                    <div class="student-card__image-container">
+                        <img 
+                            class="student-card__image" 
+                            src="{{ student.image.url }}" 
+                            alt="{{ student.first_name }} {{ student.last_name }}"
+                        >
+                    </div>
+                    
+                    <div class="student-card__info">
+                        <h3 class="student-card__name">{{ student.first_name }} {{ student.last_name }}</h3>
+                        <p class="student-card__level">{{ student.level }} класс</p>
+                        <p class="student-card__achievements">
+                            {{ student.achievements|truncatechars:150 }}
+                        </p>
+                        <button 
+                            class="student-card__button" 
+                            data-student="{{ student.id }}"
+                        >
+                            Подробнее
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Модальное окно для отображения полной информации -->
+    <div class="student-modal" id="studentModal">
+        <div class="student-modal__content">
+            <button class="student-modal__close">&times;</button>
+            <div class="student-modal__columns">
+                <div class="student-modal__image-container">
+                    <img class="student-modal__image" id="modalImage" src="" alt="">
+                </div>
+                <div class="student-modal__info">
+                    <h2 class="student-modal__name" id="modalName"></h2>
+                    <p class="student-modal__level" id="modalLevel"></p>
+                    <div class="student-modal__achievements" id="modalAchievements"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('studentModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalName = document.getElementById('modalName');
+            const modalLevel = document.getElementById('modalLevel');
+            const modalAchievements = document.getElementById('modalAchievements');
+            const closeBtn = document.querySelector('.student-modal__close');
+            const studentCards = document.querySelectorAll('.student-card');
+            const filterButtons = document.querySelectorAll('.students__filter-btn');
+            
+            // Обработчики для открытия модального окна
+            document.querySelectorAll('.student-card__button').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const studentId = this.getAttribute('data-student');
+                    openModal(studentId);
+                });
+            });
+            
+            // Обработчики для открытия по клику на карточку
+            studentCards.forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // Проверяем, не был ли клик по кнопке
+                    if (!e.target.closest('.student-card__button')) {
+                        const studentId = this.getAttribute('data-id');
+                        openModal(studentId);
+                    }
+                });
+            });
+            
+            // Закрытие модального окна
+            closeBtn.addEventListener('click', closeModal);
+            
+            // Закрытие при клике вне модального окна
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+            
+            // Закрытие по клавише Esc
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+            
+            // Обработчики для фильтров
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Убираем активный класс у всех кнопок
+                    filterButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Добавляем активный класс текущей кнопке
+                    this.classList.add('active');
+                    
+                    const filter = this.getAttribute('data-filter');
+                    filterStudents(filter);
+                });
+            });
+            
+            // Функция открытия модального окна
+            function openModal(studentId) {
+                const studentCard = document.querySelector(`.student-card[data-id="${studentId}"]`);
+                if (!studentCard) return;
+                
+                // Получаем данные из атрибутов карточки
+                const image = studentCard.getAttribute('data-image');
+                const name = studentCard.getAttribute('data-name');
+                const level = studentCard.getAttribute('data-level');
+                const achievements = studentCard.getAttribute('data-achievements');
+                
+                // Заполняем модальное окно данными
+                modalImage.src = image;
+                modalImage.alt = name;
+                modalName.textContent = name;
+                modalLevel.textContent = level + " класс";
+                
+                // Форматируем достижения
+                const achievementsHTML = achievements.split('\n')
+                    .filter(item => item.trim() !== '')
+                    .map(item => `<p>${item.trim()}</p>`)
+                    .join('');
+                
+                modalAchievements.innerHTML = achievementsHTML;
+                
+                // Показываем модальное окно
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+            
+            // Функция закрытия модального окна
+            function closeModal() {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+            
+            // Функция фильтрации учеников
+            function filterStudents(filter) {
+                const allStudents = document.querySelectorAll('.student-card');
+                
+                allStudents.forEach(student => {
+                    if (filter === 'all') {
+                        student.style.display = 'flex';
+                        return;
+                    }
+                    
+                    const level = student.getAttribute('data-level');
+                    const levelNum = parseInt(level);
+                    
+                    if (filter === '1' && levelNum >= 1 && levelNum <= 4) {
+                        student.style.display = 'flex';
+                    } else if (filter === '5' && levelNum >= 5 && levelNum <= 9) {
+                        student.style.display = 'flex';
+                    } else if (filter === '10' && levelNum >= 10 && levelNum <= 11) {
+                        student.style.display = 'flex';
+                    } else {
+                        student.style.display = 'none';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+{% endblock content %}

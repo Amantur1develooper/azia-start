@@ -61,6 +61,9 @@ class NewsDetailView(DetailView):
     
 TELEGRAM_BOT_TOKEN = "7392373379:AAFmvBHQE6uCWJ817i9H3M9fKEYgUwaNoaE"
 
+def best_student(request):
+    students = Student2.objects.all()
+    return render(request, 'best_student.html',{'students':students})
 
 def application_view(request):
     if request.method == 'POST':
