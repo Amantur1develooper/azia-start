@@ -857,6 +857,9 @@
     background: #3498db;
     color: white;
   }
+  .hero__btn2{
+    display: block;
+  }
 </style>
 
   <body>
@@ -968,12 +971,7 @@
             <button class="sent__btn" aria-label="sent button">
               <img src="{% static 'images/icon/button-line.png' %}" alt="sent button" />
             </button>
-            <a
-              class="sent__link hero__btn"
-              href="#"
-              target="blank"
-              >Записаться</a
-            >
+            <button class="sent__link hero__btn_two">Записаться</button>
           </div>
         </div>
       </div>
@@ -1651,7 +1649,7 @@
     </footer>
     <div class="student-modal">
   <div class="student-modal__content">
-    <button class="student-modal__close">&times;Х</button>
+    <button class="student-modal__close">&times;</button>
     <img class="student-modal__image" src="" alt="">
     <div class="student-modal__info">
       <h2 class="student-modal__name"></h2>
@@ -1970,11 +1968,16 @@ document.querySelector('.teacher__button')?.classList.add('active');
 
       // Modal form
       const elModal = document.querySelector(".modal");
+      console.log(elModal,'807986976876868768768687')
       const elOpenModalBtn = document.querySelector(".hero__btn");
+      const elOpenModalBtn2 = document.querySelector(".hero__btn_two");
       const elSecondOpenModalBtn = document.querySelector(".item__btn");
       const elCloseModalBtn = document.querySelector(".info__exit");
 
       elOpenModalBtn.addEventListener("click", function () {
+        elModal.classList.add("modal-on");
+      });
+       elOpenModalBtn2.addEventListener("click", function () {
         elModal.classList.add("modal-on");
       });
 
@@ -1982,9 +1985,7 @@ document.querySelector('.teacher__button')?.classList.add('active');
         elModal.classList.add("modal-on");
       });
 
-      elCloseModalBtn.addEventListener("click", function () {
-        elModal.classList.remove("modal-on");
-      });
+     
     </script>
     
     <script>

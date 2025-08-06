@@ -102,7 +102,7 @@ def application_view(request):
     main_teacher = teachers.filter(is_main=True).first()
     if not main_teacher and teachers.exists():
         main_teacher = teachers.first()
-    best_students = Student2.objects.filter(is_featured=True).order_by('order')[:4]  # Ограничив
+    best_students = Student2.objects.filter(is_featured=True).order_by('order')[:5]  # Ограничив
     news_list = News.objects.filter(is_published=True).order_by('-created_at')[:3]
     return render(request, 'index.html',{'main_teacher':main_teacher, 
                                          'teachers':teachers,

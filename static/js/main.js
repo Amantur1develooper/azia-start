@@ -254,9 +254,9 @@ elSecondOpenModalBtn.addEventListener("click", function () {
   elModal.classList.add("modal-on");
 });
 
-elCloseModalBtn.addEventListener("click", function () {
-  elModal.classList.remove("modal-on");
-});
+// elCloseModalBtn.addEventListener("click", function () {
+//   elModal.classList.remove("modal-on");
+// });
 
 // form submit
 
@@ -296,7 +296,7 @@ elForm.addEventListener("submit", function (evt) {
     })
       .then((data) => {
         if (data.status === 200) {
-          elModal.classList.remove("modal-on");
+          // elModal.classList.remove("modal-on");
           elInputName.value = "";
           elInputSurname.value = "";
           elInputClass.value = "";
