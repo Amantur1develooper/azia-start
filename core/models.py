@@ -114,13 +114,7 @@ class Student(models.Model):
             self.contract_amount = self.grade.annual_tuition
         super().save(*args, **kwargs)
         
-    # def get_total_paid_for_year(self, year):
-    #     """Общая сумма оплат за учебный год"""
-    #     payments = self.income_set.filter(
-    #         academic_year=year,
-    #         status='paid'
-    #     )
-    #     return payments.aggregate(models.Sum('amount'))['amount__sum'] or 0
+    
     def get_payment_percent(self):
         """Возвращает процент оплаты контракта"""
         if not self.contract_amount or self.contract_amount <= 0:
@@ -136,17 +130,7 @@ class Student(models.Model):
             return min(round(percent), 100)
         except (InvalidOperation, ZeroDivisionError):
             return 0
-    # def get_payment_percent(self):
-    #     """Возвращает процент оплаты контракта"""
-    #     if not self.contract_amount or self.contract_amount <= 0:
-    #         return 0
-            
-    #     current_year = AcademicYear.objects.filter(is_current=True).first()
-    #     if not current_year:
-    #         return 0
-            
-    #     total_paid = self.get_total_paid_for_year(current_year)
-    #     return min(round((total_paid / self.contract_amount) * 100, 100))
+    
     
     def get_total_paid_for_year(self, academic_year):
         """Общая сумма оплат за учебный год"""
@@ -165,33 +149,7 @@ class Student(models.Model):
         total_paid = self.get_total_paid_for_year(current_year)
         return max(self.contract_amount - total_paid, 0)
 
-    # def get_total_paid_for_year(self, year):
-    #     """Сумма оплат за указанный учебный год"""
-    #     total = self.income_set.filter(
-    #         date__gte=year.start_date,
-    #         date__lte=year.end_date,
-    #         status='paid'
-    #     ).aggregate(models.Sum('amount'))['amount__sum'] or 0
-    #     return total
-    # def get_remaining_payment(self, academic_year):
-    #     """Возвращает остаток к оплате за указанный учебный год"""
-    #     if not academic_year:
-    #         return 0
-            
-    #     total_paid = self.income_set.filter(
-    #         academic_year=academic_year,
-    #         status='paid'
-    #     ).aggregate(total=Sum('amount'))['total'] or 0
-        
-    #     contract_amount = self.contract_amount or 0
-    #     remaining = contract_amount - total_paid
-    #     return max(remaining, 0)  # Не возвращаем отрицательные значения
-    
-    
-    # def get_remaining_payment(self, year):
-    #     """Остаток к оплате за учебный год"""
-    #     return self.contract_amount - self.get_total_paid_for_year(year)
-    
+  
     def is_fully_paid_for_year(self, year):
         """Проверка полной оплаты за учебный год"""
         return self.get_total_paid_for_year(year) >= self.contract_amount
@@ -200,61 +158,8 @@ class Student(models.Model):
         """Обновляет статус оплаты для указанного учебного года"""
         self.current_year_paid = self.is_fully_paid_for_year(year)
         self.save()
-# class Student(models.Model):
-#     STATUS_CHOICES = [
-#         ('studying', 'Обучается'),
-#         ('reserve', 'Резерв'),
-#         ('expelled', 'Отчислен'),
-#     ]
-#     pol_choices = [
-#         ('male', 'муж'),
-#         ('famale', 'жен'),
-       
-#     ]
-#     full_name = models.CharField(
-#         max_length=200,
-#         verbose_name="ФИО ученика"
-#     )
-#     birth_date = models.DateField(
-#         verbose_name="Дата рождения"
-#     )
-#     pol = models.CharField(
-#         max_length=10,
-#         choices=pol_choices,
-#         default='male',
-#         verbose_name="Пол", blank=True, null=True,
-#     )
-#     parent_contacts = models.TextField(
-#         verbose_name="Контакты родителей"
-#     )
-#     admission_date = models.DateField(
-#         verbose_name="Дата поступления"
-#     )
-#     number_contract = models.IntegerField(verbose_name="Номер контракта", blank=True, null=True)
-#     grade = models.ForeignKey(
-#         Grade,
-#         on_delete=models.PROTECT,
-#         verbose_name="Класс"
-#     )
-#     status = models.CharField(
-#         max_length=10,
-#         choices=STATUS_CHOICES,
-#         default='studying',
-#         verbose_name="Статус"
-#     )
-#     is_active = models.BooleanField(
-#         default=True,
-#         verbose_name="Активный"
-#     )
-    
-#     class Meta:
-#         verbose_name = "Ученик"
-#         verbose_name_plural = "Ученики"
-#         ordering = ['grade', 'full_name']
-    
-#     def __str__(self):
-#         return self.full_name
-
+        
+        
 
 class Income(models.Model):
     MONTH_CHOICES = [
@@ -333,84 +238,7 @@ class Income(models.Model):
         # Обновляем статус оплаты студента
         if self.status == 'paid':
             self.student.update_payment_status(self.academic_year)
-    # def save(self, *args, **kwargs):
-    #     # Автоматически устанавливаем текущий учебный год, если не указан
-    #     if not self.academic_year_id:
-    #         self.academic_year = AcademicYear.objects.filter(is_current=True).first()
-        
-    #     super().save(*args, **kwargs)
-        
-    #     # Обновляем статус оплаты студента
-    #     if self.status == 'paid':
-    #         self.student.update_payment_status(self.academic_year)
-# class Income(models.Model):
-#     PAYMENT_METHODS = [
-#         ('cash', 'Наличные'),
-#         ('card', 'Безналичный'),
-#         ('online', 'Онлайн платеж'),
-#     ]
-#     receipt_pdf = models.FileField(
-#         upload_to='receipts/',
-#         null=True,
-#         blank=True,
-#         verbose_name="Квитанция PDF"
-#     )
-#     STATUS_CHOICES = [
-#         ('paid', 'Оплачено'),
-#         ('partial', 'Частично'),
-#         ('refund', 'Возврат'),
-#     ]
-    
-#     date = models.DateField(
-#         verbose_name="Дата платежа"
-#     )
-#     student = models.ForeignKey(
-#         Student,
-#         on_delete=models.PROTECT,
-#         verbose_name="Ученик"
-#     )
-#     amount = models.DecimalField(
-#         max_digits=10,
-#         decimal_places=2,
-#         validators=[MinValueValidator(0)],
-#         verbose_name="Сумма"
-#     )
-#     payment_method = models.CharField(
-#         max_length=10,
-#         choices=PAYMENT_METHODS,
-#         verbose_name="Способ оплаты"
-#     )
-#     income_type = models.CharField(
-#         max_length=100,
-#         verbose_name="Статья дохода"
-#     )
-#     status = models.CharField(
-#         max_length=10,
-#         choices=STATUS_CHOICES,
-#         default='paid',
-#         verbose_name="Статус оплаты"
-#     )
-#     transaction_id = models.CharField(
-#         max_length=50,
-#         unique=True,
-#         verbose_name="Номер транзакции"
-#     )
-#     notes = models.TextField(
-#         blank=True,
-#         verbose_name="Примечания"
-#     )
-#     def get_receipt_url(self):
-#         if self.receipt_pdf:
-#             return self.receipt_pdf.url
-#         return None
-#     class Meta:
-#         verbose_name = "Приход"
-#         verbose_name_plural = "Приходы"
-#         ordering = ['-date']
-    
-#     def __str__(self):
-#         return f"{self.student} - {self.amount}"
-# models.py
+
 from django.db import models
 
 class Teacher(models.Model):
@@ -485,38 +313,7 @@ class Document(models.Model):
 
     def __str__(self):
         return self.title
-    # @property
-    # def file_extension(self):
-    #     name, extension = os.path.splitext(self.file.name)
-    #     return extension.lower()[1:]  # Убираем точку
     
-    # @property
-    # def preview_url(self):
-    #     # Для всех форматов используем Microsoft Viewer
-    #     return f"https://view.officeapps.live.com/op/embed.aspx?src={self.file.url}"
-    # @property
-    # def file_extension(self):
-    #     import os
-    #     _, ext = os.path.splitext(self.file.name)
-    #     return ext.lower()[1:]  # Убираем точку
-    
-    # @property
-    # def preview_url(self):
-    #     url = ""
-    #     if self.file_extension == 'pdf':
-    #         url = self.file.url
-    #     else:
-    #         url = f"https://docs.google.com/gview?url={self.file.url}&embedded=true"
-    
-    #     print(f"Preview URL for {self.title}: {url}")  # Для отладки
-        # return url
-    # def preview_url(self):
-    #     if self.file_extension == 'pdf':
-    #         return self.file.url
-    #     else:
-    #         # Для форматов, которые не поддерживаются напрямую
-    #         return f"https://docs.google.com/gview?url={self.file.url}&embedded=true"
-   
 # models.py
 class TelegramSubscriber(models.Model):
     name = models.CharField(max_length=100, blank=True)
@@ -554,7 +351,13 @@ class Expense(models.Model):
         ('bank_transfer', 'Банковский перевод'),
         ('online', 'Онлайн платеж'),
     ]
-    
+    receipt_number = models.CharField(
+        max_length=50,
+        unique=True,
+        blank=True,
+        null=True,
+        verbose_name="Номер квитанции"
+    )
     date = models.DateField(verbose_name="Дата расхода")
     category = models.CharField(
         max_length=20,
@@ -611,56 +414,24 @@ class Expense(models.Model):
         return f"{self.category} - {self.amount} - {self.date}"
     
     
-# class Expense(models.Model):
-#     CATEGORIES = [
-#         ('salary', 'Зарплата'),
-#         ('materials', 'Учебные материалы'),
-#         ('events', 'Мероприятия'),
-#         ('utilities', 'Коммунальные услуги'),
-#     ]
-    
-#     date = models.DateField(
-#         verbose_name="Дата расхода"
-#     )
-#     category = models.CharField(
-#         max_length=20,
-#         choices=CATEGORIES,
-#         verbose_name="Категория расхода"
-#     )
-#     supplier = models.CharField(
-#         max_length=200,
-#         verbose_name="Поставщик/контрагент"
-#     )
-#     amount = models.DecimalField(
-#         max_digits=10,
-#         decimal_places=2,
-#         validators=[MinValueValidator(0)],
-#         verbose_name="Сумма"
-#     )
-#     payment_method = models.CharField(
-#         max_length=10,
-#         choices=Income.PAYMENT_METHODS,
-#         verbose_name="Способ оплаты"
-#     )
-#     invoice = models.FileField(
-#         upload_to='expenses/invoices/',
-#         blank=True,
-#         null=True,
-#         verbose_name="Счет/фактура"
-#     )
-#     notes = models.TextField(
-#         blank=True,
-#         verbose_name="Комментарий"
-#     )
-    
-#     class Meta:
-#         verbose_name = "Расход"
-#         verbose_name_plural = "Расходы"
-#         ordering = ['-date']
-    
-#     def __str__(self):
-#         return f"{self.category} - {self.amount}"
+    def save(self, *args, **kwargs):
+        # Генерируем уникальный номер квитанции при создании
+        if not self.receipt_number:
+            current_year = timezone.now().strftime('%Y')
+            last_receipt = Expense.objects.filter(
+                receipt_number__startswith=f'RK-{current_year}-'
+            ).order_by('-receipt_number').first()
+            
+            if last_receipt:
+                last_num = int(last_receipt.receipt_number.split('-')[-1])
+                new_num = last_num + 1
+            else:
+                new_num = 1
+                
+            self.receipt_number = f'RK-{current_year}-{str(new_num).zfill(4)}'
+        super().save(*args, **kwargs)
 
+ 
 
 class Reservation(models.Model):
     RESERVATION_STATUS = [

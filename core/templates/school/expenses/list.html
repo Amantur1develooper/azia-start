@@ -130,11 +130,11 @@
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
                              
-                                {% if expense.invoice %}
-                                <a href="{{ expense.invoice.url }}" class="btn btn-outline-info" title="Скачать счет" download>
-                                    <i class="bi bi-download"></i>
+                                {% comment %} {% if expense.invoice %} {% endcomment %}
+                                <a href="{% url 'expense_receipt_pdf' expense.id %}" class="btn btn-outline-info" title="Скачать счет" >
+                                   2 <i class="bi bi-download"></i>
                                 </a>
-                                {% endif %}
+                                {% comment %} {% endif %} {% endcomment %}
                             </div>
                         </td>
                     </tr>

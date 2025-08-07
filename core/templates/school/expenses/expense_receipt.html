@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title>Квитанция расхода {{ expense.receipt_number }}</title>
+    <style type="text/css">
+        body {
+            font-family: Helvetica;
+            font-size: 12pt;
+            margin: 0;
+            padding: 1cm;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .school-name {
+            font-size: 14pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .receipt-title {
+            font-size: 12pt;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 15px 0;
+        }
+        .details {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        .details td {
+            padding: 8px 5px;
+            border: 1px solid #000;
+            vertical-align: top;
+        }
+        .details .label {
+            font-weight: bold;
+            width: 30%;
+            background-color: #f0f0f0;
+        }
+        .footer {
+            margin-top: 40px;
+            width: 100%;
+        }
+        .signature {
+            display: inline-block;
+            width: 45%;
+            vertical-align: top;
+        }
+        .signature-line {
+            border-top: 1px solid #000;
+            width: 80%;
+            margin-top: 40px;
+            padding-top: 5px;
+        }
+        .text-right {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="school-name">{{ school_name }}</div>
+        <div class="receipt-title">РАСХОДНЫЙ КАССОВЫЙ ОРДЕР</div>
+        <div>№ {{ expense.receipt_number }} от {{ current_date }}</div>
+    </div>
+    
+    <table class="details">
+        <tr>
+            <td class="label">Дата расхода:</td>
+            <td>{{ expense_date }}</td>
+        </tr>
+        <tr>
+            <td class="label">Номер документа:</td>
+            <td>{{ expense.id }}</td>
+        </tr>
+        <tr>
+            <td class="label">Категория расхода:</td>
+            <td>{{ expense.get_category_display }}</td>
+        </tr>
+        <tr>
+            <td class="label">Поставщик:</td>
+            <td>{{ expense.supplier }}</td>
+        </tr>
+        <tr>
+            <td class="label">Сумма расхода:</td>
+            <td>{{ expense.amount|floatformat:2 }} сом</td>
+        </tr>
+        <tr>
+            <td class="label">Способ оплаты:</td>
+            <td>{{ expense.get_payment_method_display }}</td>
+        </tr>
+        <tr>
+            <td class="label">Основание:</td>
+            <td>{{ expense.notes|default:"Оплата услуг" }}</td>
+        </tr>
+        <tr>
+            <td class="label">Оформил:</td>
+            <td>{{  request.user}}</td>
+        </tr>
+        <tr>
+            <td class="label">Оформил:</td>
+            <td>{{ request.user }}</td>  <!-- Используем новое поле -->
+        </tr>
+    </table>
+    
+    <div class="footer">
+        <div class="signature">
+            <div>Главный бухгалтер:</div>
+            <div class="signature-line">{{ accountant_name }}</div>
+        </div>
+        <div class="signature text-right">
+            <div>Директор:</div>
+            <div class="signature-line">{{ director_name }}</div>
+        </div>
+    </div>
+</body>
+</html>

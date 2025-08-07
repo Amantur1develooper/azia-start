@@ -517,11 +517,11 @@ def student_search(request):
     return JsonResponse({'results': results})
 # Доходы
 from django.db.models import Q
-from datetime import datetime
+# from datetime import datetime
 from django.http import HttpResponse
 import csv
 from django.db.models import Q, Sum
-from datetime import datetime
+# from datetime import datetime
 from django.http import HttpResponse
 import csv
 
@@ -1129,47 +1129,8 @@ class ReceiptPrintView(LoginRequiredMixin, DetailView):
             context['paid_months'] = None
             
         return context
-# class ReceiptPrintView(LoginRequiredMixin, DetailView):
-#     template_name = 'school/receipt_print.html'
-    
-#     def get_object(self):
-#         student = get_object_or_404(Student, pk=self.kwargs['student_id'])
-#         payment = get_object_or_404(Income, pk=self.kwargs['payment_id'])
-#         return {'student': student, 'payment': payment}
-    
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['student'] = self.object['student']
-#         context['payment'] = self.object['payment']
-        
-#         # Получаем текущий учебный год
-#         current_year = AcademicYear.objects.filter(is_current=True).first()
-        
-#         # Вычисляем остаток к оплате
-#         remaining_payment = self.object['student'].get_remaining_payment(current_year)
-#         context['remaining_payment'] = remaining_payment
-        
-#         # Получаем список оплаченных месяцев (если это помесячная оплата)
-#         if self.object['payment'].paid_months.exists():
-#             paid_months = [mp.get_month_display() for mp in self.object['payment'].paid_months.all()]
-#             context['paid_months'] = ", ".join(paid_months)
-#         else:
-#             context['paid_months'] = None
-            
-#         return context
-# class ReceiptPrintView(LoginRequiredMixin, DetailView):
-#     template_name = 'school/receipt_print.html'
-    
-#     def get_object(self):
-#         student = get_object_or_404(Student, pk=self.kwargs['student_id'])
-#         payment = get_object_or_404(Income, pk=self.kwargs['payment_id'])
-#         return {'student': student, 'payment': payment}
-    
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['student'] = self.object['student']
-#         context['payment'] = self.object['payment']
-#         return context
+
+
 from django.db.models import Sum, Q
 from datetime import datetime, timedelta
 class ExpenseListView(LoginRequiredMixin, ListView):
@@ -1312,96 +1273,7 @@ class ExpenseListView(LoginRequiredMixin, ListView):
     )
         wb.save(response)
         return response
-    # def export_to_excel(self):
-    #     queryset = self.get_queryset()
-    #     date_from = self.request.GET.get('date_from', 'не указана')
-    #     date_to = self.request.GET.get('date_to', 'не указана')
-        
-    #     # Создаем Excel-файл
-    #     wb = Workbook()
-    #     ws = wb.active
-    #     ws.title = "Отчет по расходам"
-        
-    #     # Стили
-    #     header_fill = PatternFill(start_color="FFD700", end_color="FFD700", fill_type="solid")
-    #     header_font = Font(bold=True)
-    #     center_aligned = Alignment(horizontal='center')
-    #     right_aligned = Alignment(horizontal='right')
-    #     border = Border(
-    #         left=Side(style='thin'),
-    #         right=Side(style='thin'),
-    #         top=Side(style='thin'),
-    #         bottom=Side(style='thin')
-    #     )
-
-    #     # Заголовок отчета
-    #     ws.append(["Отчет по расходам"])
-    #     ws.merge_cells('A1:G1')
-    #     ws['A1'].font = Font(bold=True, size=14)
-    #     ws['A1'].alignment = center_aligned
-        
-    #     ws.append([f"Период: с {date_from} по {date_to}"])
-    #     ws.merge_cells('A2:G2')
-    #     ws['A2'].alignment = center_aligned
-        
-    #     ws.append([])  # Пустая строка
-
-    #     # Заголовки таблицы
-    #     headers = [
-    #         'Дата', 'Категория', 'Поставщик', 
-    #         'Сумма (сом)', 'Способ оплаты', 
-    #         'Номер счета', 'Примечания'
-    #     ]
-        
-    #     for col_num, header in enumerate(headers, 1):
-    #         cell = ws.cell(row=4, column=col_num, value=header)
-    #         cell.fill = header_fill
-    #         cell.font = header_font
-    #         cell.alignment = center_aligned
-    #         cell.border = border
-
-    #     # Данные
-    #     for row_num, expense in enumerate(queryset, 5):
-    #         ws.cell(row=row_num, column=1, value=expense.date).border = border
-    #         ws.cell(row=row_num, column=2, value=expense.get_category_display()).border = border
-    #         ws.cell(row=row_num, column=3, value=expense.supplier).border = border
-    #         ws.cell(row=row_num, column=4, value=float(expense.amount)).border = border
-    #         ws.cell(row=row_num, column=5, value=expense.get_payment_method_display()).border = border
-    #         ws.cell(row=row_num, column=6, value=expense.invoice_number or '').border = border
-    #         ws.cell(row=row_num, column=7, value=expense.notes or '').border = border
-
-    #         # Форматируем числовые ячейки
-    #         ws.cell(row=row_num, column=4).number_format = '#,##0.00'
-    #         ws.cell(row=row_num, column=4).alignment = right_aligned
-
-    #     # Итоговая строка
-    #     last_row = len(queryset) + 5
-    #     ws.cell(row=last_row, column=3, value="ИТОГО:").font = header_font
-    #     ws.cell(row=last_row, column=4, 
-    #            value=f"=SUM(D5:D{last_row-1})").font = header_font
-    #     ws.cell(row=last_row, column=4).number_format = '#,##0.00'
-    #     ws.cell(row=last_row, column=4).alignment = right_aligned
-
-    #     # Настраиваем ширину столбцов
-    #     for col in ws.columns:
-    #         max_length = 0
-    #         column = col[0].column_letter
-    #         for cell in col:
-    #             try:
-    #                 if len(str(cell.value)) > max_length:
-    #                     max_length = len(str(cell.value))
-    #             except:
-    #                 pass
-    #         adjusted_width = (max_length + 2) * 1.2
-    #         ws.column_dimensions[column].width = adjusted_width
-
-    #     # Формируем ответ
-    #     response = HttpResponse(
-    #         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    #         headers={'Content-Disposition': 'attachment; filename="expense_report.xlsx"'},
-    #     )
-    #     wb.save(response)
-    #     return response
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
@@ -1423,93 +1295,12 @@ class ExpenseListView(LoginRequiredMixin, ListView):
         context['expenses_count'] = queryset.count()
         
         # Даты по умолчанию (последние 30 дней)
-        today = datetime.now().date()
+        today = datetime.datetime.now().date()
         context['default_date_from'] = (today - timedelta(days=30)).strftime('%Y-%m-%d')
         context['default_date_to'] = today.strftime('%Y-%m-%d')
         
         return context
-    
-# class ExpenseListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-#     model = Expense
-#     template_name = 'school/expenses/list.html'
-#     context_object_name = 'expenses'
-#     paginate_by = 20
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
-    
-#     def get_queryset(self):
-#         queryset = super().get_queryset().select_related('category')
-        
-#         # Фильтрация по дате
-#         date_from = self.request.GET.get('date_from')
-#         date_to = self.request.GET.get('date_to')
-        
-#         if date_from:
-#             queryset = queryset.filter(date__gte=date_from)
-#         if date_to:
-#             queryset = queryset.filter(date__lte=date_to)
-            
-#         # Фильтрация по категории
-#         category = self.request.GET.get('category')
-#         if category:
-#             queryset = queryset.filter(category=category)
-            
-#         # Фильтрация по способу оплаты
-#         payment_method = self.request.GET.get('payment_method')
-#         if payment_method:
-#             queryset = queryset.filter(payment_method=payment_method)
-            
-#         # Фильтрация по поставщику (поиск)
-#         search = self.request.GET.get('search')
-#         if search:
-#             queryset = queryset.filter(
-#                 Q(supplier__icontains=search) |
-#                 Q(notes__icontains=search) |
-#                 Q(invoice_number__icontains=search)
-#             )
-            
-#         # Сортировка
-#         sort = self.request.GET.get('sort', '-date')
-#         queryset = queryset.order_by(sort)
-        
-#         return queryset
-    
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-        
-#         # Параметры фильтрации
-#         context['date_from'] = self.request.GET.get('date_from', '')
-#         context['date_to'] = self.request.GET.get('date_to', '')
-#         context['category'] = self.request.GET.get('category', '')
-#         context['payment_method'] = self.request.GET.get('payment_method', '')
-#         context['search'] = self.request.GET.get('search', '')
-#         context['sort'] = self.request.GET.get('sort', '-date')
-        
-#         # Варианты для фильтров
-#         context['category_choices'] = Expense.CATEGORIES
-#         context['payment_method_choices'] = Expense.PAYMENT_METHODS
-        
-#         # Статистика
-#         queryset = self.get_queryset()
-#         context['total_amount'] = queryset.aggregate(Sum('amount'))['amount__sum'] or 0
-#         context['expenses_count'] = queryset.count()
-        
-#         # Даты по умолчанию (последние 30 дней)
-#         today = datetime.now().date()
-#         context['default_date_from'] = (today - timedelta(days=30)).strftime('%Y-%m-%d')
-#         context['default_date_to'] = today.strftime('%Y-%m-%d')
-        
-#         return context
-# class ExpenseListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-#     model = Expense
-#     template_name = 'school/expenses/list.html'
-#     context_object_name = 'expenses'
-#     paginate_by = 20
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
-    
+ 
     
 class ExpenseCreateView(LoginRequiredMixin, CreateView):
     model = Expense
@@ -1958,7 +1749,7 @@ class GalleryListView(ListView):
 #     model = GalleryEvent
 #     template_name = 'gallery.html'
 #     context_object_name = 'events'
-#     paginate_by = 12
+
 
 def teacher_view1(request):
     model = Teacher.objects.all()
@@ -1969,3 +1760,315 @@ class GalleryDetailView(DetailView):
     context_object_name = 'event'
     slug_field = 'slug'
     slug_url_kwarg = 'slug'
+    
+from django.views.generic import DetailView
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.http import HttpResponse
+import os
+from django.template.loader import get_template
+from django.http import HttpResponse
+from xhtml2pdf import pisa
+from io import BytesIO
+# import datetime
+from django.template.loader import get_template
+from django.http import HttpResponse
+from xhtml2pdf import pisa
+from io import BytesIO
+import datetime
+from reportlab.pdfgen import canvas
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+# from weasyprint import HTML
+
+# def generate_pdf(request):
+#     html = HTML(string=render_to_string('template.html', context))
+#     pdf = html.write_pdf()
+#     return HttpResponse(pdf, content_type='application/pdf')
+from weasyprint import HTML
+# from django.template.loader import render_to_string
+# def expense_receipt_pdf(request, pk):
+#     expense = get_object_or_404(Expense, pk=pk)
+#     context = {
+#         'expense': expense,
+#         'expense_date': expense.date.strftime("%d.%m.%Y") if expense.date else "",
+#         'current_date': timezone.now().strftime("%d.%m.%Y"),
+#         'school_name': "Ваша школа",
+#         'director_name': "Иванов И.И.",
+#         'accountant_name': "Петрова П.П.",
+#         'created_by_name': expense.created_by.get_full_name() if expense.created_by else "Не указан",
+#     }
+#     html = HTML(string=render_to_string('school/expenses/expense_receipt.html', context))
+#     pdf = html.write_pdf()
+    
+#     response = HttpResponse(pdf, content_type='application/pdf')
+#     response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
+#     return response
+
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import cm
+from .pdf_utils import register_fonts
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+
+def expense_receipt_pdf(request, pk):
+    expense = get_object_or_404(Expense, pk=pk)
+    
+    # Регистрируем шрифты
+    register_fonts()
+    
+    # Создаем HttpResponse с заголовками PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
+    
+    # Создаем PDF документ
+    doc = SimpleDocTemplate(response, pagesize=A4)
+    
+    # Контейнер для элементов PDF
+    elements = []
+    
+    # Стили текста
+    styles = getSampleStyleSheet()
+    style_normal = styles['Normal']
+    style_heading = styles['Heading1']
+    
+    # Устанавливаем шрифт для стилей
+    style_normal.fontName = 'Arial'
+    style_heading.fontName = 'Arial'
+    
+    # Добавляем заголовок
+    elements.append(Paragraph("РАСХОДНЫЙ КАССОВЫЙ ОРДЕР", style_heading))
+    elements.append(Paragraph(f"№ {expense.receipt_number or 'БН'} от {timezone.now().strftime('%d.%m.%Y')}", style_normal))
+    
+    # Подготавливаем данные для таблицы
+    data = [
+        ["Дата расхода:", expense.date.strftime("%d.%m.%Y") if expense.date else ""],
+        ["Номер документа:", expense.id or "-"],
+        ["Категория расхода:", expense.get_category_display()],
+        ["Поставщик:", expense.supplier],
+        ["Сумма расхода:", f"{expense.amount:.2f} сом"],
+        ["Способ оплаты:", expense.get_payment_method_display()],
+        ["Основание:", expense.notes or "Оплата услуг"],
+        ["Оформил:", expense.created_by if expense.created_by else "Не указан"],
+    ]
+    
+    # Создаем таблицу
+    table = Table(data, colWidths=[5*cm, 10*cm])
+    table.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (-1, -1), 'Arial'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+    ]))
+    
+    elements.append(table)
+    
+    # Добавляем подписи
+    elements.append(Paragraph("Главный бухгалтер: ___________________ Петрова П.П.", style_normal))
+    elements.append(Paragraph("Директор: ___________________ Иванов И.И.", style_normal))
+    
+    # Собираем PDF
+    doc.build(elements)
+    
+    return response
+# def expense_receipt_pdf(request, pk):
+#     expense = get_object_or_404(Expense, pk=pk)
+#     response = HttpResponse(content_type='application/pdf')
+#     p = canvas.Canvas(response, pagesize=A4)
+    
+#     # Настройки
+#     p.setFont("Helvetica", 12)
+#     width, height = A4
+    
+#     # Добавляем текст
+#     p.drawString(2*cm, height-2*cm, "РАСХОДНЫЙ КАССОВЫЙ ОРДЕР")
+#     p.drawString(2*cm, height-3*cm, f"№ {expense.receipt_number or 'БН'} от {timezone.now().strftime('%d.%m.%Y')}")
+   
+    
+#     # Проверка данных
+#     if not expense.receipt_number:
+#         expense.receipt_number = "БН"  # Без номера, если не установлен
+    
+#     context = {
+#         'expense': expense,
+#         'expense_date': expense.date.strftime("%d.%m.%Y") if expense.date else "",
+#         'current_date': timezone.now().strftime("%d.%m.%Y"),
+#         'school_name': "Ваша школа",
+#         'director_name': "Иванов И.И.",
+#         'accountant_name': "Петрова П.П.",
+#         'created_by_name': expense.created_by.get_full_name() if expense.created_by else "Не указан",
+#     }
+    
+#     template = get_template('school/expenses/expense_receipt.html')
+#     html = template.render(context)
+    
+#     # Для отладки - посмотрим HTML
+#     print(html)  # Проверьте вывод в консоли
+    
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
+    
+#     # Создаем PDF с настройками для кириллицы
+#     pisa_status = pisa.CreatePDF(
+#         html.encode('UTF-8'),
+#         dest=response,
+#         encoding='UTF-8',
+#         default_css='''
+#             @page { size: A4; margin: 1cm; }
+#             body { font-family: "Helvetica"; }
+#         '''
+#     )
+    
+#     if pisa_status.err:
+#         return HttpResponse(f'Ошибка генерации PDF: {pisa_status.err}', status=500)
+    
+#     p.showPage()
+#     p.save()
+#     return response
+
+
+# def expense_receipt_pdf(request, pk):
+#     expense = get_object_or_404(Expense, pk=pk)
+    
+#     context = {
+#         'expense': expense,
+#         'expense_date': expense.date.strftime("%d.%m.%Y"),
+#         'current_date': datetime.datetime.now().strftime("%d.%m.%Y"),
+#         'school_name': "Ваша школа",
+#         'director_name': "Иванов И.И.",
+#         'accountant_name': "Петрова П.П.",
+#     }
+    
+#     template = get_template('school/expenses/expense_receipt.html')
+#     html = template.render(context)
+    
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = f'inline; filename="receipt_{expense.receipt_number}.pdf"'
+#     print(html)
+#     # Создаем PDF с указанием кодировки
+#     pisa_status = pisa.CreatePDF(
+#         html.encode("UTF-8"),
+#         dest=response,
+#         encoding='UTF-8',
+#         default_css='''
+#             @page {
+#                 size: A4;
+#                 margin: 1cm;
+#             }
+#             body {
+#                 font-family: "Helvetica", "Arial", sans-serif;
+#             }
+#         '''
+#     )
+   
+#     if pisa_status.err:
+#         return HttpResponse('Ошибка генерации PDF', status=500)
+#     return response
+# def expense_receipt_pdf(request, pk):
+#     expense = get_object_or_404(Expense, pk=pk)
+    
+#     # Форматируем даты
+#     expense_date = expense.date.strftime("%d.%m.%Y")
+#     current_date = datetime.now().strftime("%d.%m.%Y")
+    
+#     # current_date = datetime.datetime.now().strftime("%d.%m.%Y")
+    
+#     context = {
+#         'expense': expense,
+#         'expense_date': expense_date,
+#         'current_date': current_date,
+#         'school_name': "Ваша школа",
+#         'director_name': "Иванов И.И.",
+#         'accountant_name': "Петрова П.П.",
+#     }
+    
+#     # Рендеринг HTML
+#     template = get_template('school/expenses/expense_receipt.html')
+#     html = template.render(context)
+    
+#     # Создание PDF в памяти
+#     result = BytesIO()
+    
+#     # Настройки для корректного отображения кириллицы
+#     pdf = pisa.pisaDocument(
+#         BytesIO(html.encode("UTF-8")),
+#         dest=result,
+#         encoding='UTF-8',
+#         default_css="""
+#             @page {
+#                 size: A4;
+#                 margin: 1cm;
+#             }
+#             body {
+#                 font-family: "DejaVu Sans", sans-serif;
+#             }
+#         """
+#     )
+    
+#     if not pdf.err:
+#         response = HttpResponse(result.getvalue(), content_type='application/pdf')
+#         filename = f"expense_receipt_{expense.receipt_number}.pdf"
+#         response['Content-Disposition'] = f'inline; filename="{filename}"'
+#         return response
+    
+#     return HttpResponse('Ошибка генерации PDF', status=500)
+
+ 
+
+# Добавьте эту функцию для обработки ресурсов
+def fetch_resources(uri, rel):
+    import os
+    from django.conf import settings
+    path = os.path.join(settings.MEDIA_ROOT, uri.replace(settings.MEDIA_URL, ""))
+    return path
+
+from django.views.generic import DetailView
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.http import HttpResponse
+import os
+
+class ExpenseReceiptView(DetailView):
+    model = Expense
+    template_name = 'expense_receipt.html'
+    
+    def get(self, request, *args, **kwargs):
+        expense = self.get_object()
+        context = self.get_context_data(object=expense)
+        
+        # Рендеринг HTML
+        template = get_template(self.template_name)
+        html = template.render(context)
+        
+        # Создание PDF
+        response = HttpResponse(content_type='application/pdf')
+        filename = f"expense_receipt_{expense.id}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        # Генерация PDF
+        pisa_status = pisa.CreatePDF(html, dest=response)
+        if pisa_status.err:
+            return HttpResponse('Ошибка генерации PDF', status=500)
+        
+        # # Сохранение PDF в модель
+        # if not expense.receipt_pdf:
+        #     filepath = f'expense_receipts/{filename}'
+        #     with open(filepath, 'wb') as f:
+        #         f.write(response.content)
+        #     expense.receipt_pdf = filepath
+        #     expense.save()
+            
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        expense = self.object
+        context['expense'] = expense
+        context['school_name'] = "Ваша школа"  # Замените на реальное название
+        context['current_date'] = timezone.now().strftime("%d.%m.%Y")
+        return context
