@@ -38,7 +38,7 @@ urlpatterns = [
      ReceiptPrintView.as_view(), 
      name='print-receipt'),
     path('expenses/<int:pk>/receipt/', views.expense_receipt_pdf, name='expense_receipt_pdf'),
-    path('expenses/<int:pk>/receipt/', views.ExpenseReceiptView.as_view(), name='expense_receipt'),
+    # path('expenses/<int:pk>/receipt/', views.ExpenseReceiptView.as_view(), name='expense_receipt'),
     path('documents/', DocumentListView.as_view(), name='documents'),
     path('accounts/login/', login_view, name='login'),
     path('reports/class-debts/', ClassDebtsReportView.as_view(), name='class-debts-report'),

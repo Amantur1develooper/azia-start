@@ -1324,14 +1324,7 @@ class ExpenseCreateView(LoginRequiredMixin, CreateView):
             f"Расход на сумму {form.instance.amount} сом успешно добавлен!"
         )
         return super().form_valid(form)
-# class ExpenseCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-#     model = Expense
-#     form_class = ExpenseForm
-#     template_name = 'school/expenses/form.html'
-#     success_url = reverse_lazy('expense-list')
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
+
 
 # Отчеты
 @login_required
@@ -1356,35 +1349,7 @@ class EmployeeCreateView(LoginRequiredMixin, CreateView):
     
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))  # Вернет HttpResponse
-# class EmployeeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-#     model = Employee
-#     form_class = EmployeeForm
-#     template_name = 'school/employees/form.html'
-#     success_url = reverse_lazy('employee-list')
-    
-#     def test_func(self):
-#         return is_admin(self.request.user)
-    
-#     def form_valid(self, form):
-#         form.instance.created_by = self.request.user
-#         messages.success(self.request, "Сотрудник успешно добавлен")
-# class EmployeeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-#     model = Employee
-#     fields = [
-#         'full_name', 'birth_date', 'gender', 'address', 'phone', 'email',
-#         'position', 'contract_type', 'contract_number', 'contract_start_date',
-#         'contract_end_date', 'monthly_salary', 'contract_file', 'hire_date', 'notes'
-#     ]
-#     template_name = 'school/employees/form.html'
-#     success_url = reverse_lazy('employee-list')
-    
-#     def test_func(self):
-#         return is_admin(self.request.user)
-    
-#     def form_valid(self, form):
-#         form.instance.created_by = self.request.user
-#         messages.success(self.request, "Сотрудник успешно добавлен")
-#         return super().form_valid(form)
+
 
 class EmployeeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Employee
@@ -1398,24 +1363,6 @@ class EmployeeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, "Данные сотрудника обновлены")
         return super().form_valid(form)
-
-# class EmployeeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
-#     model = Employee
-#     fields = [
-#         'full_name', 'birth_date', 'gender', 'address', 'phone', 'email',
-#         'position', 'contract_type', 'contract_number', 'contract_start_date',
-#         'contract_end_date', 'monthly_salary', 'contract_file', 'hire_date', 
-#         'is_active', 'notes'
-#     ]
-#     template_name = 'school/employees/form.html'
-#     success_url = reverse_lazy('employee-list')
-    
-#     def test_func(self):
-#         return is_admin(self.request.user)
-    
-#     def form_valid(self, form):
-#         messages.success(self.request, "Данные сотрудника обновлены")
-#         return super().form_valid(form)
 
 class EmployeeListView(LoginRequiredMixin, ListView):
     model = Employee
@@ -1462,23 +1409,7 @@ class SalaryPaymentCreateView(LoginRequiredMixin, CreateView):
             f"Зарплатная выплата для {form.instance.employee} успешно добавлена!"
         )
         return super().form_valid(form)
-# class SalaryPaymentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-#     model = SalaryPayment
-#     fields = ['employee', 'amount', 'payment_date', 
-#               'for_month', 'payment_method', 'is_bonus', 'notes']
-#     template_name = 'school/employees/salary_payment_form.html'
-#     success_url = reverse_lazy('employee-list')
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
-    
-#     def form_valid(self, form):
-#         form.instance.created_by = self.request.user
-#         messages.success(
-#             self.request,
-#             f"Зарплатная выплата для {form.instance.employee} успешно добавлена!"
-#         )
-#         return super().form_valid(form)
+
 class SalaryReportView(LoginRequiredMixin, ListView):
     template_name = 'school/employees/salary_report.html'
     context_object_name = 'payments'
@@ -1569,33 +1500,7 @@ class SalaryReportView(LoginRequiredMixin, ListView):
             Sum('amount')
         )['amount__sum'] or 0
         
-        return context
-# class SalaryReportView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-#     template_name = 'school/employees/salary_report.html'
-#     context_object_name = 'payments'
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
-    
-#     def get_queryset(self):
-#         year = self.request.GET.get('year')
-#         month = self.request.GET.get('month')
-        
-#         # queryset = SalaryPayment.objects.select_related('employee', 'contract')
-        
-#         if year:
-#             queryset = queryset.filter(for_month__year=year)
-#         if month:
-#             queryset = queryset.filter(for_month__month=month)
-            
-#         return queryset.order_by('-for_month', 'employee__full_name')
-    
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['total_amount'] = self.get_queryset().aggregate(
-#             Sum('amount')
-#         )['amount__sum'] or 0
-#         return context
+        return context      
     
     
 class EmployeeDetailView(LoginRequiredMixin, DetailView):
@@ -1700,56 +1605,8 @@ class GalleryListView(ListView):
         context['current_year'] = self.request.GET.get('year', 'all')
         
         return context
-# class GalleryListView(ListView):
-#     model = GalleryEvent
-#     template_name = 'gallery.html'
-#     context_object_name = 'events'
-#     paginate_by = 12
-#     def get_queryset(self):
-#         queryset = GalleryEvent.objects.annotate(
-#             image_count=Count('images')
-#         ).filter(image_count__gt=0)
-        
-#         # Фильтрация по году
-#         year = self.request.GET.get('year')
-#         if year and year != 'all':
-#             queryset = queryset.filter(date__year=year)
-        
-#         return queryset.order_by('-date')
-#     # def get_queryset(self):
-#     #     return GalleryEvent.objects.annotate(
-#     #         image_count=Count('images')
-#     #     ).filter(image_count__gt=0).order_by('-date')
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-        
-#         # Получаем уникальные года из событий
-#         # years = GalleryEvent.objects.annotate(
-#         #     year=ExtractYear('date')
-#         # ).values_list('year', flat=True).distinct().order_by('-year')
-#         years = GalleryEvent.objects.values_list('date__year', flat=True).distinct().order_by('-date__year')
-#         # Добавляем в контекст
-#         context['years'] = years
-#         context['current_year'] = self.request.GET.get('year', 'all')
-        
-#         return context
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-        
-    #     # Получаем уникальные года из событий
-    #     years = GalleryEvent.objects.dates('date', 'year').order_by('-date')
-    #     year_list = [year.year for year in years]
-        
-    #     # Добавляем в контекст
-    #     context['years'] = year_list
-    #     context['current_year'] = self.request.GET.get('year', 'all')
-        
-    #     return context
-# class GalleryListView(ListView):
-#     model = GalleryEvent
-#     template_name = 'gallery.html'
-#     context_object_name = 'events'
-
+    
+    
 
 def teacher_view1(request):
     model = Teacher.objects.all()
@@ -1780,31 +1637,8 @@ from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
-# from weasyprint import HTML
 
-# def generate_pdf(request):
-#     html = HTML(string=render_to_string('template.html', context))
-#     pdf = html.write_pdf()
-#     return HttpResponse(pdf, content_type='application/pdf')
-from weasyprint import HTML
-# from django.template.loader import render_to_string
-# def expense_receipt_pdf(request, pk):
-#     expense = get_object_or_404(Expense, pk=pk)
-#     context = {
-#         'expense': expense,
-#         'expense_date': expense.date.strftime("%d.%m.%Y") if expense.date else "",
-#         'current_date': timezone.now().strftime("%d.%m.%Y"),
-#         'school_name': "Ваша школа",
-#         'director_name': "Иванов И.И.",
-#         'accountant_name': "Петрова П.П.",
-#         'created_by_name': expense.created_by.get_full_name() if expense.created_by else "Не указан",
-#     }
-#     html = HTML(string=render_to_string('school/expenses/expense_receipt.html', context))
-#     pdf = html.write_pdf()
-    
-#     response = HttpResponse(pdf, content_type='application/pdf')
-#     response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
-#     return response
+
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
@@ -1869,206 +1703,10 @@ def expense_receipt_pdf(request, pk):
     elements.append(table)
     
     # Добавляем подписи
-    elements.append(Paragraph("Главный бухгалтер: ___________________ Петрова П.П.", style_normal))
-    elements.append(Paragraph("Директор: ___________________ Иванов И.И.", style_normal))
+    elements.append(Paragraph("Главный бухгалтер: ___________________ ", style_normal))
+    elements.append(Paragraph("Директор: ___________________ Муртазо У.Б.", style_normal))
     
     # Собираем PDF
     doc.build(elements)
     
     return response
-# def expense_receipt_pdf(request, pk):
-#     expense = get_object_or_404(Expense, pk=pk)
-#     response = HttpResponse(content_type='application/pdf')
-#     p = canvas.Canvas(response, pagesize=A4)
-    
-#     # Настройки
-#     p.setFont("Helvetica", 12)
-#     width, height = A4
-    
-#     # Добавляем текст
-#     p.drawString(2*cm, height-2*cm, "РАСХОДНЫЙ КАССОВЫЙ ОРДЕР")
-#     p.drawString(2*cm, height-3*cm, f"№ {expense.receipt_number or 'БН'} от {timezone.now().strftime('%d.%m.%Y')}")
-   
-    
-#     # Проверка данных
-#     if not expense.receipt_number:
-#         expense.receipt_number = "БН"  # Без номера, если не установлен
-    
-#     context = {
-#         'expense': expense,
-#         'expense_date': expense.date.strftime("%d.%m.%Y") if expense.date else "",
-#         'current_date': timezone.now().strftime("%d.%m.%Y"),
-#         'school_name': "Ваша школа",
-#         'director_name': "Иванов И.И.",
-#         'accountant_name': "Петрова П.П.",
-#         'created_by_name': expense.created_by.get_full_name() if expense.created_by else "Не указан",
-#     }
-    
-#     template = get_template('school/expenses/expense_receipt.html')
-#     html = template.render(context)
-    
-#     # Для отладки - посмотрим HTML
-#     print(html)  # Проверьте вывод в консоли
-    
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
-    
-#     # Создаем PDF с настройками для кириллицы
-#     pisa_status = pisa.CreatePDF(
-#         html.encode('UTF-8'),
-#         dest=response,
-#         encoding='UTF-8',
-#         default_css='''
-#             @page { size: A4; margin: 1cm; }
-#             body { font-family: "Helvetica"; }
-#         '''
-#     )
-    
-#     if pisa_status.err:
-#         return HttpResponse(f'Ошибка генерации PDF: {pisa_status.err}', status=500)
-    
-#     p.showPage()
-#     p.save()
-#     return response
-
-
-# def expense_receipt_pdf(request, pk):
-#     expense = get_object_or_404(Expense, pk=pk)
-    
-#     context = {
-#         'expense': expense,
-#         'expense_date': expense.date.strftime("%d.%m.%Y"),
-#         'current_date': datetime.datetime.now().strftime("%d.%m.%Y"),
-#         'school_name': "Ваша школа",
-#         'director_name': "Иванов И.И.",
-#         'accountant_name': "Петрова П.П.",
-#     }
-    
-#     template = get_template('school/expenses/expense_receipt.html')
-#     html = template.render(context)
-    
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = f'inline; filename="receipt_{expense.receipt_number}.pdf"'
-#     print(html)
-#     # Создаем PDF с указанием кодировки
-#     pisa_status = pisa.CreatePDF(
-#         html.encode("UTF-8"),
-#         dest=response,
-#         encoding='UTF-8',
-#         default_css='''
-#             @page {
-#                 size: A4;
-#                 margin: 1cm;
-#             }
-#             body {
-#                 font-family: "Helvetica", "Arial", sans-serif;
-#             }
-#         '''
-#     )
-   
-#     if pisa_status.err:
-#         return HttpResponse('Ошибка генерации PDF', status=500)
-#     return response
-# def expense_receipt_pdf(request, pk):
-#     expense = get_object_or_404(Expense, pk=pk)
-    
-#     # Форматируем даты
-#     expense_date = expense.date.strftime("%d.%m.%Y")
-#     current_date = datetime.now().strftime("%d.%m.%Y")
-    
-#     # current_date = datetime.datetime.now().strftime("%d.%m.%Y")
-    
-#     context = {
-#         'expense': expense,
-#         'expense_date': expense_date,
-#         'current_date': current_date,
-#         'school_name': "Ваша школа",
-#         'director_name': "Иванов И.И.",
-#         'accountant_name': "Петрова П.П.",
-#     }
-    
-#     # Рендеринг HTML
-#     template = get_template('school/expenses/expense_receipt.html')
-#     html = template.render(context)
-    
-#     # Создание PDF в памяти
-#     result = BytesIO()
-    
-#     # Настройки для корректного отображения кириллицы
-#     pdf = pisa.pisaDocument(
-#         BytesIO(html.encode("UTF-8")),
-#         dest=result,
-#         encoding='UTF-8',
-#         default_css="""
-#             @page {
-#                 size: A4;
-#                 margin: 1cm;
-#             }
-#             body {
-#                 font-family: "DejaVu Sans", sans-serif;
-#             }
-#         """
-#     )
-    
-#     if not pdf.err:
-#         response = HttpResponse(result.getvalue(), content_type='application/pdf')
-#         filename = f"expense_receipt_{expense.receipt_number}.pdf"
-#         response['Content-Disposition'] = f'inline; filename="{filename}"'
-#         return response
-    
-#     return HttpResponse('Ошибка генерации PDF', status=500)
-
- 
-
-# Добавьте эту функцию для обработки ресурсов
-def fetch_resources(uri, rel):
-    import os
-    from django.conf import settings
-    path = os.path.join(settings.MEDIA_ROOT, uri.replace(settings.MEDIA_URL, ""))
-    return path
-
-from django.views.generic import DetailView
-from django.template.loader import get_template
-from xhtml2pdf import pisa
-from django.http import HttpResponse
-import os
-
-class ExpenseReceiptView(DetailView):
-    model = Expense
-    template_name = 'expense_receipt.html'
-    
-    def get(self, request, *args, **kwargs):
-        expense = self.get_object()
-        context = self.get_context_data(object=expense)
-        
-        # Рендеринг HTML
-        template = get_template(self.template_name)
-        html = template.render(context)
-        
-        # Создание PDF
-        response = HttpResponse(content_type='application/pdf')
-        filename = f"expense_receipt_{expense.id}.pdf"
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
-        # Генерация PDF
-        pisa_status = pisa.CreatePDF(html, dest=response)
-        if pisa_status.err:
-            return HttpResponse('Ошибка генерации PDF', status=500)
-        
-        # # Сохранение PDF в модель
-        # if not expense.receipt_pdf:
-        #     filepath = f'expense_receipts/{filename}'
-        #     with open(filepath, 'wb') as f:
-        #         f.write(response.content)
-        #     expense.receipt_pdf = filepath
-        #     expense.save()
-            
-        return response
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        expense = self.object
-        context['expense'] = expense
-        context['school_name'] = "Ваша школа"  # Замените на реальное название
-        context['current_date'] = timezone.now().strftime("%d.%m.%Y")
-        return context
