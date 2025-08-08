@@ -51,7 +51,7 @@ urlpatterns = [
     path('incomes/<int:pk>/receipt/', download_receipt_view, name='download-receipt'),
     # Доходы
     
-  
+    path('graduates/', views.graduates_list, name='graduates_list'),
     path('gallery/', GalleryListView.as_view(), name='gallery'),
     path('gallery/<slug:slug>/', GalleryDetailView.as_view(), name='gallery_detail'),
     

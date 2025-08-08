@@ -1,0 +1,514 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+{% block content %}
+<section class="graduates-section">
+    <div class="container">
+        <div class="section-header">
+            <h1 class="section-title">Наши выпускники</h1>
+            <p class="section-subtitle">Гордость школы - успешные выпускники</p>
+        </div>
+
+        <!-- Фильтр по годам выпуска -->
+        <div class="graduates-filters">
+            <button class="filter-btn active" data-filter="all">Все годы</button>
+            {% for year in unique_years %}
+                <button class="filter-btn" data-filter="{{ year }}">{{ year }} год</button>
+            {% endfor %}
+        </div>
+
+        <!-- Список выпускников -->
+        <div class="graduates-grid">
+            {% for graduate in graduates %}
+            <div class="graduate-card" 
+                 data-year="{{ graduate.graduation_year }}"
+                 data-id="{{ graduate.id }}"
+                 data-name="{{ graduate.username }}"
+                 data-year="{{ graduate.graduation_year }}"
+                 data-achievements="{{ graduate.achievements|default:'' }}"
+                 data-image="{% if graduate.image %}{{ graduate.image.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}">
+                
+                <div class="graduate-image-container">
+                    {% if graduate.image %}
+                        <img src="{{ graduate.image.url }}" alt="{{ graduate.username }}" class="graduate-image">
+                    {% else %}
+                        <img src="{% static 'images/default-profile.png' %}" alt="{{ graduate.username }}" class="graduate-image">
+                    {% endif %}
+                    <div class="graduation-year">{{ graduate.graduation_year }}</div>
+                </div>
+                
+                <div class="graduate-info">
+                    <h3 class="graduate-name">{{ graduate.username }}</h3>
+                    <p class="graduate-achievements">
+                        {{ graduate.achievements|truncatechars:100|default:"Выпускник нашей школы" }}
+                    </p>
+                    <button class="graduate-btn" data-id="{{ graduate.id }}">Подробнее</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Модальное окно -->
+<div class="graduate-modal" id="graduateModal">
+    <div class="graduate-modal__content">
+        <button class="graduate-modal__close">&times;</button>
+        <div class="graduate-modal__columns">
+            <div class="graduate-modal__image-container">
+                <img class="graduate-modal__image" id="modalImage" src="" alt="">
+            </div>
+            <div class="graduate-modal__info">
+                <h2 class="graduate-modal__name" id="modalName"></h2>
+                <p class="graduate-modal__year" id="modalYear"></p>
+                <div class="graduate-modal__achievements" id="modalAchievements"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Основные стили */
+    .graduates-section {
+        padding: 80px 0;
+        background-color: #f9f9f9;
+    }
+    
+    .section-header {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+    
+    .section-title {
+        font-size: 2.5rem;
+        color: #2980b9;
+        margin-bottom: 15px;
+        position: relative;
+    }
+    
+    .section-title::after {
+        content: '';
+        display: block;
+        width: 80px;
+        height: 4px;
+        background: #3498db;
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .section-subtitle {
+        font-size: 1.2rem;
+        color: #555;
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+    
+    /* Фильтры */
+    .graduates-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 40px;
+        justify-content: center;
+    }
+    
+    .filter-btn {
+        padding: 8px 20px;
+        border-radius: 30px;
+        background: #ecf0f1;
+        color: #333;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    
+    .filter-btn:hover,
+    .filter-btn.active {
+        background: #3498db;
+        color: white;
+    }
+    
+    /* Сетка выпускников */
+    .graduates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 30px;
+    }
+    
+    /* Карточка выпускника */
+    .graduate-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .graduate-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+    }
+    
+    .graduate-image-container {
+        position: relative;
+        height: 250px;
+        overflow: hidden;
+    }
+    
+    .graduate-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .graduate-card:hover .graduate-image {
+        transform: scale(1.05);
+    }
+    
+    .graduation-year {
+        position: absolute;
+        bottom: 15px;
+        right: 15px;
+        background: rgba(52, 152, 219, 0.9);
+        color: white;
+        padding: 5px 15px;
+        border-radius: 30px;
+        font-weight: 600;
+    }
+    
+    .graduate-info {
+        padding: 20px;
+    }
+    
+    .graduate-name {
+        font-size: 1.4rem;
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+    }
+    
+    .graduate-achievements {
+        font-size: 1rem;
+        color: #555;
+        line-height: 1.5;
+        margin: 0 0 15px 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    
+    .graduate-btn {
+        display: inline-block;
+        padding: 8px 20px;
+        background: #3498db;
+        color: white;
+        border-radius: 30px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        text-align: center;
+    }
+    
+    .graduate-btn:hover {
+        background: #2980b9;
+    }
+    
+    /* Модальное окно */
+    .graduate-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    
+    .graduate-modal.active {
+        display: flex;
+        opacity: 1;
+    }
+    
+    .graduate-modal__content {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        width: 100%;
+        max-width: 900px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        animation: fadeIn 0.4s ease forwards;
+    }
+    
+    .graduate-modal__close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        border: none;
+        font-size: 1.5rem;
+        color: #333;
+        transition: all 0.3s ease;
+    }
+    
+    .graduate-modal__close:hover {
+        background: #e74c3c;
+        color: white;
+        transform: rotate(90deg);
+    }
+    
+    .graduate-modal__columns {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .graduate-modal__image-container {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+        max-height: 350px;
+    }
+    
+    .graduate-modal__image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .graduate-modal__info {
+        flex: 2;
+        padding: 30px;
+        overflow-y: auto;
+        max-height: calc(90vh - 350px);
+    }
+    
+    .graduate-modal__name {
+        font-size: 2rem;
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+    }
+    
+    .graduate-modal__year {
+        font-size: 1.3rem;
+        color: #3498db;
+        margin: 0 0 20px 0;
+        font-weight: 600;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f1f1;
+    }
+    
+    .graduate-modal__achievements {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: #555;
+        padding: 10px 0;
+    }
+    
+    .graduate-modal__achievements p {
+        margin-bottom: 15px;
+        position: relative;
+        padding-left: 20px;
+    }
+    
+    .graduate-modal__achievements p::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        top: 0;
+        color: #3498db;
+        font-weight: bold;
+    }
+    
+    /* Анимации */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Адаптивность */
+    @media (min-width: 768px) {
+        .graduate-modal__columns {
+            flex-direction: row;
+        }
+        
+        .graduate-modal__image-container {
+            max-height: none;
+            height: auto;
+            max-width: 40%;
+        }
+        
+        .graduate-modal__info {
+            max-height: calc(90vh - 60px);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .graduates-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .section-title {
+            font-size: 2rem;
+        }
+        
+        .graduate-modal__info {
+            padding: 20px;
+        }
+        
+        .graduate-modal__name {
+            font-size: 1.8rem;
+        }
+        
+        .graduate-modal__year {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Элементы модального окна
+        const modal = document.getElementById('graduateModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalName = document.getElementById('modalName');
+        const modalYear = document.getElementById('modalYear');
+        const modalAchievements = document.getElementById('modalAchievements');
+        const closeBtn = document.querySelector('.graduate-modal__close');
+        
+        // Фильтрация по годам
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const graduateCards = document.querySelectorAll('.graduate-card');
+        
+        // Обработчики для кнопок фильтра
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Удаляем активный класс у всех кнопок
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                
+                // Добавляем активный класс текущей кнопке
+                this.classList.add('active');
+                
+                const filter = this.getAttribute('data-filter');
+                filterGraduates(filter);
+            });
+        });
+        
+        // Функция фильтрации выпускников
+        function filterGraduates(year) {
+            graduateCards.forEach(card => {
+                if (year === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    if (card.getAttribute('data-year') === year) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+        }
+        
+        // Обработчики для открытия модального окна
+        document.querySelectorAll('.graduate-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const graduateId = this.getAttribute('data-id');
+                openModal(graduateId);
+            });
+        });
+        
+        // Обработчики для открытия по клику на карточку
+        graduateCards.forEach(card => {
+            card.addEventListener('click', function(e) {
+                // Проверяем, не был ли клик по кнопке
+                if (!e.target.closest('.graduate-btn')) {
+                    const graduateId = this.getAttribute('data-id');
+                    openModal(graduateId);
+                }
+            });
+        });
+        
+        // Функция открытия модального окна
+        function openModal(graduateId) {
+            const graduateCard = document.querySelector(`.graduate-card[data-id="${graduateId}"]`);
+            if (!graduateCard) return;
+            
+            // Получаем данные из атрибутов карточки
+            const image = graduateCard.getAttribute('data-image');
+            const name = graduateCard.getAttribute('data-name');
+            const year = graduateCard.getAttribute('data-year');
+            const achievements = graduateCard.getAttribute('data-achievements');
+            
+            // Заполняем модальное окно данными
+            modalImage.src = image;
+            modalImage.alt = name;
+            modalName.textContent = name;
+            modalYear.textContent = `Выпуск ${year} года`;
+            
+            // Форматируем достижения (разделяем по переносам строк)
+            if (achievements) {
+                const achievementsHTML = achievements.split('\n')
+                    .filter(item => item.trim() !== '')
+                    .map(item => `<p>${item.trim()}</p>`)
+                    .join('');
+                modalAchievements.innerHTML = achievementsHTML;
+            } else {
+                modalAchievements.innerHTML = '<p>Информация о достижениях отсутствует</p>';
+            }
+            
+            // Показываем модальное окно
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        // Функция закрытия модального окна
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Закрытие модального окна
+        closeBtn.addEventListener('click', closeModal);
+        
+        // Закрытие при клике вне модального окна
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Закрытие по клавише Esc
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                closeModal();
+            }
+        });
+    });
+</script>
+{% endblock %}

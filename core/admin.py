@@ -227,3 +227,35 @@ class SalaryPaymentAdmin(admin.ModelAdmin):
     list_filter = ('is_bonus', 'payment_method')
     search_fields = ('employee__full_name', 'notes')
     date_hierarchy = 'payment_date'
+
+from .models import Graduate
+
+class GraduateAdmin(admin.ModelAdmin):
+    # Поля для отображения в списке
+    list_display = ('username', 'graduation_year', 'order')
+    
+    # Поля для фильтрации
+    list_filter = ('graduation_year',)
+    
+    # Поля для поиска
+    search_fields = ('username', 'achievements')
+    
+    # Поля для редактирования прямо в списке
+    list_editable = ('order',)
+    
+    # Автоматическое заполнение порядка
+    def get_changeform_initial_data(self, request):
+        return {'order': Graduate.objects.count()}
+    
+    # Группировка полей в форме редактирования
+    fieldsets = (
+        ('Основная информация', {
+            'fields': ('username', 'graduation_year', 'order')
+        }),
+        ('Дополнительная информация', {
+            'fields': ('image', 'achievements'),
+            'classes': ('collapse',)  # Можно свернуть
+        }),
+    )
+
+admin.site.register(Graduate, GraduateAdmin)

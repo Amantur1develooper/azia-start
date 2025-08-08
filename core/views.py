@@ -301,46 +301,8 @@ def home(request):
 
     return render(request, 'school/home.html', context)
 
-# def home(request):
-#     current_year = AcademicYear.objects.filter(is_current=True).first()
 
-#     students = Student.objects.all()
-#     studying = students.filter(status='studying')
-#     reserve = students.filter(status='reserve')
-#     expelled = students.filter(status='expelled')
 
-#     male_count = studying.filter(pol='male').count()
-#     female_count = studying.filter(pol='female').count()
-
-#     fully_paid = studying.filter(current_year_paid=True).count()
-#     not_paid = studying.filter(current_year_paid=False).count()
-
-#     total_students = studying.count()
-#     total_reserve = reserve.count()
-#     total_expelled = expelled.count()
-
-#     # Финансовая статистика
-#     total_contract_amount = studying.aggregate(total=Sum('contract_amount'))['total'] or 0
-#     total_paid_amount = sum([s.get_total_paid_for_year(current_year) for s in studying])
-#     total_remaining = total_contract_amount - total_paid_amount
-
-#     context = {
-#         'total_students': total_students,
-#         'male_count': male_count,
-#         'female_count': female_count,
-#         'fully_paid': fully_paid,
-#         'not_paid': not_paid,
-#         'total_reserve': total_reserve,
-#         'total_expelled': total_expelled,
-#         'total_contract_amount': total_contract_amount,
-#         'total_paid_amount': total_paid_amount,
-#         'total_remaining': total_remaining,
-#     }
-
-#     return render(request, 'school/home.html', context)
-
-# def home(request):
-#     return render(request, 'school/home.html')
 from django.shortcuts import render
 from django.views.generic import ListView
 from .models import Student, Grade
@@ -399,21 +361,7 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
         'current_year': current_year,
     })
         return context
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     student = self.object
-    #     payments = Income.objects.filter(student=student).order_by('-date')
-        
-    #     context.update({
-    #         'student':student,
-    #         'payments': payments,
-    #         'total_payments': payments.aggregate(Sum('amount'))['amount__sum'] or 0
-    #     })
-    #     return context
-# class StudentDetailView(LoginRequiredMixin, DetailView):
-#     model = Student
-#     template_name = 'school/students/detail.html'
-
+  
 class StudentCreateView(LoginRequiredMixin, CreateView):  # Убрали UserPassesTestMixin
     model = Student
     form_class = StudentForm
@@ -433,28 +381,6 @@ class StudentCreateView(LoginRequiredMixin, CreateView):  # Убрали UserPas
             f"Ученик {form.instance.full_name} успешно добавлен!"
         )
         return super().form_valid(form)
-# class StudentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-#     model = Student
-#     form_class = StudentForm
-#     template_name = 'school/students/form.html'
-#     success_url = reverse_lazy('student-list')
-    
-#     def test_func(self):
-#         return is_admin(self.request.user)
-    
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['title'] = 'Добавление нового ученика'
-#         context['submit_text'] = 'Создать ученика'
-#         return context
-    
-#     def form_valid(self, form):
-#         form.instance.created_by = self.request.user
-#         messages.success(
-#             self.request,
-#             f"Ученик {form.instance.full_name} успешно добавлен!"
-#         )
-#         return super().form_valid(form)
 
 
 def login_view(request):
@@ -479,14 +405,7 @@ class CustomLoginView(LoginView):
     def get_success_url(self):
         return self.get_redirect_url() or '/'  # куда перекидывать после входа (например, на главную)
 
-# class StudentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-#     model = Student
-#     form_class = StudentForm
-#     template_name = 'school/students/form.html'
-#     success_url = reverse_lazy('student-list')
-    
-#     def test_func(self):
-#         return is_admin(self.request.user)
+
 
 class StudentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Student
@@ -551,39 +470,7 @@ class IncomeListView(LoginRequiredMixin, ListView):
         html = template.render(context)
     
         return HttpResponse(html)
-        # """Генерация PDF акта передачи приходов"""
-        # total_amount = queryset.aggregate(total=Sum('amount'))['total'] or 0
-        # date_from = self.request.GET.get('date_from', 'не указана')
-        # date_to = self.request.GET.get('date_to', 'не указана')
-        
-        # context = {
-        #     'incomes': queryset,
-        #     'total_amount': total_amount,
-        #     'date_from': date_from,
-        #     'date_to': date_to,
-        #     'generated_date': datetime.now().strftime('%d.%m.%Y %H:%M'),  # Используем now()
-        #     'user': self.request.user.get_full_name() or self.request.user.username,
-        # }
-        
-        # template = get_template('school/incomes/transfer_act_pdf.html')
-        # html = template.render(context)
-        
-        # response = HttpResponse(content_type='application/pdf')
-        # filename = f"transfer_act_{now().strftime('%Y-%m-%d')}.pdf"
-        
-        # # Для предпросмотра в браузере
-        # if self.request.GET.get('preview'):
-        #     response['Content-Disposition'] = f'inline; filename="{filename}"'
-        # else:
-        #     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
-        # # Создаем PDF
-        # pisa_status = pisa.CreatePDF(html, dest=response)
-        
-        # if pisa_status.err:
-        #     return HttpResponse('Ошибка при генерации PDF', status=500)
-        
-        # return response
+       
 
     def render_to_response(self, context, **response_kwargs):
         # Обработка экспорта в Excel
@@ -664,10 +551,7 @@ class IncomeListView(LoginRequiredMixin, ListView):
         wb.save(response)
         return response
 
-    # def render_to_response(self, context, **response_kwargs):
-    #     if self.request.GET.get('export') == 'xlsx':
-    #         return self.export_to_excel()
-    #     return super().render_to_response(context, **response_kwargs)
+   
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related('student', 'academic_year')
@@ -722,10 +606,7 @@ class IncomeListView(LoginRequiredMixin, ListView):
         
         return context
     
-    # def render_to_response(self, context, **response_kwargs):
-    #     if self.request.GET.get('export') == 'csv':
-    #         return self.export_to_csv()
-    #     return super().render_to_response(context, **response_kwargs)
+  
     
     def export_to_csv(self):
         queryset = self.get_queryset()
@@ -765,121 +646,7 @@ class IncomeListView(LoginRequiredMixin, ListView):
             ])
         
         return response
-# class IncomeListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-#     model = Income
-#     template_name = 'school/incomes/list.html'
-#     context_object_name = 'incomes'
-#     paginate_by = 20
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
-    
-#     def get_queryset(self):
-#         queryset = super().get_queryset().select_related('student', 'academic_year')
-        
-#         # Фильтрация по дате
-#         date_from = self.request.GET.get('date_from')
-#         date_to = self.request.GET.get('date_to')
-        
-#         if date_from:
-#             queryset = queryset.filter(date__gte=date_from)
-#         if date_to:
-#             queryset = queryset.filter(date__lte=date_to)
-            
-#         # Фильтрация по статусу
-#         status = self.request.GET.get('status')
-#         if status:
-#             queryset = queryset.filter(status=status)
-            
-#         # Фильтрация по способу оплаты
-#         payment_method = self.request.GET.get('payment_method')
-#         if payment_method:
-#             queryset = queryset.filter(payment_method=payment_method)
-            
-#         # Фильтрация по ученику (через поиск)
-#         search = self.request.GET.get('search')
-#         if search:
-#             queryset = queryset.filter(
-#                 Q(student__full_name__icontains=search) |
-#                 Q(transaction_id__icontains=search)
-#             )
-            
-#         return queryset.order_by('-date')
-    
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-    
-#     # Добавляем параметры фильтрации в контекст
-#         context['date_from'] = self.request.GET.get('date_from', '')
-#         context['date_to'] = self.request.GET.get('date_to', '')
-#         context['status'] = self.request.GET.get('status', '')
-#         context['payment_method'] = self.request.GET.get('payment_method', '')
-#         context['search'] = self.request.GET.get('search', '')
 
-#         # Добавляем choices для фильтров
-#         context['status_choices'] = Income.STATUS_CHOICES
-#         context['payment_method_choices'] = Income.PAYMENT_METHODS
-
-#         # Суммарная информация
-#         queryset = self.get_queryset()
-#         context['total_amount'] = queryset.aggregate(Sum('amount'))['amount__sum'] or 0
-#         context['total_count'] = queryset.count()
-    
-#         return context
-#     # def get_context_data(self, **kwargs):
-#     #     context = super().get_context_data(**kwargs)
-        
-#     #     # Добавляем параметры фильтрации в контекст
-#     #     context['date_from'] = self.request.GET.get('date_from', '')
-#     #     context['date_to'] = self.request.GET.get('date_to', '')
-#     #     context['status'] = self.request.GET.get('status', '')
-#     #     context['payment_method'] = self.request.GET.get('payment_method', '')
-#     #     context['search'] = self.request.GET.get('search', '')
-        
-#     #     # Суммарная информация
-#     #     queryset = self.get_queryset()
-#     #     context['total_amount'] = queryset.aggregate(Sum('amount'))['amount__sum'] or 0
-#     #     context['total_count'] = queryset.count()
-        
-#     #     return context
-    
-#     def render_to_response(self, context, **response_kwargs):
-#         if self.request.GET.get('export') == 'csv':
-#             return self.export_to_csv(context['incomes'])
-#         return super().render_to_response(context, **response_kwargs)
-    
-#     def export_to_csv(self, queryset):
-#         response = HttpResponse(content_type='text/csv')
-#         response['Content-Disposition'] = 'attachment; filename="income_report_{}.csv"'.format(
-#             datetime.now().strftime('%Y-%m-%d_%H-%M'))
-        
-#         writer = csv.writer(response)
-#         writer.writerow([
-#             'Дата', 'Ученик', 'Класс', 'Сумма', 'Способ оплаты', 
-#             'Статус', 'Номер транзакции', 'Период оплаты'
-#         ])
-        
-#         for income in queryset:
-#             writer.writerow([
-#                 income.date.strftime('%d.%m.%Y'),
-#                 income.student.full_name,
-#                 f"{income.student.grade.number}{income.student.grade.parallel}",
-#                 str(income.amount),
-#                 income.get_payment_method_display(),
-#                 income.get_status_display(),
-#                 income.transaction_id,
-#                 income.get_paid_months_display(),
-#             ])
-        
-#         return response
-# class IncomeListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-#     model = Income
-#     template_name = 'school/incomes/list.html'
-#     context_object_name = 'incomes'
-#     paginate_by = 20
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
 from django.utils import timezone
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
@@ -893,39 +660,7 @@ class DownloadReceiptView(View):
         response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="receipt_{income.transaction_id}.pdf"'
         return response
-    
-# class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-#     model = Income
-#     form_class = IncomeForm
-#     template_name = 'school/incomes/form.html'
-    
-#     def get_success_url(self):
-#         return reverse_lazy('student-detail', kwargs={'pk': self.kwargs['student_id']})
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
-    
-#     def get_form_kwargs(self):
-#         kwargs = super().get_form_kwargs()
-#         kwargs['student_id'] = self.kwargs['student_id']
-#         return kwargs
-    
-#     def form_valid(self, form):
-#         form.instance.created_by = self.request.user
-#         self.object = form.save()
-        
-#         # Генерация PDF и возврат ответа
-#         try:
-#             pdf_buffer = generate_receipt(self.object)
-#             response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
-#             response['Content-Disposition'] = f'attachment; filename="receipt_{self.object.transaction_id}.pdf"'
-#             return response
-#         except Exception as e:
-#             messages.warning(
-#                 self.request,
-#                 f"Платеж сохранен, но не удалось сгенерировать квитанцию. Ошибка: {str(e)}"
-#             )
-#             return super().form_valid(form)
+
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
@@ -939,8 +674,6 @@ class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return reverse_lazy('student-detail', kwargs={'pk': self.kwargs['student_id']})
     def test_func(self):
         return True 
-    # def test_func(self):
-    #     return is_admin(self.request.user) or is_accountant(self.request.user)
     
     def get_initial(self):
         initial = super().get_initial()
@@ -964,25 +697,9 @@ class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
             self.request,
             f"Платеж успешно сохранен. Номер транзакции: {self.object.transaction_id}"
         )
-        # try:
-        #     pdf_buffer = generate_receipt(self.object)
-        #     response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
-        #     response['Content-Disposition'] = f'attachment; filename="receipt_{self.object.transaction_id}.pdf"'
-        #     return response
-        # except Exception as e:
-        #     messages.warning(
-        #         self.request,
-        #         f"Платеж сохранен, но не удалось сгенерировать квитанцию. Ошибка: {str(e)}"
-        #     )
+      
         return super().form_valid(form)
-    # def form_valid(self, form):
-    #     form.instance.created_by = self.request.user
-    #     self.object = form.save()
-        
-    #     pdf_buffer = generate_receipt(self.object)
-    #     response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
-    #     response['Content-Disposition'] = f'attachment; filename="receipt_{self.object.transaction_id}.pdf"'
-    #     return response
+    
     def get_success_url(self):
         # После скачивания перенаправляем на страницу ученика
         return reverse('student-detail', kwargs={'pk': self.kwargs['student_id']})
@@ -1024,65 +741,7 @@ class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         response = HttpResponse(pdf_buffer, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="receipt_{self.object.transaction_id}.pdf"'
         return response
-   
-# class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-#     model = Income
-#     form_class = IncomeForm
-#     template_name = 'school/incomes/form.html'
-    
-#     def get_success_url(self):
-#         return reverse_lazy('student-detail', kwargs={'pk': self.object.student.pk})
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
-    
-#     def get_initial(self):
-#         initial = super().get_initial()
-#         if 'student_id' in self.kwargs:
-#             student = get_object_or_404(Student, pk=self.kwargs['student_id'])
-#             initial.update({
-#                 'student': student,
-#                 'income_type': 'Оплата контракта',
-#                 'date': timezone.now().date()
-#             })
-#         return initial
-    
-#     def form_valid(self, form):
-#         form.instance.created_by = self.request.user
-#         messages.success(
-#             self.request,
-#             f"Платеж на сумму {form.instance}₸ успешно добавлен для {form.instance}"
-#         )
-#         return super().form_valid(form)
-# class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-#     model = Income
-#     form_class = IncomeForm
-#     template_name = 'school/incomes/form.html'
-#     success_url = reverse_lazy('income-list')
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
-    
-#     def form_valid(self, form):
-#         # Добавляем пользователя, создавшего запись
-#         form.instance.created_by = self.request.user
-#         response = super().form_valid(form)
-#               return response
-    
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         context['title'] = 'Добавление прихода'
-#         return context
-# class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
-#     model = Income
-#     form_class = IncomeForm
-#     template_name = 'school/incomes/form.html'
-#     success_url = reverse_lazy('income-list')
-    
-#     def test_func(self):
-#         return is_admin(self.request.user) or is_accountant(self.request.user)
 
-# Расходы
 from django.shortcuts import get_object_or_404
 
 class ReceiptPrintView(LoginRequiredMixin, DetailView):
@@ -1710,3 +1369,23 @@ def expense_receipt_pdf(request, pk):
     doc.build(elements)
     
     return response
+
+from .models import Graduate
+
+from django.shortcuts import render
+from .models import Graduate
+
+def graduates_list(request):
+    graduates = Graduate.objects.all().order_by('-graduation_year', '-order', 'username')
+    unique_years = Graduate.objects.values_list('graduation_year', flat=True).distinct().order_by('-graduation_year')
+    
+    # Фильтрация по году, если указан параметр
+    year_filter = request.GET.get('year')
+    if year_filter:
+        graduates = graduates.filter(graduation_year=year_filter)
+    
+    return render(request, 'school/graduates/graduates_list.html', {
+        'graduates': graduates,
+        'unique_years': unique_years,
+        'selected_year': year_filter,
+    })

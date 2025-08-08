@@ -712,3 +712,52 @@ class GalleryImage(models.Model):
     
     def __str__(self):
         return f"Изображение {self.id} для {self.event.title}"
+    
+    
+from django.db import models
+from django.utils.text import slugify
+
+class Graduate(models.Model):
+    username = models.CharField(
+        max_length=100, 
+        verbose_name="ФИО выпускника",
+        help_text="Введите полное имя выпускника (Иванов Иван Иванович)"
+    )
+    graduation_year = models.PositiveIntegerField(
+        verbose_name="Год выпуска",
+        help_text="Например: 2020"
+    )
+    achievements = models.TextField(
+        verbose_name="Достижения после школы",
+        help_text="Кратко опишите достижения выпускника (место работы, учебы, награды)",
+        blank=True
+    )
+    image = models.ImageField(
+        upload_to='graduates/',
+        verbose_name="Фотография",
+        help_text="Загрузите фотографию выпускника",
+        blank=True  # Сделаем необязательным
+    )
+    order = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Порядок сортировки",
+        help_text="Чем больше число, тем выше в списке"
+    )
+    slug = models.SlugField(max_length=200, unique=True, blank=True)
+    class Meta:
+        verbose_name = "Выпускник"
+        verbose_name_plural = "Выпускники"
+        ordering = ['-order', '-graduation_year', 'username']
+
+    def __str__(self):
+        return f"{self.username} ({self.graduation_year})"
+
+    def save(self, *args, **kwargs):
+        # Автоматически создаем slug только на основе года выпуска и порядка
+        if not self.slug:
+            self.slug = slugify(f"graduate-{self.graduation_year}-{self.order}")
+            counter = 1
+            while Graduate.objects.filter(slug=self.slug).exists():
+                self.slug = f"graduate-{self.graduation_year}-{self.order}-{counter}"
+                counter += 1
+        super().save(*args, **kwargs)
