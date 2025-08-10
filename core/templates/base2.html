@@ -23,16 +23,243 @@
       href="{% static 'mock/slick/slick-theme.css' %} "
     />
     <link rel="stylesheet" href="{% static '/css/main.min.css' %}"/>
+     <link rel="stylesheet" href="{% static '/css/main.css' %}"/>
     <title>
       Школа Азия Старт – расширение прав и возможностей лидеров завтрашнего дня
     </title>
   </head>
-  <style>
-    @charset 'UTF-8';
-/* Slider */
-.slick-loading .slick-list {
-  background: #fff url("./ajax-loader.gif") center center no-repeat;
+   <style>
+.whyus .whyus__item:nth-child(5) {
+  background-color: #0b0a08;
+  position: relative;
+  background-image: url("{% static 'images/icon/bg-5.png' %}");
 }
+.whyus .whyus__item:nth-child(5) .item__box {
+  background-image: url("{% static 'images/icon/item5.svg' %}");
+}
+.whyus .whyus__item:nth-child(4) {
+  background-color: #ddb449;
+  position: relative;
+  background-image: url("{% static 'images/icon/bg-4.png' %}");
+}
+.whyus .whyus__item:nth-child(4) .item__box {
+  background-image: url("{% static 'images/icon/item4.svg' %}");
+}
+.teacher .teacher__left .teacher__button::after {
+  content: "";
+  width: 32px;
+  height: 32px;
+  right: 40px;
+  top: 24px;
+  position: absolute;
+  background-image: url("{% static 'images/icon/next-btn.svg' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  transition: all ease 0.3s;
+}
+.student .student__title {
+  color: #0b0a08;
+  display: inline-block;
+  padding: 20px 30px;
+  font-size: 64px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 83.2px */
+  background-image: url("{% static 'images/icon/big-bg.png' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  margin-bottom: 60px;
+}
+.question .question__title {
+  color: #fff;
+  display: inline-block;
+  padding: 20px 30px;
+  font-size: 64px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 83.2px */
+  background-image: url("{% static 'images/icon/bg-question.png' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  margin-bottom: 60px;
+}
+
+.filial .filial__item {
+  width: 100%;
+  max-width: 585px;
+  padding: 40px;
+  border-radius: 30px;
+  background-color: #58cf7a;
+  background-image: url("{% static 'images/icon/location.svg' %}");
+  background-repeat: no-repeat;
+  background-position: right bottom;
+}
+
+.about .about__title {
+  color: #fff;
+  display: inline-block;
+  padding: 20px 20px;
+  font-size: 64px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 83.2px */
+  background-image: url("{% static 'images/icon/dark-bg.png' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin-bottom: 60px;
+}
+
+.footer .footer__smooth {
+  width: 64px;
+  height: 64px;
+  right: 8%;
+  bottom: 50px;
+  background-image: url("{% static 'images/icon/top-smooth.svg' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: absolute;
+}
+.filial .filial__title {
+  color: #0b0a08;
+  display: inline-block;
+  padding: 20px 30px;
+  font-size: 64px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 83.2px */
+  background-image: url("{% static 'images/icon/big-bg.png' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  margin-bottom: 80px;
+}
+.question .question__summary::after {
+  content: "";
+  width: 32px;
+  height: 32px;
+  background-image: url("{% static 'images/icon/next-btn.svg' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  position: absolute;
+  transition: all ease 0.3s;
+  top: 30%;
+  right: 12px;
+}
+.teacher .teacher__title {
+  color: #fff;
+  display: inline-block;
+  padding: 20px 30px;
+  font-size: 64px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 130%; /* 83.2px */
+  background-image: url("{% static 'images/icon/dark-bg.png' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: center;
+  margin-bottom: 60px;
+}
+.whyus .whyus__title {
+  display: inline-block;
+  color: #0b0a08;
+  padding: 20px 30px;
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 130%; /* 83.2px */
+  background-image: url("{% static 'images/icon/white-bg.png' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin-bottom: 60px;
+}
+.whyus .whyus__item:nth-child(2) {
+  background-color: #58cf7a;
+  position: relative;
+  background-image: url("{% static 'images/icon/bg-2.png' %}");
+}
+.whyus .whyus__item:nth-child(2) .item__box {
+  background-image: url("{% static 'images/icon/item2.svg' %}");
+}
+    .whyus .whyus__item:nth-child(3) {
+  background-color: #19caf0;
+  position: relative;
+  background-image: url("{% static 'images/icon/bg-3.png' %}");
+}
+.whyus .whyus__item:nth-child(3) .item__box {
+  background-image: url("{% static 'images/icon/item3.svg' %}");
+}
+    .whyus .item__plus {
+  width: 32px;
+  height: 32px;
+  border: none;
+  padding: 0;
+  background-color: transparent;
+  background-image: url("{% static 'images/icon/plus-btn.svg' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  border-radius: 100px;
+  cursor: pointer;
+}
+    .whyus .whyus__item {
+  width: 100%;
+  padding: 40px;
+  max-width: 380px;
+  height: 420px;
+  border-radius: 30px;
+  background: #0b0a08;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-image: url("{% static 'images/icon/bg-1.png' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: bottom;
+  transition: all ease 0.3s;
+}
+.whyus .whyus__item:nth-child(1) {
+  background: #b66ad0;
+  position: relative;
+  background-image: url("{% static 'images/icon/bg-1.png' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: bottom;
+}
+.whyus .whyus__item:nth-child(1) .item__box {
+  background-image: url("{% static 'images/icon/item1.svg' %}");
+}
+    .hero .hero__inner {
+  position: relative;
+  padding: 60px 30px 136px 30px;
+  border-radius: 40px;
+  background: #fff;
+  background-image: url("{% static 'images/icon/hero.png' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: right;
+}
+    .hero .hero__intro {
+  display: inline-block;
+  padding: 22px 30px;
+  color: #0b0a08;
+  font-size: 32px;
+  line-height: 130%; /* 41.6px */
+  background-image: url("{% static 'images/icon/title_bg.png' %}");
+  background-repeat: no-repeat;
+  background-size: contain;
+  margin-bottom: 10px;
+}
+    @font-face {
+  font-display: swap;
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 400;
+  src: url("{% static 'fonts/roboto-v30-latin-regular.woff2' %}") format("woff2");
+}
+  </style>
+
+  <style>
+  
 
 /* Icons */
 @font-face {
@@ -974,10 +1201,10 @@
 
           <div class="header__sent sent">
             <button class="sent__btn" aria-label="sent button">
-              <img src="{% static 'images/icon/button-line.png' %}" alt="sent button" />
+              <img src="{% static 'images/icon/button-line.png' %}" />
             </button>
             <button
-              class=" hero__btn"
+              class="sent__link hero__btn_two"
              
               >Записаться</button
             >
@@ -1111,7 +1338,7 @@
 </div>
  <div class="student-modal">
   <div class="student-modal__content">
-    <button class="student-modal__close">&times;Х</button>
+    <button class="student-modal__close">&times;</button>
     <img class="student-modal__image" src="" alt="">
     <div class="student-modal__info">
       <h2 class="student-modal__name"></h2>
@@ -1145,11 +1372,16 @@
 
       // Modal form
       const elModal = document.querySelector(".modal");
+      
+      const elOpenModalBt2 = document.querySelector(".hero__btn_two");
       const elOpenModalBtn = document.querySelector(".hero__btn");
       const elSecondOpenModalBtn = document.querySelector(".item__btn");
       const elCloseModalBtn = document.querySelector(".info__exit");
 
       elOpenModalBtn.addEventListener("click", function () {
+        elModal.classList.add("modal-on");
+      });
+       elOpenModalBtn2.addEventListener("click", function () {
         elModal.classList.add("modal-on");
       });
 
