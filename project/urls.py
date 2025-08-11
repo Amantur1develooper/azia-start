@@ -22,7 +22,7 @@ from django.urls import path
 from core import views
 from django.urls import path
 from django.views.generic import TemplateView
-from core.views import CustomLoginView, DocumentListView, GalleryDetailView, GalleryListView, application_view, best_student, login_view, logout_view, ClassDebtsReportView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, student_search, teacher_view1
+from core.views import ApplicationListView, CustomLoginView, DocumentListView, GalleryDetailView, GalleryListView, application_view, best_student, login_view, logout_view, ClassDebtsReportView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, student_search, teacher_view1
 from core.views import (
     EmployeeListView, EmployeeCreateView, 
     EmployeeUpdateView, EmployeeDetailView,
@@ -50,7 +50,7 @@ urlpatterns = [
     path('incomes/<int:pk>/download/', DownloadReceiptView.as_view(), name='download-receipt'),
     path('incomes/<int:pk>/receipt/', download_receipt_view, name='download-receipt'),
     # Доходы
-    
+    path('applications/', ApplicationListView.as_view(), name='application_list'),
     path('graduates/', views.graduates_list, name='graduates_list'),
     path('gallery/', GalleryListView.as_view(), name='gallery'),
     path('gallery/<slug:slug>/', GalleryDetailView.as_view(), name='gallery_detail'),

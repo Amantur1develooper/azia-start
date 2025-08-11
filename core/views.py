@@ -1389,3 +1389,16 @@ def graduates_list(request):
         'unique_years': unique_years,
         'selected_year': year_filter,
     })
+    
+from django.views.generic import ListView
+from .models import Application
+
+class ApplicationListView(ListView):
+    model = Application
+    template_name = 'school/application/application_list.html'
+    context_object_name = 'applications'
+    paginate_by = 10  # Пагинация по 10 элементов
+    
+    def get_queryset(self):
+        # Сортировка по дате создания (новые сначала)
+        return Application.objects.all().order_by('-created_at')
