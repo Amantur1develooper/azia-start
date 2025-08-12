@@ -1307,6 +1307,12 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 
+from reportlab.lib.pagesizes import landscape, A4
+from reportlab.lib import colors
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+
 def expense_receipt_pdf(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
     
@@ -1317,39 +1323,52 @@ def expense_receipt_pdf(request, pk):
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
     
-    # Создаем PDF документ
-    doc = SimpleDocTemplate(response, pagesize=A4)
+    # Используем альбомную ориентацию
+    doc = SimpleDocTemplate(response, pagesize=landscape(A4))
     
     # Контейнер для элементов PDF
     elements = []
     
     # Стили текста
     styles = getSampleStyleSheet()
-    style_normal = styles['Normal']
-    style_heading = styles['Heading1']
     
-    # Устанавливаем шрифт для стилей
-    style_normal.fontName = 'Arial'
-    style_heading.fontName = 'Arial'
+    # Создаем кастомные стили
+    style_heading = ParagraphStyle(
+        'Heading1',
+        parent=styles['Heading1'],
+        fontName='Arial',
+        fontSize=10,
+        alignment=1,  # 0=left, 1=center, 2=right
+        spaceAfter=6
+    )
+    
+    style_normal = ParagraphStyle(
+        'Normal',
+        parent=styles['Normal'],
+        fontName='Arial',
+        fontSize=10,
+        leading=12
+    )
     
     # Добавляем заголовок
     elements.append(Paragraph("РАСХОДНЫЙ КАССОВЫЙ ОРДЕР", style_heading))
-    elements.append(Paragraph(f"№ {expense.receipt_number or 'БН'} от {timezone.now().strftime('%d.%m.%Y')}", style_normal))
+    elements.append(Paragraph(f"№ {expense.id or 'БН'} от {expense.created_at.strftime('%d.%m.%Y')}", style_normal))
+    elements.append(Spacer(1, 0.1*cm))
     
-    # Подготавливаем данные для таблицы
+    # Подготавливаем данные для таблицы (две колонки)
     data = [
         ["Дата расхода:", expense.date.strftime("%d.%m.%Y") if expense.date else ""],
-        ["Номер документа:", expense.id or "-"],
+        ["Номер документа:", str(expense.id)],
         ["Категория расхода:", expense.get_category_display()],
         ["Поставщик:", expense.supplier],
         ["Сумма расхода:", f"{expense.amount:.2f} сом"],
         ["Способ оплаты:", expense.get_payment_method_display()],
         ["Основание:", expense.notes or "Оплата услуг"],
-        ["Оформил:", expense.created_by if expense.created_by else "Не указан"],
+        ["Оформил:", request.user if request.user else "Не указан"],
     ]
     
-    # Создаем таблицу
-    table = Table(data, colWidths=[5*cm, 10*cm])
+    # Создаем таблицу (располагаем слева)
+    table = Table(data, colWidths=[4*cm, 8*cm])
     table.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (-1, -1), 'Arial'),
         ('FONTSIZE', (0, 0), (-1, -1), 10),
@@ -1357,18 +1376,93 @@ def expense_receipt_pdf(request, pk):
         ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
         ('ALIGN', (1, 0), (1, -1), 'LEFT'),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
     ]))
     
-    elements.append(table)
+    # Создаем основной контейнер с двумя колонками
+    two_columns = Table([
+        [table, ""]  # Левая колонка - таблица, правая - пустая
+    ], colWidths=[12*cm, 8*cm])
     
-    # Добавляем подписи
-    elements.append(Paragraph("Главный бухгалтер: ___________________ ", style_normal))
-    elements.append(Paragraph("Директор: ___________________ Муртазо У.Б.", style_normal))
+    elements.append(two_columns)
+    elements.append(Spacer(1, 0.4*cm))
+    
+    # Добавляем подписи (теперь в одну строку)
+    signatures = Table([
+        [
+            # Paragraph("Главный бухгалтер:<br/>___________________", style_normal),
+            Paragraph("Директор:<br/>___________________<br/>Муртазо У.Б.", style_normal)
+        ]
+    ], colWidths=[6*cm, 6*cm])
+    
+    elements.append(signatures)
     
     # Собираем PDF
     doc.build(elements)
     
     return response
+# def expense_receipt_pdf(request, pk):
+#     expense = get_object_or_404(Expense, pk=pk)
+    
+#     # Регистрируем шрифты
+#     register_fonts()
+    
+#     # Создаем HttpResponse с заголовками PDF
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
+    
+#     # Создаем PDF документ
+#     doc = SimpleDocTemplate(response, pagesize=A4)
+    
+#     # Контейнер для элементов PDF
+#     elements = []
+    
+#     # Стили текста
+#     styles = getSampleStyleSheet()
+#     style_normal = styles['Normal']
+#     style_heading = styles['Heading1']
+    
+#     # Устанавливаем шрифт для стилей
+#     style_normal.fontName = 'Arial'
+#     style_heading.fontName = 'Arial'
+    
+#     # Добавляем заголовок
+#     elements.append(Paragraph("РАСХОДНЫЙ КАССОВЫЙ ОРДЕР", style_heading))
+#     elements.append(Paragraph(f"№ {expense.receipt_number or 'БН'} от {timezone.now().strftime('%d.%m.%Y')}", style_normal))
+    
+#     # Подготавливаем данные для таблицы
+#     data = [
+#         ["Дата расхода:", expense.date.strftime("%d.%m.%Y") if expense.date else ""],
+#         ["Номер документа:", expense.id or "-"],
+#         ["Категория расхода:", expense.get_category_display()],
+#         ["Поставщик:", expense.supplier],
+#         ["Сумма расхода:", f"{expense.amount:.2f} сом"],
+#         ["Способ оплаты:", expense.get_payment_method_display()],
+#         ["Основание:", expense.notes or "Оплата услуг"],
+#         ["Оформил:", expense.created_by if expense.created_by else "Не указан"],
+#     ]
+    
+#     # Создаем таблицу
+#     table = Table(data, colWidths=[5*cm, 10*cm])
+#     table.setStyle(TableStyle([
+#         ('FONTNAME', (0, 0), (-1, -1), 'Arial'),
+#         ('FONTSIZE', (0, 0), (-1, -1), 10),
+#         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+#         ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
+#         ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+#         ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+#     ]))
+    
+#     elements.append(table)
+    
+#     # Добавляем подписи
+#     elements.append(Paragraph("Главный бухгалтер: ___________________ ", style_normal))
+#     elements.append(Paragraph("Директор: ___________________ Муртазо У.Б.", style_normal))
+    
+#     # Собираем PDF
+#     doc.build(elements)
+    
+#     return response
 
 from .models import Graduate
 
