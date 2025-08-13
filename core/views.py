@@ -1313,6 +1313,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 
+
 def expense_receipt_pdf(request, pk):
     expense = get_object_or_404(Expense, pk=pk)
     
@@ -1324,7 +1325,7 @@ def expense_receipt_pdf(request, pk):
     response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
     
     # Используем альбомную ориентацию
-    doc = SimpleDocTemplate(response, pagesize=landscape(A4))
+    doc = SimpleDocTemplate(response, pagesize=A4)
     
     # Контейнер для элементов PDF
     elements = []
