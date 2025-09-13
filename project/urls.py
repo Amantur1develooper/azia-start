@@ -83,10 +83,6 @@ urlpatterns = [
     path('salary-report/', SalaryReportView.as_view(), name='salary-report'),
 ]
 
-#  {% load  path('students/', views.StudentListView.as_view(), name='student-list'),
-#     path('students/<int:pk>/', views.StudentDetailView.as_view(), name='student-detail'),
-#     path('students/add/', views.StudentCreateView.as_view(), name='student-create'),
-#     path('students/<int:pk>/edit/', views.StudentUpdateView.as_view(), name='student-update'),
-#     _tags %}
+
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -39,6 +39,18 @@ from .models import Application
 from django.views.generic import ListView, DetailView
 from .models import News
 from .models import TelegramSubscriber
+# Главная страница
+from django.shortcuts import render
+from .models import Student, AcademicYear
+from django.db.models import Count, Sum, Q
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.utils import get_column_letter  
+from django.utils import timezone
+from django.contrib import messages
+from django.shortcuts import get_object_or_404
+from django.views.generic import View
 class NewsListView(ListView):
     model = News
     template_name = 'news_list.html'
@@ -258,10 +270,7 @@ def is_admin(user):
 def is_accountant(user):
     return user.groups.filter(name='Бухгалтер').exists()
 
-# Главная страница
-from django.shortcuts import render
-from .models import Student, AcademicYear
-from django.db.models import Count, Sum, Q
+
 
 @login_required()
 def home(request):
@@ -647,10 +656,7 @@ class IncomeListView(LoginRequiredMixin, ListView):
         
         return response
 
-from django.utils import timezone
-from django.contrib import messages
-from django.shortcuts import get_object_or_404
-from django.views.generic import View
+
 
 class DownloadReceiptView(View):
     def get(self, request, pk):
@@ -661,10 +667,7 @@ class DownloadReceiptView(View):
         response['Content-Disposition'] = f'attachment; filename="receipt_{income.transaction_id}.pdf"'
         return response
 
-from django.http import HttpResponse
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, PatternFill
-from openpyxl.utils import get_column_letter        
+      
 class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Income
     form_class = IncomeForm
@@ -1402,74 +1405,14 @@ def expense_receipt_pdf(request, pk):
     doc.build(elements)
     
     return response
-# def expense_receipt_pdf(request, pk):
-#     expense = get_object_or_404(Expense, pk=pk)
-    
-#     # Регистрируем шрифты
-#     register_fonts()
-    
-#     # Создаем HttpResponse с заголовками PDF
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
-    
-#     # Создаем PDF документ
-#     doc = SimpleDocTemplate(response, pagesize=A4)
-    
-#     # Контейнер для элементов PDF
-#     elements = []
-    
-#     # Стили текста
-#     styles = getSampleStyleSheet()
-#     style_normal = styles['Normal']
-#     style_heading = styles['Heading1']
-    
-#     # Устанавливаем шрифт для стилей
-#     style_normal.fontName = 'Arial'
-#     style_heading.fontName = 'Arial'
-    
-#     # Добавляем заголовок
-#     elements.append(Paragraph("РАСХОДНЫЙ КАССОВЫЙ ОРДЕР", style_heading))
-#     elements.append(Paragraph(f"№ {expense.receipt_number or 'БН'} от {timezone.now().strftime('%d.%m.%Y')}", style_normal))
-    
-#     # Подготавливаем данные для таблицы
-#     data = [
-#         ["Дата расхода:", expense.date.strftime("%d.%m.%Y") if expense.date else ""],
-#         ["Номер документа:", expense.id or "-"],
-#         ["Категория расхода:", expense.get_category_display()],
-#         ["Поставщик:", expense.supplier],
-#         ["Сумма расхода:", f"{expense.amount:.2f} сом"],
-#         ["Способ оплаты:", expense.get_payment_method_display()],
-#         ["Основание:", expense.notes or "Оплата услуг"],
-#         ["Оформил:", expense.created_by if expense.created_by else "Не указан"],
-#     ]
-    
-#     # Создаем таблицу
-#     table = Table(data, colWidths=[5*cm, 10*cm])
-#     table.setStyle(TableStyle([
-#         ('FONTNAME', (0, 0), (-1, -1), 'Arial'),
-#         ('FONTSIZE', (0, 0), (-1, -1), 10),
-#         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-#         ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
-#         ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-#         ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-#     ]))
-    
-#     elements.append(table)
-    
-#     # Добавляем подписи
-#     elements.append(Paragraph("Главный бухгалтер: ___________________ ", style_normal))
-#     elements.append(Paragraph("Директор: ___________________ Муртазо У.Б.", style_normal))
-    
-#     # Собираем PDF
-#     doc.build(elements)
-    
-#     return response
+
 
 from .models import Graduate
 
 from django.shortcuts import render
 from .models import Graduate
-
+from django.views.generic import ListView
+from .models import Application
 def graduates_list(request):
     graduates = Graduate.objects.all().order_by('-graduation_year', '-order', 'username')
     unique_years = Graduate.objects.values_list('graduation_year', flat=True).distinct().order_by('-graduation_year')
@@ -1485,8 +1428,7 @@ def graduates_list(request):
         'selected_year': year_filter,
     })
     
-from django.views.generic import ListView
-from .models import Application
+
 
 class ApplicationListView(ListView):
     model = Application
