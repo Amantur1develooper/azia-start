@@ -60,7 +60,7 @@ urlpatterns = [
     path('incomes/', views.IncomeListView.as_view(), name='income-list'),
     path('incomes/add/', views.IncomeCreateView.as_view(), name='income-create'),
     path('students/<int:student_id>/add-income/', IncomeCreateView.as_view(), name='student-add-income'),
-    # Расходы
+    # Расходы /students/2/payments/20/receipt/
     path('expenses/', views.ExpenseListView.as_view(), name='expense-list'),
     path('expenses/add/', views.ExpenseCreateView.as_view(), name='expense-create'),
     path('students/search/', student_search, name='student-search'),

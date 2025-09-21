@@ -1,5 +1,5 @@
 {% extends 'school/base.html' %}
-
+{% load humanize %}
 {% block content %}
 <div class="container">
     <div class="d-flex justify-content-between mb-4">
@@ -35,7 +35,11 @@
                 </tr>
                 <tr>
                     <td style="font-weight: bold; padding: 2px 0;">Сумма:</td>
-                    <td style="padding: 2px 0;">{{ payment.amount|floatformat:2 }} сом</td>
+                    <td style="padding: 2px 0;">{{ payment.amount|intcomma }} сом</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Сумма прописью:</td>
+                    <td style="padding: 2px 0;">{{ amount_words }}</td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold; padding: 2px 0;">Способ оплаты:</td>
@@ -85,7 +89,11 @@
                 </tr>
                 <tr>
                     <td style="font-weight: bold; padding: 2px 0;">Сумма:</td>
-                    <td style="padding: 2px 0;">{{ payment.amount|floatformat:2 }} сом</td>
+                    <td style="padding: 2px 0;">{{ payment.amount|intcomma }} сом</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold; padding: 2px 0;">Сумма прописью:</td>
+                    <td style="padding: 2px 0;">{{ amount_words }}</td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold; padding: 2px 0;">Способ оплаты:</td>
@@ -105,7 +113,7 @@
                 </tr>
                 <tr>
                     <td style="font-weight: bold; padding: 2px 0;">Остаток к оплате:</td>
-                    <td style="padding: 2px 0;">{{ remaining_payment|floatformat:2 }} сом</td>
+                    <td style="padding: 2px 0;"> {{ remaining_payment|intcomma }} сом</td>
                 </tr>
             </table>
 
