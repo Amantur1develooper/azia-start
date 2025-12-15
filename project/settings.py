@@ -32,6 +32,7 @@ CSRF_TRUSTED_ORIGINS = ['https://asiastartschool.org','https://www.asiastartscho
 
 
 # Application definition
+USE_X_FORWARDED_HOST = False
 
 INSTALLED_APPS = [
     'django.contrib.admin',
