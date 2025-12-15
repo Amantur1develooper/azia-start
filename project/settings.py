@@ -23,13 +23,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-4kjpdeec9i-er9y2122by@!x0@(_x8*5yvzw^x#ewtca404_ne'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['asiastartschool.org','www.asiastartschool.org']
 LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/s/'  # куда после входа
 CSRF_TRUSTED_ORIGINS = ['https://asiastartschool.org','https://www.asiastartschool.org']
 
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
 
 # Application definition
 USE_X_FORWARDED_HOST = False
