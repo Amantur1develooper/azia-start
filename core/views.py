@@ -800,50 +800,7 @@ class ReceiptPrintView(LoginRequiredMixin, DetailView):
         return context
 
 
-# class ReceiptPrintView(LoginRequiredMixin, DetailView):
-#     template_name = 'school/receipt_print.html'
-    
-#     def get_object(self):
-#         student = get_object_or_404(Student, pk=self.kwargs['student_id'])
-#         payment = get_object_or_404(Income, pk=self.kwargs['payment_id'])
-#         return {'student': student, 'payment': payment}
-    
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         student = self.object['student']
-#         payment = self.object['payment']
-#         context['student'] = student
-#         context['payment'] = payment
-        
-#         # Получаем текущий учебный год
-#         current_year = AcademicYear.objects.filter(is_current=True).first()
-        
-#         if current_year:
-#             # Получаем ВСЕ оплаты за текущий учебный год (включая текущую)
-#             payments = Income.objects.filter(
-#                 student=student,
-#                 academic_year=current_year,
-#                 status='paid'
-#             ).aggregate(total=Sum('amount'))['total'] or 0
-            
-#             # Сумма контракта
-#             contract_amount = student.contract_amount or 0
-            
-#             # Остаток к оплате
-#             remaining = contract_amount - payments
-#             context['remaining_payment'] = max(remaining, 0)  # Не показываем отрицательные значения
-#         else:
-#             context['remaining_payment'] = "Не установлен текущий учебный год"
-        
-#         # Форматируем оплаченные месяцы
-#         if payment.paid_months:
-#             month_names = dict(Income.MONTH_CHOICES)
-#             paid_months = [month_names[int(m)] for m in payment.paid_months]
-#             context['paid_months'] = ", ".join(paid_months)
-#         else:
-#             context['paid_months'] = None
-            
-#         return context
+
 
 
 from django.db.models import Sum, Q
@@ -1370,50 +1327,103 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 
 from num2words import num2words
-
 def expense_receipt_pdf(request, pk):
+    from django.http import HttpResponse
+    from django.shortcuts import get_object_or_404
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import cm
+    from reportlab.lib import colors
+    from num2words import num2words
+
     expense = get_object_or_404(Expense, pk=pk)
 
+    # твоя функция регистрации шрифтов
     register_fonts()
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="receipt_{expense.id}.pdf"'
 
-    doc = SimpleDocTemplate(response, pagesize=A4)
+    doc = SimpleDocTemplate(
+        response,
+        pagesize=A4,
+        leftMargin=1.5 * cm,
+        rightMargin=1.5 * cm,
+        topMargin=1.5 * cm,
+        bottomMargin=1.5 * cm,
+    )
 
     elements = []
     styles = getSampleStyleSheet()
 
     style_heading = ParagraphStyle(
-        'Heading1',
-        parent=styles['Heading1'],
-        fontName='Arial',
+        "Heading1",
+        parent=styles["Heading1"],
+        fontName="Arial",
         fontSize=10,
-        alignment=1,
-        spaceAfter=6
+        alignment=1,  # center
+        spaceAfter=6,
     )
 
     style_normal = ParagraphStyle(
-        'Normal',
-        parent=styles['Normal'],
-        fontName='Arial',
+        "Normal",
+        parent=styles["Normal"],
+        fontName="Arial",
         fontSize=10,
-        leading=12
+        leading=12,
     )
 
+    # --- Шапка
     elements.append(Paragraph("РАСХОДНЫЙ КАССОВЫЙ ОРДЕР", style_heading))
-    elements.append(Paragraph(f"№ {expense.id or 'БН'} от {expense.created_at.strftime('%d.%m.%Y')}", style_normal))
-    elements.append(Spacer(1, 0.1*cm))
+    elements.append(
+        Paragraph(
+            f"№ {expense.id or 'БН'} от {expense.created_at.strftime('%d.%m.%Y')}",
+            style_normal,
+        )
+    )
+    elements.append(Spacer(1, 0.2 * cm))
 
     # --- сумма с разделением по 3 символа
-    formatted_amount = "{:,.2f}".format(expense.amount).replace(",", " ")
+    formatted_amount = "{:,.2f}".format(float(expense.amount)).replace(",", " ")
 
     # --- сумма прописью
-    som_int = int(expense.amount)
-    tiyin = int(round((expense.amount - som_int) * 100))
-
+    som_int = int(float(expense.amount))
+    tiyin = int(round((float(expense.amount) - som_int) * 100))
     amount_words = f"{num2words(som_int, lang='ru').capitalize()} сом {tiyin:02d} тыйын"
 
+    # --- кто оформил
+    issuer = "Не указан"
+    if getattr(request, "user", None) and getattr(request.user, "is_authenticated", False):
+        issuer = (
+            getattr(request.user, "get_full_name", lambda: "")()  # type: ignore
+            or getattr(request.user, "username", "")
+            or str(request.user)
+        )
+
+    # --- получатель (попробуем угадать по разным полям, чтобы не падало)
+    recipient_fio = ""
+    for attr in ("recipient", "receiver", "employee", "worker", "person", "user"):
+        obj = getattr(expense, attr, None)
+        if obj:
+            recipient_fio = (
+                getattr(obj, "get_full_name", lambda: "")()
+                or getattr(obj, "full_name", "")
+                or getattr(obj, "fio", "")
+                or getattr(obj, "name", "")
+                or str(obj)
+            )
+            break
+    # если есть строковое поле (например receiver_name / recipient_name)
+    for attr in ("recipient_name", "receiver_name", "fio", "full_name"):
+        val = getattr(expense, attr, None)
+        if val and not recipient_fio:
+            recipient_fio = str(val).strip()
+            break
+    if not recipient_fio:
+        recipient_fio = "ФИО"
+
+    # --- Таблица реквизитов
     data = [
         ["Дата расхода:", expense.date.strftime("%d.%m.%Y") if expense.date else ""],
         ["Номер документа:", str(expense.id)],
@@ -1423,122 +1433,81 @@ def expense_receipt_pdf(request, pk):
         ["Сумма прописью:", amount_words],
         ["Способ оплаты:", expense.get_payment_method_display()],
         ["Основание:", expense.notes or "Оплата услуг"],
-        ["Оформил:", request.user if request.user else "Не указан"],
+        ["Оформил:", issuer],
     ]
 
-    table = Table(data, colWidths=[4*cm, 8*cm])
-    table.setStyle(TableStyle([
-        ('FONTNAME', (0, 0), (-1, -1), 'Arial'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-        ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
-        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-        ('GRID', (0, 0), (-1, -1), 1, colors.black),
-    ]))
+    table = Table(data, colWidths=[5 * cm, 12 * cm])
+    table.setStyle(
+        TableStyle(
+            [
+                ("FONTNAME", (0, 0), (-1, -1), "Arial"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("ALIGN", (0, 0), (0, -1), "RIGHT"),
+                ("ALIGN", (1, 0), (1, -1), "LEFT"),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ("GRID", (0, 0), (-1, -1), 0.7, colors.black),
+            ]
+        )
+    )
 
-    two_columns = Table([[table, ""]], colWidths=[12*cm, 8*cm])
-    elements.append(two_columns)
-    elements.append(Spacer(1, 0.4*cm))
+    elements.append(table)
+    elements.append(Spacer(1, 0.5 * cm))
 
-    signatures = Table([
-        [Paragraph("Директор:<br/>___________________<br/>Муртазо У.Б.", style_normal)]
-    ], colWidths=[6*cm, 6*cm])
+    # --- Красивые подписи (линия под подпись реальная, а не ____)
+
+    def sign_cell(title: str, fio: str):
+        t = Table(
+            [
+                [Paragraph(f"{title}:", style_normal)],
+                [""],  # линия
+                [Paragraph(fio or "ФИО", style_normal)],
+            ],
+            colWidths=[8.5 * cm],
+            rowHeights=[0.55 * cm, 0.9 * cm, 0.55 * cm],
+        )
+        t.setStyle(
+            TableStyle(
+                [
+                    ("FONTNAME", (0, 0), (-1, -1), "Arial"),
+                    ("FONTSIZE", (0, 0), (-1, -1), 10),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+
+                    ("ALIGN", (0, 0), (-1, 0), "LEFT"),
+                    ("LINEBELOW", (0, 1), (0, 1), 1, colors.black),  # линия подписи
+                    ("ALIGN", (0, 2), (-1, 2), "CENTER"),
+
+                    ("TOPPADDING", (0, 0), (-1, -1), 0),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                ]
+            )
+        )
+        return t
+
+    director_fio = "Муртазо У.Б."
+
+    signatures = Table(
+        [[sign_cell("Получатель", recipient_fio), sign_cell("Директор", director_fio)]],
+        colWidths=[9 * cm, 9 * cm],
+    )
+    signatures.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
 
     elements.append(signatures)
 
     doc.build(elements)
-
     return response
 
-# def expense_receipt_pdf(request, pk):
-#     expense = get_object_or_404(Expense, pk=pk)
-    
-#     # Регистрируем шрифты
-#     register_fonts()
-    
-#     # Создаем HttpResponse с заголовками PDF
-#     response = HttpResponse(content_type='application/pdf')
-#     response['Content-Disposition'] = f'inline; filename="receipt_{expense.id}.pdf"'
-    
-#     # Используем альбомную ориентацию
-#     doc = SimpleDocTemplate(response, pagesize=A4)
-    
-#     # Контейнер для элементов PDF
-#     elements = []
-    
-#     # Стили текста
-#     styles = getSampleStyleSheet()
-    
-#     # Создаем кастомные стили
-#     style_heading = ParagraphStyle(
-#         'Heading1',
-#         parent=styles['Heading1'],
-#         fontName='Arial',
-#         fontSize=10,
-#         alignment=1,  # 0=left, 1=center, 2=right
-#         spaceAfter=6
-#     )
-    
-#     style_normal = ParagraphStyle(
-#         'Normal',
-#         parent=styles['Normal'],
-#         fontName='Arial',
-#         fontSize=10,
-#         leading=12
-#     )
-    
-#     # Добавляем заголовок
-#     elements.append(Paragraph("РАСХОДНЫЙ КАССОВЫЙ ОРДЕР", style_heading))
-#     elements.append(Paragraph(f"№ {expense.id or 'БН'} от {expense.created_at.strftime('%d.%m.%Y')}", style_normal))
-#     elements.append(Spacer(1, 0.1*cm))
-    
-#     # Подготавливаем данные для таблицы (две колонки)
-#     data = [
-#         ["Дата расхода:", expense.date.strftime("%d.%m.%Y") if expense.date else ""],
-#         ["Номер документа:", str(expense.id)],
-#         ["Категория расхода:", expense.get_category_display()],
-#         ["Поставщик:", expense.supplier],
-#         ["Сумма расхода:", f"{expense.amount:.2f} сом"],
-#         ["Способ оплаты:", expense.get_payment_method_display()],
-#         ["Основание:", expense.notes or "Оплата услуг"],
-#         ["Оформил:", request.user if request.user else "Не указан"],
-#     ]
-    
-#     # Создаем таблицу (располагаем слева)
-#     table = Table(data, colWidths=[4*cm, 8*cm])
-#     table.setStyle(TableStyle([
-#         ('FONTNAME', (0, 0), (-1, -1), 'Arial'),
-#         ('FONTSIZE', (0, 0), (-1, -1), 10),
-#         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
-#         ('ALIGN', (0, 0), (0, -1), 'RIGHT'),
-#         ('ALIGN', (1, 0), (1, -1), 'LEFT'),
-#         ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-#         ('GRID', (0, 0), (-1, -1), 1, colors.black),
-#     ]))
-    
-#     # Создаем основной контейнер с двумя колонками
-#     two_columns = Table([
-#         [table, ""]  # Левая колонка - таблица, правая - пустая
-#     ], colWidths=[12*cm, 8*cm])
-    
-#     elements.append(two_columns)
-#     elements.append(Spacer(1, 0.4*cm))
-    
-#     # Добавляем подписи (теперь в одну строку)
-#     signatures = Table([
-#         [
-#             # Paragraph("Главный бухгалтер:<br/>___________________", style_normal),
-#             Paragraph("Директор:<br/>___________________<br/>Муртазо У.Б.", style_normal)
-#         ]
-#     ], colWidths=[6*cm, 6*cm])
-    
-#     elements.append(signatures)
-    
-#     # Собираем PDF
-#     doc.build(elements)
-    
-#     return response
+
 
 
 from .models import Graduate
