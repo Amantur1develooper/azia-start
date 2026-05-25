@@ -116,7 +116,10 @@ class IncomeForm(forms.ModelForm):
         student_id = kwargs.pop('student_id', None)
         super().__init__(*args, **kwargs)
         self.fields['date'].initial = timezone.now().date()
-        self.fields['date'].disabled = True
+        self.fields['date'].widget = forms.DateInput(
+            format='%Y-%m-%d',
+            attrs={'type': 'date', 'class': 'form-control'}
+        )
 
         
         if student_id:
