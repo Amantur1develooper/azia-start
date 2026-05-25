@@ -96,6 +96,17 @@ class Student(models.Model):
         blank=True
     )
     
+    # Зачисление и статус обучения
+    enrollment_year = models.ForeignKey(
+        'AcademicYear',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='enrolled_students',
+        verbose_name="Год зачисления (с какого года учится)"
+    )
+    is_graduated = models.BooleanField(default=False, verbose_name="Выпустился")
+
     # Платежи и учет оплаты
     current_year_paid = models.BooleanField(default=False, verbose_name="Оплачен текущий учебный год")
     payment_notes = models.TextField(blank=True, verbose_name="Примечания по оплате")
@@ -109,9 +120,21 @@ class Student(models.Model):
         return self.full_name
     
     def save(self, *args, **kwargs):
+        # Автоматически определяем год зачисления по дате поступления
+        if not self.enrollment_year_id and self.admission_date:
+            matched = AcademicYear.objects.filter(
+                start_date__lte=self.admission_date,
+                end_date__gte=self.admission_date
+            ).first()
+            if matched:
+                self.enrollment_year = matched
+
         # Если сумма контракта не указана, используем стандартную для класса
         if self.contract_amount is None:
-            self.contract_amount = self.grade.annual_tuition
+            try:
+                self.contract_amount = self.grade.annual_tuition
+            except Exception:
+                pass
         super().save(*args, **kwargs)
         
     

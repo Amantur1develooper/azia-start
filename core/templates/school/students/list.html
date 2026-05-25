@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container-fluid">
     <div class="row">
-        <!-- Боковая панель с классами - скрывается на мобильных -->
+        <!-- Боковая панель с классами -->
         <div class="col-md-3 col-lg-2 d-none d-md-block bg-light sidebar">
             <div class="position-sticky pt-3">
                 <h6 class="sidebar-heading px-3 mt-4 mb-1 text-muted">
@@ -11,16 +11,16 @@
                 </h6>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link {% if not selected_grade %}active{% endif %}" 
+                        <a class="nav-link {% if not selected_grade %}active{% endif %}"
                            href="{% url 'student-list' %}">
                             Все ученики
                         </a>
                     </li>
                     {% for grade in grades %}
                     <li class="nav-item">
-                        <a class="nav-link {% if selected_grade == grade.number|stringformat:'i'|add:'-'|add:grade.parallel %}active{% endif %}" 
+                        <a class="nav-link {% if selected_grade == grade.number|stringformat:'i'|add:'-'|add:grade.parallel %}active{% endif %}"
                            href="?grade={{ grade.number }}-{{ grade.parallel }}">
-                            {{ grade.number }}{{ grade.parallel }} 
+                            {{ grade.number }}{{ grade.parallel }}
                             <span class="badge bg-primary rounded-pill float-end">
                                 {{ grade.student_set.count }}
                             </span>
@@ -33,12 +33,13 @@
 
         <!-- Основное содержимое -->
         <div class="col-12 col-md-9 ms-sm-auto col-lg-10 px-md-4">
-            <!-- Мобильное меню для классов (появляется только на мобильных) -->
+
+            <!-- Мобильный выбор класса -->
             <div class="d-md-none mb-3">
                 <select class="form-select" onchange="location = this.value;">
                     <option value="{% url 'student-list' %}" {% if not selected_grade %}selected{% endif %}>Все ученики</option>
                     {% for grade in grades %}
-                    <option value="?grade={{ grade.number }}-{{ grade.parallel }}" 
+                    <option value="?grade={{ grade.number }}-{{ grade.parallel }}"
                             {% if selected_grade == grade.number|stringformat:'i'|add:'-'|add:grade.parallel %}selected{% endif %}>
                         {{ grade.number }}{{ grade.parallel }} ({{ grade.student_set.count }})
                     </option>
@@ -46,207 +47,122 @@
                 </select>
             </div>
 
-            <div class="d-flex gap-3 justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2 order-md-1 text-center text-md-start flex-grow-1 mt-2 mt-md-0">
-                    {% if selected_grade %}
-                        Ученики {{ selected_grade }} класса
-                    {% else %}
-                        Все ученики
-                    {% endif %}
+            <!-- Заголовок + кнопки -->
+            <div class="d-flex gap-2 justify-content-between flex-wrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h4 mb-0">
+                    {% if selected_grade %}Ученики {{ selected_grade }} класса{% else %}Все ученики{% endif %}
+                    {% if current_year %}<small class="text-muted fs-6 fw-normal">— {{ current_year.year }}</small>{% endif %}
                 </h1>
-                <div class="order-md-3 text-md-end">
+                <div class="d-flex gap-2 flex-wrap">
                     <a href="{% url 'student-create' %}" class="btn btn-sm btn-outline-primary">
                         <i class="bi bi-plus-circle"></i> <span class="d-none d-md-inline">Добавить ученика</span>
                     </a>
-                </div>
-                <div class="order-md-2 ">
-                    <a href="{% url 'class-debts-report' %}" class="btn btn-warning btn-sm">
-                        <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-md-inline">Отчет по задолженностям</span>
+                    <a href="{% url 'class-debts-report' %}" class="btn btn-sm btn-warning">
+                        <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-md-inline">Отчёт по долгам</span>
                     </a>
+                    {% if show_graduated %}
+                        <a href="?{% if selected_grade %}grade={{ selected_grade }}&{% endif %}" class="btn btn-sm btn-secondary">
+                            <i class="bi bi-eye-slash"></i> <span class="d-none d-md-inline">Скрыть выпускников</span>
+                        </a>
+                    {% else %}
+                        <a href="?{% if selected_grade %}grade={{ selected_grade }}&{% endif %}graduated=1" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-mortarboard"></i> <span class="d-none d-md-inline">Показать выпускников</span>
+                        </a>
+                    {% endif %}
                 </div>
-               
+            </div>
+
+            <!-- Легенда -->
+            <div class="d-flex gap-3 mb-3 small text-muted">
+                <span><span class="badge bg-success me-1">&nbsp;</span>Полностью оплачено</span>
+                <span><span class="badge bg-warning text-dark me-1">&nbsp;</span>Частично / не оплачено</span>
+                <span><span class="badge bg-danger me-1">&nbsp;</span>Нет контракта</span>
             </div>
 
             <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead class="d-none d-md-table-header-group">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light d-none d-md-table-header-group">
                         <tr>
+                            <th style="width:30px;">#</th>
                             <th>ФИО</th>
                             <th>Класс</th>
                             <th>Статус</th>
-                            <th>Оплата</th>
-                            <th>Контакты родителей</th>
-                            <th>Действия</th>
+                            <th>Оплата за {{ current_year.year|default:"текущий год" }}</th>
+                            <th>Прогресс</th>
+                            <th>Контакты</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for student in students %}
-                        <tr class="{% if student.current_year_paid %}table-success{% endif %}">
-                            <td data-label="ФИО">
-                                <div class="d-flex flex-column">
-                                    <span>{{ student.full_name }}</span>
-                                    <small class="text-muted d-md-none">
-                                        {{ student.grade.number }}{{ student.grade.parallel }} | 
-                                        {{ student.get_status_display }}
-                                    </small>
-                                    {% if student.current_year_paid %}
-                                    <small class="d-md-none">
-                                        <span class="badge bg-success">Оплачено</span>
-                                    </small>
-                                    {% else %}
-                                    <small class="d-md-none">
-                                        <span class="badge bg-warning text-dark">Не оплачено</span>
-                                    </small>
-                                    {% endif %}
-                                </div>
-                                {% if student.current_year_paid %}
-                                <i class="bi bi-check-circle-fill text-success ms-2 d-none d-md-inline"></i>
-                                {% endif %}
-                            </td>
-                            <td class="d-none d-md-table-cell">{{ student.grade.number }}{{ student.grade.parallel }}</td>
-                            <td class="d-none d-md-table-cell">
-                                <span class="badge 
-                                    {% if student.status == 'studying' %}bg-success
-                                    {% elif student.status == 'reserve' %}bg-warning text-dark
-                                    {% else %}bg-danger{% endif %}">
-                                    {{ student.get_status_display }}
-                                </span>
-                            </td>
-                            <td class="d-none d-md-table-cell">
-                                {% if student.current_year_paid %}
-                                <span class="badge bg-success">Оплачено</span>
-                                {% else %}
-                                <span class="badge bg-warning text-dark">Не оплачено</span>
-                                {% endif %}
-                            </td>
-                            <td data-label="Контакты" class="text-truncate" style="max-width: 300px;">
-                                {{ student.parent_contacts }}
-                            </td>
-                            <td>
-                                <div class="btn-group btn-group-sm flex-wrap" role="group">
-                                    <a href="{% url 'student-detail' student.pk %}" class="btn btn-outline-info" title="Просмотр">
-                                        <i class="bi bi-eye"></i>
-                                        <span class="d-none d-md-inline"> Просмотр</span>
-                                    </a>
-                                    <a href="{% url 'student-update' student.pk %}" class="btn btn-outline-secondary" title="Редактировать">
-                                        <i class="bi bi-pencil"></i>
-                                        <span class="d-none d-md-inline"> Редакт.</span>
-                                    </a>
-                                    <a href="{% url 'student-add-income' student.pk %}" class="btn btn-success" title="Добавить платеж">
-                                        <i class="bi bi-cash"></i>
-                                        <span class="d-none d-md-inline"> Платеж</span>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
+                        {% if student.contract_amount and student.contract_amount > 0 %}
+                            {% if student.paid_this_year >= student.contract_amount %}
+                                {% with row_class="table-success" paid=True %}
+                                {% include "school/students/_student_row.html" %}
+                                {% endwith %}
+                            {% else %}
+                                {% with row_class="" paid=False %}
+                                {% include "school/students/_student_row.html" %}
+                                {% endwith %}
+                            {% endif %}
+                        {% else %}
+                            {% with row_class="table-danger" paid=False no_contract=True %}
+                            {% include "school/students/_student_row.html" %}
+                            {% endwith %}
+                        {% endif %}
                         {% empty %}
                         <tr>
-                            <td colspan="6" class="text-center">Нет учеников</td>
+                            <td colspan="8" class="text-center py-4 text-muted">Нет учеников</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-                
-                <!-- Пагинация -->
-                {% if is_paginated %}
-                <nav aria-label="Page navigation">
-                    <ul class="pagination justify-content-center flex-wrap">
-                        {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
-                                <span class="d-none d-md-inline">&laquo; Первая</span>
-                                <span class="d-inline d-md-none">&laquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
-                                <span class="d-none d-md-inline">Предыдущая</span>
-                                <span class="d-inline d-md-none">&lsaquo;</span>
-                            </a>
-                        </li>
-                        {% endif %}
-                        
-                        <li class="page-item disabled">
-                            <span class="page-link">
-                                <span class="d-none d-md-inline">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
-                                <span class="d-inline d-md-none">{{ page_obj.number }}/{{ page_obj.paginator.num_pages }}</span>
-                            </span>
-                        </li>
-                        
-                        {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
-                                <span class="d-none d-md-inline">Следующая</span>
-                                <span class="d-inline d-md-none">&rsaquo;</span>
-                            </a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">
-                                <span class="d-none d-md-inline">Последняя &raquo;</span>
-                                <span class="d-inline d-md-none">&raquo;</span>
-                            </a>
-                        </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-                {% endif %}
             </div>
+
+            <!-- Пагинация -->
+            {% if is_paginated %}
+            <nav class="mt-3">
+                <ul class="pagination justify-content-center flex-wrap">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">&laquo;</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">&#8249;</a>
+                    </li>
+                    {% endif %}
+                    <li class="page-item disabled">
+                        <span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">&#8250;</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">&raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
         </div>
     </div>
 </div>
 
 <style>
-    .table-success {
-        background-color: #e6f7e6 !important;
-    }
-    .table-success:hover {
-        background-color: #d4edda !important;
-    }
-    .bi-check-circle-fill {
-        font-size: 1.1rem;
-    }
-    .btn-group {
-        flex-wrap: nowrap;
-    }
-    
-    /* Стили для мобильной таблицы */
-    @media (max-width: 767.98px) {
-        table {
-            border: 0;
-        }
-        
-        table tr {
-            display: block;
-            margin-bottom: 1rem;
-            border: 1px solid #dee2e6;
-            border-radius: 0.25rem;
-        }
-        
-        table td {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.5rem;
-            border-bottom: 1px solid #eee;
-        }
-        
-        table td::before {
-            content: attr(data-label);
-            font-weight: bold;
-            margin-right: 1rem;
-            flex: 1;
-        }
-        
-        table td .btn-group {
-            width: 100%;
-            justify-content: space-between;
-        }
-        
-        table td .btn {
-            flex: 1;
-            margin: 0 2px;
-            padding: 0.25rem;
-        }
-    }
+.table-success td { border-left: 4px solid #198754 !important; }
+.table-danger td  { border-left: 4px solid #dc3545 !important; }
+tr td:first-child { border-left-width: 4px; }
+.progress { min-width: 80px; }
+@media (max-width: 767.98px) {
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { display: none; }
+    tr { margin-bottom: 1rem; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden; }
+    td { display: flex; justify-content: space-between; align-items: center;
+         padding: 0.5rem 0.75rem; border-bottom: 1px solid #f0f0f0; }
+    td::before { content: attr(data-label); font-weight: 600; color: #666; margin-right: 0.5rem; flex-shrink: 0; }
+    td:last-child { border-bottom: none; }
+}
 </style>
 {% endblock %}

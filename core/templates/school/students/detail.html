@@ -3,478 +3,300 @@
 {% load custom_filters %}
 
 {% block content %}
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2>
-                    <i class="bi bi-person-vcard"></i> {{ student.full_name }}
-                </h2>
-                <div>{% if current_year %}
-                    <div class="alert alert-info">
-                        <h5>Платежи за {{ current_year.year }} учебный год</h5>
-                        <p>Всего оплачено: {{ total_payments|intcomma }} сом</p>
-                        <p>Остаток к оплате: {{ remaining_payment|intcomma }} сом</p>
-                    </div>
-                    {% endif %}
-                    <a href="{% url 'student-update' student.pk %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-pencil"></i> Редактировать
-                    </a>
-                    <a href="{% url 'student-add-income' student.pk %}" class="btn btn-success ms-2">
-                        <i class="bi bi-plus-circle"></i> Добавить платеж
-                    </a>
-                </div>
-            </div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'student-list' %}">Все ученики</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ student.full_name }}</li>
-                </ol>
-            </nav>
+<div class="container-fluid px-3 px-md-4">
+
+  <!-- Breadcrumb -->
+  <nav class="mb-3">
+    <ol class="breadcrumb mb-0 small">
+      <li class="breadcrumb-item"><a href="{% url 'student-list' %}">Ученики</a></li>
+      <li class="breadcrumb-item active">{{ student.full_name }}</li>
+    </ol>
+  </nav>
+
+  <!-- Шапка -->
+  <div class="d-flex flex-wrap gap-3 justify-content-between align-items-start mb-4">
+    <div class="d-flex align-items-center gap-3">
+      <!-- Аватар-инициалы -->
+      <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white fs-4 flex-shrink-0"
+           style="width:60px;height:60px;background:{% if is_fully_paid %}#198754{% elif student.status == 'expelled' %}#dc3545{% else %}#0d6efd{% endif %};">
+        {{ student.full_name|slice:":1" }}
+      </div>
+      <div>
+        <h4 class="mb-1 fw-bold">{{ student.full_name }}</h4>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <span class="badge bg-primary">{{ student.grade.number }}{{ student.grade.parallel }} класс</span>
+          <span class="badge {% if student.status == 'studying' %}bg-success{% elif student.status == 'reserve' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+            {{ student.get_status_display }}
+          </span>
+          {% if student.is_graduated %}
+          <span class="badge bg-secondary"><i class="bi bi-mortarboard me-1"></i>Выпускник</span>
+          {% endif %}
+          {% if student.pol %}
+          <span class="badge bg-light text-dark border">
+            {% if student.pol == 'male' %}<i class="bi bi-gender-male text-info"></i>{% else %}<i class="bi bi-gender-female text-danger"></i>{% endif %}
+            {{ student.get_pol_display }}
+          </span>
+          {% endif %}
+          {% if student.enrollment_year %}
+          <span class="badge bg-light text-dark border"><i class="bi bi-calendar3 me-1"></i>с {{ student.enrollment_year.year }}</span>
+          {% endif %}
         </div>
+      </div>
     </div>
-
-    <!-- Карточка информации о контракте -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Информация о контракте</h5>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="table-responsive">
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="40%">Номер контракта:</th>
-                                <td>{{ student.number_contract|default:"не указан" }}</td>
-                            </tr>
-                            <tr>
-                                <th>Дата контракта:</th>
-                                <td>{{ student.contract_date|date:"d.m.Y"|default:"не указана" }}</td>
-                            </tr>
-                            <tr>
-                                <th>Сумма контракта:</th>
-                                <td>{{ student.contract_amount|default:0|intcomma }} сом</td>
-                            </tr>
-                            {% if student.contract_file %}
-                            <tr>
-                                <th>Файл контракта:</th>
-                                <td>
-                                    <a href="{{ student.contract_file.url }}" class="btn btn-sm btn-outline-primary" download>
-                                        <i class="bi bi-download"></i> Скачать
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endif %}
-                        </table>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    {% with remaining=student.get_remaining_payment %}
-                    <div class="alert {% if remaining <= 0 %}alert-success{% else %}alert-warning{% endif %}">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h5 class="alert-heading mb-0">
-                                {% if remaining <= 0 %}
-                                    <i class="bi bi-check-circle"></i> Контракт полностью оплачен
-                                {% else %}
-                                    <i class="bi bi-exclamation-triangle"></i> Остаток к оплате
-                                {% endif %}
-                            </h5>
-                            <span class="badge bg-{% if remaining <= 0 %}success{% else %}warning text-dark{% endif %}">
-                                {{ remaining|abs|intcomma }} сом
-                            </span>
-                        </div>
-                        
-                        <!-- Ползунок прогресса оплаты -->
-                        <div class="progress mb-3" style="height: 20px;">
-                            {% with paid_percent=student.get_payment_percent %}
-                            <div class="progress-bar bg-{% if paid_percent == 100 %}success{% else %}primary{% endif %}" 
-                                 role="progressbar" 
-                                 style="width: {{ paid_percent }}%" 
-                                 aria-valuenow="{{ paid_percent }}" 
-                                 aria-valuemin="0" 
-                                 aria-valuemax="100">
-                                {{ paid_percent }}%
-                            </div>
-                            {% endwith %}
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <small>Оплачено: {{ total_payments|intcomma }} сом</small>
-                            <small>Всего: {{ student.contract_amount|intcomma }} сом</small>
-                        </div>
-                        
-                        <hr>
-                        <a href="{% url 'student-add-income' student.pk %}" class="btn btn-{% if remaining <= 0 %}outline-success{% else %}primary{% endif %}">
-                            <i class="bi bi-cash"></i> {% if remaining <= 0 %}Добавить переплату{% else %}Оплатить{% endif %}
-                        </a>
-                    </div>
-                    {% endwith %}
-                </div>
-            </div>
-        </div>
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{% url 'student-update' student.pk %}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-pencil me-1"></i>Редактировать
+      </a>
+      {% if not student.is_graduated %}
+      <a href="{% url 'student-add-income' student.pk %}" class="btn btn-sm btn-success">
+        <i class="bi bi-cash me-1"></i>Добавить платёж
+      </a>
+      {% endif %}
     </div>
+  </div>
 
-    <div class="row">
-        <!-- Основная информация -->
-        <div class="col-md-5 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Основная информация</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-borderless mb-0">
-                            <tbody>
-                                <tr>
-                                    <th width="40%">Класс:</th>
-                                    <td>{{ student.grade.number }}{{ student.grade.parallel }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Статус:</th>
-                                    <td>
-                                        <span class="badge 
-                                            {% if student.status == 'studying' %}bg-success
-                                            {% elif student.status == 'reserve' %}bg-warning text-dark
-                                            {% else %}bg-danger{% endif %}">
-                                            {{ student.get_status_display }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Дата рождения:</th>
-                                    <td>{{ student.birth_date|date:"d.m.Y" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Дата поступления:</th>
-                                    <td>{{ student.admission_date|date:"d.m.Y" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Контакты родителей:</th>
-                                    <td>{{ student.parent_contacts|linebreaks }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- История платежей -->
-        <div class="col-md-7 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="bi bi-cash-stack"></i> История платежей</h5>
-                        <span class="badge bg-light text-dark">
-                            Всего: {{ total_payments|intcomma }} сом
-                        </span>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    {% if payments %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Дата</th>
-                                    <th>Сумма</th>
-                                    <th>Период</th>
-                                    <th>Статус</th>
-                                    <th>Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment in payments %}
-                                <tr>
-                                    <td>{{ payment.date|date:"d.m.Y" }}</td>
-                                    <td>{{ payment.amount|intcomma }} сом</td>
-                                    <td>
-                                        <small>{{ payment.get_paid_months_display }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge 
-                                            {% if payment.status == 'paid' %}bg-success
-                                            {% elif payment.status == 'partial' %}bg-warning text-dark
-                                            {% else %}bg-danger{% endif %}">
-                                            {{ payment.get_status_display }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="{% url 'print-receipt' student.pk payment.pk %}" 
-                                           class="btn btn-sm btn-outline-primary"
-                                           target="_blank"
-                                           title="Квитанция">
-                                            <i class="bi bi-receipt"></i>
-                                        </a>
-                                        {% if payment.receipt_pdf %}
-                                        <a href="{{ payment.receipt_pdf.url }}" 
-                                           class="btn btn-sm btn-outline-secondary ms-1"
-                                           download
-                                           title="Скачать PDF">
-                                            <i class="bi bi-download"></i>
-                                        </a>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-cash-coin display-6 text-muted"></i>
-                        <p class="mt-3">Нет данных о платежах</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+  <!-- KPI-строка -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm text-center py-3">
+        <div class="text-muted small mb-1">Сумма контракта</div>
+        <div class="fw-bold fs-6">{{ student.contract_amount|default:0|floatformat:0|intcomma }} сом</div>
+      </div>
     </div>
-</div>
-
-<style>
-    .card {
-        border-radius: 10px;
-        transition: transform 0.2s;
-    }
-    .card:hover {
-        transform: translateY(-2px);
-    }
-    .card-header {
-        border-radius: 10px 10px 0 0 !important;
-    }
-    .progress {
-        border-radius: 10px;
-        background-color: #e9ecef;
-    }
-    .progress-bar {
-        border-radius: 10px;
-    }
-    .table th {
-        font-weight: 500;
-        white-space: nowrap;
-    }
-    .breadcrumb {
-        background-color: transparent;
-        padding: 0;
-    }
-    .badge {
-        font-weight: 500;
-    }
-</style>
-{% endblock %}
-{% comment %} {% extends 'school/base.html' %}
-{% load humanize %}
-
-{% block content %}
-<div class="container">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2>
-                    <i class="bi bi-person-vcard"></i> {{ student.full_name }}
-                </h2>
-                <div>
-                    <a href="{% url 'student-update' student.pk %}" class="btn btn-outline-secondary">
-                        <i class="bi bi-pencil"></i> Редактировать
-                    </a>
-                    <a href="{% url 'student-add-income' student.pk %}" class="btn btn-success ms-2">
-                        <i class="bi bi-plus-circle"></i> Добавить платеж
-                    </a>
-                </div>
-            </div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{% url 'student-list' %}">Все ученики</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">{{ student.full_name }}</li>
-                </ol>
-            </nav>
-        </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm text-center py-3" style="border-top:3px solid #198754 !important;">
+        <div class="text-muted small mb-1">Оплачено</div>
+        <div class="fw-bold fs-6 text-success">{{ total_payments|floatformat:0|intcomma }} сом</div>
+      </div>
     </div>
-
-    <div class="row">
-        <!-- Основная информация -->
-        <div class="col-md-5 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-info-circle"></i> Основная информация</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-borderless mb-0">
-                            <tbody>
-                                <tr>
-                                    <th width="40%">Класс:</th>
-                                    <td>{{ student.grade.number }}{{ student.grade.parallel }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Статус:</th>
-                                    <td>
-                                        <span class="badge 
-                                            {% if student.status == 'studying' %}bg-success
-                                            {% elif student.status == 'reserve' %}bg-warning text-dark
-                                            {% else %}bg-danger{% endif %}">
-                                            {{ student.get_status_display }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>Дата рождения:</th>
-                                    <td>{{ student.birth_date|date:"d.m.Y" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Дата поступления:</th>
-                                    <td>{{ student.admission_date|date:"d.m.Y" }}</td>
-                                </tr>
-                                <tr>
-                                    <th>Контакты родителей:</th>
-                                    <td>{{ student.parent_contacts|linebreaks }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm text-center py-3" style="border-top:3px solid {% if remaining_payment <= 0 %}#198754{% else %}#dc3545{% endif %} !important;">
+        <div class="text-muted small mb-1">Остаток</div>
+        <div class="fw-bold fs-6 {% if remaining_payment <= 0 %}text-success{% else %}text-danger{% endif %}">
+          {{ remaining_payment|floatformat:0|intcomma }} сом
         </div>
-
-        <!-- История платежей -->
-        <div class="col-md-7 mb-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="bi bi-cash-stack"></i> История платежей</h5>
-                        <span class="badge bg-light text-dark">
-                            Всего: {{ total_payments|intcomma }} сом
-                        </span>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    {% if payments %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Дата</th>
-                                    <th>Сумма</th>
-                                    <th>Способ оплаты</th>
-                                    <th>Статус</th>
-                                    <th>Номер</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for payment in payments %}
-                                <tr>
-                                    <td>{{ payment.date|date:"d.m.Y" }}</td>
-                                    <td>{{ payment.amount|intcomma }} сом</td>
-                                    <td>{{ payment.get_payment_method_display }}</td>
-                                    <td>
-                                        <span class="badge 
-                                            {% if payment.status == 'paid' %}bg-success
-                                            {% elif payment.status == 'partial' %}bg-warning text-dark
-                                            {% else %}bg-danger{% endif %}">
-                                            {{ payment.get_status_display }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <small class="text-muted">{{ payment.transaction_id }}</small>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-cash-coin display-6 text-muted"></i>
-                        <p class="mt-3">Нет данных о платежах</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
-</div>
-{% for payment in payments %}
-<tr>
-    <td>{{ payment.date|date:"d.m.Y" }}</td>
-    <td>{{ payment.amount|floatformat:"0"|intcomma }}сом</td>
-    <td>{{ payment.get_payment_method_display }}</td>
-    <td>
-        <span class="badge 
-            {% if payment.status == 'paid' %}bg-success
-            {% elif payment.status == 'partial' %}bg-warning text-dark
-            {% else %}bg-danger{% endif %}">
-            {{ payment.get_status_display }}
+    <div class="col-6 col-md-3">
+      <div class="card border-0 shadow-sm text-center py-3" style="border-top:3px solid {% if payment_percent == 100 %}#198754{% else %}#ffc107{% endif %} !important;">
+        <div class="text-muted small mb-1">Прогресс</div>
+        <div class="fw-bold fs-5 {% if payment_percent == 100 %}text-success{% else %}text-warning{% endif %}">
+          {{ payment_percent }}%
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Прогрессбар оплаты -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="fw-semibold small">
+          {% if current_year %}Оплата за {{ current_year.year }}{% else %}Оплата{% endif %}
         </span>
-    </td>
-    <td>
-        <small class="text-muted">{{ payment.transaction_id }}</small>
-        {% if payment.receipt_pdf %}
-        <a href="{{ payment.get_receipt_url }}" class="btn btn-sm btn-outline-primary ms-2" download>
-            <i class="bi bi-download"></i>
-        </a>
+        {% if is_fully_paid %}
+        <span class="badge bg-success"><i class="bi bi-check2-all me-1"></i>Полностью оплачено</span>
+        {% else %}
+        <span class="badge bg-warning text-dark">Не полностью оплачено</span>
         {% endif %}
-        
-    </td>
-    <td>
-        
-  <li><a href="{% url 'print-receipt' student.pk payment.pk %}" 
-class="btn btn-sm btn-outline-primary"
-target="_blank">
-<i class="bi bi-receipt"></i> Квитанция
-</a>
-</li>
-    </td>
-</tr>
-{% endfor %}
-{{student.get_remaining_payment}}/////
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Информация о контракте</h5>
+      </div>
+      <div class="progress rounded-pill" style="height:18px;">
+        <div class="progress-bar rounded-pill fw-semibold"
+             style="width:{{ payment_percent }}%;
+                    background: {% if payment_percent == 100 %}linear-gradient(90deg,#20c997,#198754){% else %}linear-gradient(90deg,#ffc107,#fd7e14){% endif %};
+                    font-size:12px; line-height:18px;">
+          {% if payment_percent > 10 %}{{ payment_percent }}%{% endif %}
+        </div>
+      </div>
+      <div class="d-flex justify-content-between mt-1 text-muted" style="font-size:12px;">
+        <span>{{ total_payments|floatformat:0|intcomma }} сом оплачено</span>
+        <span>{{ student.contract_amount|default:0|floatformat:0|intcomma }} сом всего</span>
+      </div>
     </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <p><strong>Номер контракта:</strong> {{ student.number_contract|default:"не указан" }}</p>
-                <p><strong>Дата контракта:</strong> {{ student.contract_date|date:"d.m.Y"|default:"не указана" }}</p>
-                <p><strong>Сумма контракта:</strong> {{ student.contract_amount }} сом</p>
-                {% if student.contract_file %}
-                <a href="{{ student.contract_file.url }}" class="btn btn-sm btn-outline-primary" download>
-                    <i class="bi bi-download"></i> Скачать контракт
+  </div>
+
+  <div class="row g-3">
+
+    <!-- Личная информация -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white fw-semibold border-bottom py-3">
+          <i class="bi bi-person-circle me-2 text-primary"></i>Личная информация
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-start py-2 px-3">
+              <span class="text-muted small">Дата рождения</span>
+              <span class="small fw-semibold">{{ student.birth_date|date:"d.m.Y" }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-start py-2 px-3">
+              <span class="text-muted small">Дата поступления</span>
+              <span class="small fw-semibold">{{ student.admission_date|date:"d.m.Y" }}</span>
+            </li>
+            {% if student.enrollment_year %}
+            <li class="list-group-item d-flex justify-content-between align-items-start py-2 px-3">
+              <span class="text-muted small">Год зачисления</span>
+              <span class="small fw-semibold">{{ student.enrollment_year.year }}</span>
+            </li>
+            {% endif %}
+            <li class="list-group-item py-2 px-3">
+              <div class="text-muted small mb-1">Контакты родителей</div>
+              <div class="small" style="white-space:pre-line;">{{ student.parent_contacts }}</div>
+            </li>
+            {% if student.payment_notes %}
+            <li class="list-group-item py-2 px-3">
+              <div class="text-muted small mb-1">Примечания по оплате</div>
+              <div class="small text-warning-emphasis">{{ student.payment_notes }}</div>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Контракт -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white fw-semibold border-bottom py-3">
+          <i class="bi bi-file-earmark-text me-2 text-primary"></i>Контракт
+        </div>
+        <div class="card-body p-0">
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+              <span class="text-muted small">Номер</span>
+              <span class="small fw-semibold">{{ student.number_contract|default:"—" }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+              <span class="text-muted small">Дата подписания</span>
+              <span class="small fw-semibold">{{ student.contract_date|date:"d.m.Y"|default:"—" }}</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+              <span class="text-muted small">Сумма контракта</span>
+              <span class="small fw-bold">{{ student.contract_amount|default:0|floatformat:0|intcomma }} сом</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+              <span class="text-muted small">Оплачено (текущий год)</span>
+              <span class="small fw-bold text-success">{{ total_payments|floatformat:0|intcomma }} сом</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+              <span class="text-muted small">Остаток</span>
+              <span class="small fw-bold {% if remaining_payment <= 0 %}text-success{% else %}text-danger{% endif %}">
+                {{ remaining_payment|floatformat:0|intcomma }} сом
+              </span>
+            </li>
+            {% if student.contract_file %}
+            <li class="list-group-item py-2 px-3">
+              <a href="{{ student.contract_file.url }}" class="btn btn-sm btn-outline-primary w-100" download>
+                <i class="bi bi-download me-1"></i>Скачать контракт
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Платежи за текущий год -->
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white fw-semibold border-bottom py-3 d-flex justify-content-between align-items-center">
+          <span><i class="bi bi-calendar-check me-2 text-success"></i>{% if current_year %}{{ current_year.year }}{% else %}Текущий год{% endif %}</span>
+          <span class="badge bg-success rounded-pill">{{ total_payments|floatformat:0|intcomma }} сом</span>
+        </div>
+        <div class="card-body p-0">
+          {% if payments %}
+          <ul class="list-group list-group-flush">
+            {% for p in payments %}
+            <li class="list-group-item py-2 px-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="small fw-semibold">{{ p.amount|floatformat:0|intcomma }} сом</div>
+                  <div class="text-muted" style="font-size:11px;">
+                    {{ p.date|date:"d.m.Y" }} · {{ p.get_payment_method_display }}
+                  </div>
+                  {% if p.paid_months or p.is_full_year_payment %}
+                  <div style="font-size:11px;" class="text-info">{{ p.get_paid_months_display }}</div>
+                  {% endif %}
+                </div>
+                <div class="d-flex gap-1 align-items-center">
+                  <span class="badge {% if p.status == 'paid' %}bg-success{% elif p.status == 'partial' %}bg-warning text-dark{% else %}bg-danger{% endif %}" style="font-size:10px;">
+                    {{ p.get_status_display }}
+                  </span>
+                  <a href="{% url 'print-receipt' student.pk p.pk %}" class="btn btn-outline-secondary btn-sm py-0 px-1" target="_blank" title="Квитанция">
+                    <i class="bi bi-receipt" style="font-size:13px;"></i>
+                  </a>
+                </div>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <div class="text-center py-4 text-muted small">
+            <i class="bi bi-inbox display-6 d-block mb-2"></i>
+            Платежей за этот год нет
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Полная история платежей -->
+  {% if all_payments %}
+  <div class="card border-0 shadow-sm mt-4">
+    <div class="card-header bg-white fw-semibold border-bottom py-3 d-flex justify-content-between align-items-center">
+      <span><i class="bi bi-clock-history me-2 text-primary"></i>Вся история платежей</span>
+      <span class="badge bg-light text-dark border">{{ all_payments.count }} записей</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0 small">
+        <thead class="table-light">
+          <tr>
+            <th>Дата</th>
+            <th>Учебный год</th>
+            <th>Сумма</th>
+            <th>Способ</th>
+            <th>Период</th>
+            <th>Статус</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in all_payments %}
+          <tr {% if p.academic_year == current_year %}class="table-success bg-opacity-50"{% endif %}>
+            <td>{{ p.date|date:"d.m.Y" }}</td>
+            <td>
+              <span class="badge bg-light text-dark border">{{ p.academic_year|default:"—" }}</span>
+              {% if p.academic_year == current_year %}<i class="bi bi-star-fill text-warning ms-1" title="Текущий год" style="font-size:10px;"></i>{% endif %}
+            </td>
+            <td class="fw-semibold">{{ p.amount|floatformat:0|intcomma }} сом</td>
+            <td class="text-muted">{{ p.get_payment_method_display }}</td>
+            <td class="text-muted">{{ p.get_paid_months_display }}</td>
+            <td>
+              <span class="badge {% if p.status == 'paid' %}bg-success{% elif p.status == 'partial' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                {{ p.get_status_display }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex gap-1">
+                <a href="{% url 'print-receipt' student.pk p.pk %}" class="btn btn-outline-secondary btn-sm py-0 px-2" target="_blank" title="Квитанция">
+                  <i class="bi bi-receipt"></i>
+                </a>
+                {% if p.receipt_pdf %}
+                <a href="{{ p.receipt_pdf.url }}" class="btn btn-outline-primary btn-sm py-0 px-2" download title="PDF">
+                  <i class="bi bi-download"></i>
                 </a>
                 {% endif %}
-            </div>
-            <div class="col-md-6">
-                <div class="alert {% if student.current_year_paid %}alert-success{% else %}alert-warning{% endif %}">
-                    <h5 class="alert-heading">
-                        {% if student.current_year_paid %}
-                        <i class="bi bi-check-circle"></i> Контракт полностью оплачен
-                        {% else %}
-                        <i class="bi bi-exclamation-triangle"></i> Остаток к оплате: {{ student.get_remaining_payment }} сом
-                        {% endif %}
-                    </h5>
-                    <a href="{% url 'student-add-income' student.pk %}" class="btn btn-primary">
-                        <i class="bi bi-cash"></i> Добавить платеж
-                    </a>
-                </div>
-            </div>
-        </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
+  </div>
+  {% endif %}
+
 </div>
-<style>
-    .card {
-        border-radius: 10px;
-    }
-    .card-header {
-        border-radius: 10px 10px 0 0 !important;
-    }
-    .table th {
-        font-weight: 500;
-    }
-    .breadcrumb {
-        background-color: transparent;
-        padding: 0;
-    }
-</style>
-{% endblock %} {% endcomment %}
+{% endblock %}

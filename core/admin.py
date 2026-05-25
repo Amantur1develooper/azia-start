@@ -30,10 +30,10 @@ class GradeAdmin(ImportExportModelAdmin):
 admin.site.register(AcademicYear)
 @admin.register(Student)
 class StudentAdmin(ImportExportModelAdmin):
-    list_display = ('full_name', 'grade', 'status', 'is_active')
-    list_filter = ('grade', 'status', 'is_active')
+    list_display = ('full_name', 'grade', 'enrollment_year', 'status', 'is_active', 'is_graduated')
+    list_filter = ('grade', 'status', 'is_active', 'is_graduated', 'enrollment_year')
     search_fields = ('full_name', 'parent_contacts')
-    list_editable = ('status', 'is_active')
+    list_editable = ('status', 'is_active', 'is_graduated')
     ordering = ('grade', 'full_name')
     fieldsets = (
         (None, {
@@ -46,7 +46,7 @@ class StudentAdmin(ImportExportModelAdmin):
             'fields': ('parent_contacts',)
         }),
         ('Статус', {
-            'fields': ('admission_date', 'status', 'is_active')
+            'fields': ('admission_date', 'enrollment_year', 'status', 'is_active', 'is_graduated')
         }),
     )
 

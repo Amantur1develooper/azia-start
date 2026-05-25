@@ -184,7 +184,10 @@ class ClassDebtsReportView(LoginRequiredMixin, View):
         row_num = 2
         
         for grade in grades:
-            students = grade.student_set.filter(is_active=True)
+            students = grade.student_set.filter(is_active=True, is_graduated=False).filter(
+                Q(enrollment_year__isnull=True) |
+                Q(enrollment_year__start_date__lte=current_year.start_date)
+            )
             
             for student in students:
                 # Рассчитываем оплаты за текущий год
@@ -274,9 +277,15 @@ def is_accountant(user):
 
 @login_required()
 def home(request):
+    from decimal import Decimal
     current_year = AcademicYear.objects.filter(is_current=True).first()
 
-    students = Student.objects.all()
+    students = Student.objects.filter(is_graduated=False)
+    if current_year:
+        students = students.filter(
+            Q(enrollment_year__isnull=True) |
+            Q(enrollment_year__start_date__lte=current_year.start_date)
+        )
     studying = students.filter(status='studying')
     reserve = students.filter(status='reserve')
     expelled = students.filter(status='expelled')
@@ -291,11 +300,59 @@ def home(request):
     total_reserve = reserve.count()
     total_expelled = expelled.count()
 
-    total_contract_amount = studying.aggregate(total=Sum('contract_amount'))['total'] or 0
-    total_paid_amount = sum([s.get_total_paid_for_year(current_year) for s in studying])
-    total_remaining = max(total_contract_amount - total_paid_amount, 0)
+    total_contract_amount = studying.aggregate(total=Sum('contract_amount'))['total'] or Decimal('0')
+    total_paid_amount = Income.objects.filter(
+        student__in=studying,
+        academic_year=current_year,
+        status='paid'
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+    total_remaining = max(total_contract_amount - total_paid_amount, Decimal('0'))
+
+    payment_percent = 0
+    if total_contract_amount > 0:
+        payment_percent = int((total_paid_amount / total_contract_amount) * 100)
+
+    # Последние 6 платежей
+    recent_payments = Income.objects.filter(
+        academic_year=current_year,
+        status='paid'
+    ).select_related('student').order_by('-date')[:6]
+
+    # Доходы по месяцам (сентябрь–май)
+    month_order = [9, 10, 11, 12, 1, 2, 3, 4, 5]
+    month_names = {9:'Сен', 10:'Окт', 11:'Ноя', 12:'Дек', 1:'Янв', 2:'Фев', 3:'Мар', 4:'Апр', 5:'Май'}
+    monthly_labels = []
+    monthly_data = []
+    if current_year:
+        for m in month_order:
+            if m >= 9:
+                year = current_year.start_date.year
+            else:
+                year = current_year.end_date.year
+            total = Income.objects.filter(
+                academic_year=current_year,
+                status='paid',
+                date__year=year,
+                date__month=m
+            ).aggregate(total=Sum('amount'))['total'] or 0
+            monthly_labels.append(month_names[m])
+            monthly_data.append(float(total))
+
+    # Последние расходы
+    recent_expenses = Expense.objects.order_by('-date')[:5]
+
+    # Расходы за текущий год
+    total_expenses = 0
+    if current_year:
+        total_expenses = Expense.objects.filter(
+            date__gte=current_year.start_date,
+            date__lte=current_year.end_date
+        ).aggregate(total=Sum('amount'))['total'] or 0
+
+    net_profit = float(total_paid_amount) - float(total_expenses)
 
     context = {
+        'current_year': current_year,
         'total_students': total_students,
         'male_count': male_count,
         'female_count': female_count,
@@ -306,6 +363,13 @@ def home(request):
         'total_contract_amount': total_contract_amount,
         'total_paid_amount': total_paid_amount,
         'total_remaining': total_remaining,
+        'payment_percent': payment_percent,
+        'recent_payments': recent_payments,
+        'monthly_labels': monthly_labels,
+        'monthly_data': monthly_data,
+        'recent_expenses': recent_expenses,
+        'total_expenses': total_expenses,
+        'net_profit': net_profit,
     }
 
     return render(request, 'school/home.html', context)
@@ -323,52 +387,88 @@ class StudentListView(ListView):
     paginate_by = 20
 
     def get_queryset(self):
+        from django.db.models import OuterRef, Subquery, DecimalField
+        from django.db.models.functions import Coalesce
+        from decimal import Decimal
+
+        current_year = AcademicYear.objects.filter(is_current=True).first()
+
         queryset = super().get_queryset().select_related('grade')
         grade_filter = self.request.GET.get('grade')
-        
-        if grade_filter:
-            if '-' in grade_filter:
-                number, parallel = grade_filter.split('-')
-                queryset = queryset.filter(grade__number=number, grade__parallel=parallel)
-        
+        show_graduated = self.request.GET.get('graduated') == '1'
+
+        if not show_graduated:
+            queryset = queryset.filter(is_graduated=False)
+
+        if grade_filter and '-' in grade_filter:
+            number, parallel = grade_filter.split('-')
+            queryset = queryset.filter(grade__number=number, grade__parallel=parallel)
+
+        # Аннотируем сумму оплат за текущий год прямо в queryset
+        if current_year:
+            paid_sub = Income.objects.filter(
+                student=OuterRef('pk'),
+                academic_year=current_year,
+                status='paid'
+            ).values('student').annotate(s=Sum('amount')).values('s')
+            queryset = queryset.annotate(
+                paid_this_year=Coalesce(
+                    Subquery(paid_sub, output_field=DecimalField(max_digits=10, decimal_places=2)),
+                    Decimal('0')
+                )
+            )
+        else:
+            from django.db.models import Value
+            queryset = queryset.annotate(paid_this_year=Value(Decimal('0'), output_field=DecimalField()))
+
         return queryset.order_by('grade__number', 'grade__parallel', 'full_name')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['grades'] = Grade.objects.all().order_by('number', 'parallel')
         context['selected_grade'] = self.request.GET.get('grade', '')
+        context['show_graduated'] = self.request.GET.get('graduated') == '1'
+        context['current_year'] = AcademicYear.objects.filter(is_current=True).first()
         return context
 
 
 class StudentDetailView(LoginRequiredMixin, DetailView):
     model = Student
     template_name = 'school/students/detail.html'
+
     def get_context_data(self, **kwargs):
+        from decimal import Decimal
         context = super().get_context_data(**kwargs)
         student = self.object
-    
-    # Получаем текущий учебный год
+
         current_year = AcademicYear.objects.filter(is_current=True).first()
-    
-    # Фильтруем платежи по текущему учебному году
+
         payments = Income.objects.filter(
             student=student,
             academic_year=current_year
         ).order_by('-date')
-    
-    # Сумма платежей за текущий учебный год
-        total_payments = payments.aggregate(Sum('amount'))['amount__sum'] or 0
-    
-    # Остаток к оплате
-        remaining_payment = student.contract_amount - total_payments if student.contract_amount else 0
-    
+
+        total_payments = payments.filter(status='paid').aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
+        contract_amount = student.contract_amount or Decimal('0')
+        remaining_payment = max(contract_amount - total_payments, Decimal('0'))
+
+        payment_percent = 0
+        if contract_amount > 0:
+            payment_percent = min(int((total_payments / contract_amount) * 100), 100)
+
+        # Все платежи по всем годам (для истории)
+        all_payments = Income.objects.filter(student=student).select_related('academic_year').order_by('-date')
+
         context.update({
-        'student': student,
-        'payments': payments,
-        'total_payments': total_payments,
-        'remaining_payment': remaining_payment,
-        'current_year': current_year,
-    })
+            'student': student,
+            'payments': payments,
+            'all_payments': all_payments,
+            'total_payments': total_payments,
+            'remaining_payment': remaining_payment,
+            'payment_percent': payment_percent,
+            'current_year': current_year,
+            'is_fully_paid': remaining_payment <= 0 and contract_amount > 0,
+        })
         return context
   
 class StudentCreateView(LoginRequiredMixin, CreateView):  # Убрали UserPassesTestMixin
@@ -433,7 +533,7 @@ def student_search(request):
         students = Student.objects.filter(
             Q(full_name__icontains=query) |
             Q(parent_contacts__icontains=query)
-        )[:10]
+        ).filter(is_graduated=False)[:10]
         results = [
             {
                 'id': student.id,

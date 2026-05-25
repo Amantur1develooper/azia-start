@@ -12,29 +12,32 @@ class StudentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         # Добавляем классы и placeholder для полей
         for field in self.fields:
-            if field not in ['is_active', 'pol']:
+            if field not in ['is_active', 'is_graduated', 'pol']:
                 self.fields[field].widget.attrs.update({
                     'class': 'form-control'
                 })
             if field in ['full_name', 'number_contract']:
                 self.fields[field].widget.attrs['placeholder'] = 'Введите значение...'
-    
+
     class Meta:
         model = Student
         fields = [
             'full_name', 'birth_date', 'pol', 'parent_contacts',
-            'admission_date', 'number_contract', 'grade', 'status',
-            'is_active', 'contract_amount', 'contract_date', 'contract_file',
+            'admission_date', 'enrollment_year', 'number_contract', 'grade', 'status',
+            'is_active', 'is_graduated', 'contract_amount', 'contract_date', 'contract_file',
             'payment_notes'
         ]
         widgets = {
             'birth_date': forms.DateInput(
+                format='%Y-%m-%d',
                 attrs={'type': 'date', 'class': 'form-control'}
             ),
             'admission_date': forms.DateInput(
+                format='%Y-%m-%d',
                 attrs={'type': 'date', 'class': 'form-control'}
             ),
             'contract_date': forms.DateInput(
+                format='%Y-%m-%d',
                 attrs={'type': 'date', 'class': 'form-control'}
             ),
             'parent_contacts': forms.Textarea(
@@ -46,6 +49,7 @@ class StudentForm(forms.ModelForm):
             'grade': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
             'pol': forms.Select(attrs={'class': 'form-select'}),
+            'enrollment_year': forms.Select(attrs={'class': 'form-select'}),
         }
         labels = {
             'full_name': 'ФИО ученика',
@@ -53,10 +57,12 @@ class StudentForm(forms.ModelForm):
             'pol': 'Пол',
             'parent_contacts': 'Контакты родителей',
             'admission_date': 'Дата поступления',
+            'enrollment_year': 'Год зачисления (с какого учебного года учится)',
             'number_contract': 'Номер контракта',
             'grade': 'Класс',
             'status': 'Статус',
-            'is_active': 'Активный',
+            'is_active': 'Активный (учится)',
+            'is_graduated': 'Выпустился',
             'contract_amount': 'Сумма контракта (сом)',
             'contract_date': 'Дата подписания контракта',
             'contract_file': 'Файл контракта',
@@ -169,10 +175,10 @@ class EmployeeForm(forms.ModelForm):
             'is_active', 'notes'
         ]
         widgets = {
-            'birth_date': forms.DateInput(attrs={'type': 'date'}),
-            'contract_start_date': forms.DateInput(attrs={'type': 'date'}),
-            'contract_end_date': forms.DateInput(attrs={'type': 'date'}),
-            'hire_date': forms.DateInput(attrs={'type': 'date'}),
+            'birth_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
+            'contract_start_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
+            'contract_end_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
+            'hire_date': forms.DateInput(format='%Y-%m-%d', attrs={'type': 'date'}),
             'notes': forms.Textarea(attrs={'rows': 3}),
             'address': forms.Textarea(attrs={'rows': 2}),
         }
