@@ -1,0 +1,64 @@
+{% extends 'school/cms/base.html' %}
+
+{% block page_title %}Выпускники{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex align-items-center gap-2">
+    <a href="{% url 'cms-dashboard' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+    <h5 class="fw-bold mb-0"><i class="bi bi-mortarboard me-2 text-secondary"></i>Выпускники</h5>
+  </div>
+  <a href="{% url 'cms-graduate-create' %}" class="btn btn-secondary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Добавить выпускника
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width:60px;">Фото</th>
+          <th>ФИО</th>
+          <th>Год выпуска</th>
+          <th>Порядок</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>
+            {% if item.image %}
+            <img src="{{ item.image.url }}" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;">
+            {% else %}
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+              <i class="bi bi-person text-muted"></i>
+            </div>
+            {% endif %}
+          </td>
+          <td class="fw-semibold">{{ item.username }}</td>
+          <td><span class="badge bg-light text-dark border">{{ item.graduation_year }}</span></td>
+          <td class="text-muted small">{{ item.order }}</td>
+          <td>
+            <div class="d-flex gap-1 justify-content-end">
+              <a href="{% url 'cms-graduate-edit' item.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil"></i></a>
+              <a href="{% url 'cms-graduate-delete' item.pk %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center text-muted py-4">Нет выпускников</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% if is_paginated %}
+<nav class="mt-3"><ul class="pagination justify-content-center">
+  {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹</a></li>{% endif %}
+  <li class="page-item disabled"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+  {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">›</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% endblock %}

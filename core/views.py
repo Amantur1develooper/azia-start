@@ -1503,7 +1503,7 @@ def expense_receipt_pdf(request, pk):
 
     # --- получатель (попробуем угадать по разным полям, чтобы не падало)
     recipient_fio = ""
-    for attr in ("recipient", "receiver", "employee", "worker", "person", "user"):
+    for attr in ("recipient",   "receiver", "employee", "worker", "person", "user"):
         obj = getattr(expense, attr, None)
         if obj:
             recipient_fio = (
@@ -1630,7 +1630,330 @@ def graduates_list(request):
         'unique_years': unique_years,
         'selected_year': year_filter,
     })
-    
+
+
+# ══════════════════════════════════════════════════════════════════
+#  CMS — управление контентом сайта
+# ══════════════════════════════════════════════════════════════════
+from .models import News, Teacher, Student2, Graduate, GalleryEvent
+from .forms import (NewsForm, TeacherForm, BestStudentForm,
+                    GraduateForm, GalleryEventForm, GalleryImageFormSet)
+
+
+def cms_login(request):
+    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+        return redirect('cms-dashboard')
+    error = None
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and (user.is_staff or user.is_superuser):
+            login(request, user)
+            return redirect(request.GET.get('next', 'cms-dashboard'))
+        else:
+            error = 'Неверный логин/пароль или нет доступа к CMS.'
+    return render(request, 'school/cms/login.html', {'error': error})
+
+
+def cms_logout(request):
+    logout(request)
+    return redirect('cms-login')
+
+
+class CMSRequiredMixin(LoginRequiredMixin):
+    login_url = '/cms/login/'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect(f'/cms/login/?next={request.path}')
+        if not (request.user.is_staff or request.user.is_superuser):
+            return redirect(f'/cms/login/?next={request.path}')
+        return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
+
+
+@login_required(login_url='/cms/login/')
+def cms_dashboard(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return redirect('cms-login')
+    context = {
+        'news_count':         News.objects.count(),
+        'teacher_count':      Teacher.objects.count(),
+        'best_student_count': Student2.objects.count(),
+        'graduate_count':     Graduate.objects.count(),
+        'gallery_count':      GalleryEvent.objects.count(),
+        'recent_news':        News.objects.order_by('-created_at')[:3],
+    }
+    return render(request, 'school/cms/dashboard.html', context)
+
+
+# ── Новости ──────────────────────────────────────────────────────
+
+class CMSNewsListView(CMSRequiredMixin, ListView):
+    model = News
+    template_name = 'school/cms/news/list.html'
+    context_object_name = 'items'
+    ordering = ['-created_at']
+    paginate_by = 20
+
+
+class CMSNewsCreateView(CMSRequiredMixin, CreateView):
+    model = News
+    form_class = NewsForm
+    template_name = 'school/cms/form.html'
+    success_url = reverse_lazy('cms-news-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Добавить новость'
+        ctx['back_url'] = reverse_lazy('cms-news-list')
+        return ctx
+
+
+class CMSNewsUpdateView(CMSRequiredMixin, UpdateView):
+    model = News
+    form_class = NewsForm
+    template_name = 'school/cms/form.html'
+    success_url = reverse_lazy('cms-news-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Редактировать новость'
+        ctx['back_url'] = reverse_lazy('cms-news-list')
+        return ctx
+
+
+class CMSNewsDeleteView(CMSRequiredMixin, DeleteView):
+    model = News
+    template_name = 'school/cms/confirm_delete.html'
+    success_url = reverse_lazy('cms-news-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Удалить новость'
+        ctx['object_name'] = str(self.object)
+        ctx['back_url'] = reverse_lazy('cms-news-list')
+        return ctx
+
+
+# ── Учителя ──────────────────────────────────────────────────────
+
+class CMSTeacherListView(CMSRequiredMixin, ListView):
+    model = Teacher
+    template_name = 'school/cms/teachers/list.html'
+    context_object_name = 'items'
+    ordering = ['order', 'last_name']
+
+
+class CMSTeacherCreateView(CMSRequiredMixin, CreateView):
+    model = Teacher
+    form_class = TeacherForm
+    template_name = 'school/cms/form.html'
+    success_url = reverse_lazy('cms-teacher-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Добавить учителя'
+        ctx['back_url'] = reverse_lazy('cms-teacher-list')
+        return ctx
+
+
+class CMSTeacherUpdateView(CMSRequiredMixin, UpdateView):
+    model = Teacher
+    form_class = TeacherForm
+    template_name = 'school/cms/form.html'
+    success_url = reverse_lazy('cms-teacher-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Редактировать учителя'
+        ctx['back_url'] = reverse_lazy('cms-teacher-list')
+        return ctx
+
+
+class CMSTeacherDeleteView(CMSRequiredMixin, DeleteView):
+    model = Teacher
+    template_name = 'school/cms/confirm_delete.html'
+    success_url = reverse_lazy('cms-teacher-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Удалить учителя'
+        ctx['object_name'] = str(self.object)
+        ctx['back_url'] = reverse_lazy('cms-teacher-list')
+        return ctx
+
+
+# ── Лучшие ученики ───────────────────────────────────────────────
+
+class CMSBestStudentListView(CMSRequiredMixin, ListView):
+    model = Student2
+    template_name = 'school/cms/best_students/list.html'
+    context_object_name = 'items'
+    ordering = ['order', 'last_name']
+
+
+class CMSBestStudentCreateView(CMSRequiredMixin, CreateView):
+    model = Student2
+    form_class = BestStudentForm
+    template_name = 'school/cms/form.html'
+    success_url = reverse_lazy('cms-best-student-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Добавить лучшего ученика'
+        ctx['back_url'] = reverse_lazy('cms-best-student-list')
+        return ctx
+
+
+class CMSBestStudentUpdateView(CMSRequiredMixin, UpdateView):
+    model = Student2
+    form_class = BestStudentForm
+    template_name = 'school/cms/form.html'
+    success_url = reverse_lazy('cms-best-student-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Редактировать лучшего ученика'
+        ctx['back_url'] = reverse_lazy('cms-best-student-list')
+        return ctx
+
+
+class CMSBestStudentDeleteView(CMSRequiredMixin, DeleteView):
+    model = Student2
+    template_name = 'school/cms/confirm_delete.html'
+    success_url = reverse_lazy('cms-best-student-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Удалить лучшего ученика'
+        ctx['object_name'] = str(self.object)
+        ctx['back_url'] = reverse_lazy('cms-best-student-list')
+        return ctx
+
+
+# ── Выпускники ───────────────────────────────────────────────────
+
+class CMSGraduateListView(CMSRequiredMixin, ListView):
+    model = Graduate
+    template_name = 'school/cms/graduates/list.html'
+    context_object_name = 'items'
+    ordering = ['-graduation_year', '-order']
+    paginate_by = 20
+
+
+class CMSGraduateCreateView(CMSRequiredMixin, CreateView):
+    model = Graduate
+    form_class = GraduateForm
+    template_name = 'school/cms/form.html'
+    success_url = reverse_lazy('cms-graduate-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Добавить выпускника'
+        ctx['back_url'] = reverse_lazy('cms-graduate-list')
+        return ctx
+
+
+class CMSGraduateUpdateView(CMSRequiredMixin, UpdateView):
+    model = Graduate
+    form_class = GraduateForm
+    template_name = 'school/cms/form.html'
+    success_url = reverse_lazy('cms-graduate-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Редактировать выпускника'
+        ctx['back_url'] = reverse_lazy('cms-graduate-list')
+        return ctx
+
+
+class CMSGraduateDeleteView(CMSRequiredMixin, DeleteView):
+    model = Graduate
+    template_name = 'school/cms/confirm_delete.html'
+    success_url = reverse_lazy('cms-graduate-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Удалить выпускника'
+        ctx['object_name'] = str(self.object)
+        ctx['back_url'] = reverse_lazy('cms-graduate-list')
+        return ctx
+
+
+# ── Галерея ──────────────────────────────────────────────────────
+
+class CMSGalleryListView(CMSRequiredMixin, ListView):
+    model = GalleryEvent
+    template_name = 'school/cms/gallery/list.html'
+    context_object_name = 'items'
+    ordering = ['-date']
+    paginate_by = 20
+
+
+class CMSGalleryCreateView(CMSRequiredMixin, CreateView):
+    model = GalleryEvent
+    form_class = GalleryEventForm
+    template_name = 'school/cms/gallery/form.html'
+    success_url = reverse_lazy('cms-gallery-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Добавить событие галереи'
+        ctx['formset'] = GalleryImageFormSet(self.request.POST or None,
+                                             self.request.FILES or None)
+        return ctx
+
+    def form_valid(self, form):
+        ctx = self.get_context_data()
+        formset = ctx['formset']
+        if formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            return redirect(self.success_url)
+        return self.render_to_response(ctx)
+
+
+class CMSGalleryUpdateView(CMSRequiredMixin, UpdateView):
+    model = GalleryEvent
+    form_class = GalleryEventForm
+    template_name = 'school/cms/gallery/form.html'
+    success_url = reverse_lazy('cms-gallery-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Редактировать событие галереи'
+        ctx['formset'] = GalleryImageFormSet(
+            self.request.POST or None,
+            self.request.FILES or None,
+            instance=self.object,
+        )
+        return ctx
+
+    def form_valid(self, form):
+        ctx = self.get_context_data()
+        formset = ctx['formset']
+        if formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            return redirect(self.success_url)
+        return self.render_to_response(ctx)
+
+
+class CMSGalleryDeleteView(CMSRequiredMixin, DeleteView):
+    model = GalleryEvent
+    template_name = 'school/cms/confirm_delete.html'
+    success_url = reverse_lazy('cms-gallery-list')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['title'] = 'Удалить событие галереи'
+        ctx['object_name'] = str(self.object)
+        ctx['back_url'] = reverse_lazy('cms-gallery-list')
+        return ctx
+
 
 
 class ApplicationListView(ListView):

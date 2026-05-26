@@ -24,9 +24,16 @@ from django.urls import path
 from django.views.generic import TemplateView
 from core.views import ApplicationListView, CustomLoginView, DocumentListView, GalleryDetailView, GalleryListView, application_view, best_student, login_view, logout_view, ClassDebtsReportView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, student_search, teacher_view1
 from core.views import (
-    EmployeeListView, EmployeeCreateView, 
+    EmployeeListView, EmployeeCreateView,
     EmployeeUpdateView, EmployeeDetailView,
-    SalaryPaymentCreateView, SalaryReportView
+    SalaryPaymentCreateView, SalaryReportView,
+    # CMS
+    cms_dashboard,
+    CMSNewsListView, CMSNewsCreateView, CMSNewsUpdateView, CMSNewsDeleteView,
+    CMSTeacherListView, CMSTeacherCreateView, CMSTeacherUpdateView, CMSTeacherDeleteView,
+    CMSBestStudentListView, CMSBestStudentCreateView, CMSBestStudentUpdateView, CMSBestStudentDeleteView,
+    CMSGraduateListView, CMSGraduateCreateView, CMSGraduateUpdateView, CMSGraduateDeleteView,
+    CMSGalleryListView, CMSGalleryCreateView, CMSGalleryUpdateView, CMSGalleryDeleteView,
 )
 from core.receipts import download_receipt_view
 urlpatterns = [
@@ -81,6 +88,41 @@ urlpatterns = [
     path('employees/<int:pk>/edit/', EmployeeUpdateView.as_view(), name='employee-edit'),
     path('salary-payments/add/', SalaryPaymentCreateView.as_view(), name='salary-payment-add'),
     path('salary-report/', SalaryReportView.as_view(), name='salary-report'),
+
+    # ── CMS ──────────────────────────────────────────────────────
+    path('cms/login/', views.cms_login, name='cms-login'),
+    path('cms/logout/', views.cms_logout, name='cms-logout'),
+    path('cms/', cms_dashboard, name='cms-dashboard'),
+
+    # Новости
+    path('cms/news/', CMSNewsListView.as_view(), name='cms-news-list'),
+    path('cms/news/add/', CMSNewsCreateView.as_view(), name='cms-news-create'),
+    path('cms/news/<int:pk>/edit/', CMSNewsUpdateView.as_view(), name='cms-news-edit'),
+    path('cms/news/<int:pk>/delete/', CMSNewsDeleteView.as_view(), name='cms-news-delete'),
+
+    # Учителя
+    path('cms/teachers/', CMSTeacherListView.as_view(), name='cms-teacher-list'),
+    path('cms/teachers/add/', CMSTeacherCreateView.as_view(), name='cms-teacher-create'),
+    path('cms/teachers/<int:pk>/edit/', CMSTeacherUpdateView.as_view(), name='cms-teacher-edit'),
+    path('cms/teachers/<int:pk>/delete/', CMSTeacherDeleteView.as_view(), name='cms-teacher-delete'),
+
+    # Лучшие ученики
+    path('cms/best-students/', CMSBestStudentListView.as_view(), name='cms-best-student-list'),
+    path('cms/best-students/add/', CMSBestStudentCreateView.as_view(), name='cms-best-student-create'),
+    path('cms/best-students/<int:pk>/edit/', CMSBestStudentUpdateView.as_view(), name='cms-best-student-edit'),
+    path('cms/best-students/<int:pk>/delete/', CMSBestStudentDeleteView.as_view(), name='cms-best-student-delete'),
+
+    # Выпускники
+    path('cms/graduates/', CMSGraduateListView.as_view(), name='cms-graduate-list'),
+    path('cms/graduates/add/', CMSGraduateCreateView.as_view(), name='cms-graduate-create'),
+    path('cms/graduates/<int:pk>/edit/', CMSGraduateUpdateView.as_view(), name='cms-graduate-edit'),
+    path('cms/graduates/<int:pk>/delete/', CMSGraduateDeleteView.as_view(), name='cms-graduate-delete'),
+
+    # Галерея
+    path('cms/gallery/', CMSGalleryListView.as_view(), name='cms-gallery-list'),
+    path('cms/gallery/add/', CMSGalleryCreateView.as_view(), name='cms-gallery-create'),
+    path('cms/gallery/<int:pk>/edit/', CMSGalleryUpdateView.as_view(), name='cms-gallery-edit'),
+    path('cms/gallery/<int:pk>/delete/', CMSGalleryDeleteView.as_view(), name='cms-gallery-delete'),
 ]
 
 

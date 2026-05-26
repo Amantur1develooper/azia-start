@@ -1,5 +1,5 @@
 from django import forms
-from .models import SalaryPayment, Student, Income, Expense, Reservation
+from .models import SalaryPayment, Student, Income, Expense, Reservation, News, Teacher, Student2, Graduate, GalleryEvent, GalleryImage
 from django.utils import timezone 
 from django.core.exceptions import ValidationError
 import random
@@ -213,3 +213,114 @@ class SalaryPaymentForm(forms.ModelForm):
         # Устанавливаем первый день текущего месяца по умолчанию
         today = timezone.now().date()
         self.fields['for_month'].initial = today.replace(day=1)
+
+
+# ── CMS формы ────────────────────────────────────────────────────
+
+class NewsForm(forms.ModelForm):
+    class Meta:
+        model = News
+        fields = ['title', 'content', 'image', 'is_published']
+        widgets = {
+            'title':   forms.TextInput(attrs={'class': 'form-control'}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 6}),
+            'image':   forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'title': 'Заголовок', 'content': 'Содержание',
+            'image': 'Изображение', 'is_published': 'Опубликовать',
+        }
+
+
+class TeacherForm(forms.ModelForm):
+    class Meta:
+        model = Teacher
+        fields = ['first_name', 'last_name', 'subject', 'description',
+                  'image', 'is_main', 'is_publish', 'order']
+        widgets = {
+            'first_name':   forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name':    forms.TextInput(attrs={'class': 'form-control'}),
+            'subject':      forms.TextInput(attrs={'class': 'form-control'}),
+            'description':  forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'image':        forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'order':        forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'first_name': 'Имя', 'last_name': 'Фамилия',
+            'subject': 'Предмет', 'description': 'Описание',
+            'image': 'Фото', 'is_main': 'Главный учитель',
+            'is_publish': 'Показывать на сайте', 'order': 'Порядок',
+        }
+
+
+class BestStudentForm(forms.ModelForm):
+    class Meta:
+        model = Student2
+        fields = ['first_name', 'last_name', 'level', 'achievements',
+                  'image', 'is_featured', 'order']
+        widgets = {
+            'first_name':   forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name':    forms.TextInput(attrs={'class': 'form-control'}),
+            'level':        forms.TextInput(attrs={'class': 'form-control'}),
+            'achievements': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'image':        forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'order':        forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'first_name': 'Имя', 'last_name': 'Фамилия',
+            'level': 'Класс', 'achievements': 'Достижения',
+            'image': 'Фото', 'is_featured': 'Показывать на главной',
+            'order': 'Порядок',
+        }
+
+
+class GraduateForm(forms.ModelForm):
+    class Meta:
+        model = Graduate
+        fields = ['username', 'graduation_year', 'achievements', 'image', 'order']
+        widgets = {
+            'username':        forms.TextInput(attrs={'class': 'form-control'}),
+            'graduation_year': forms.NumberInput(attrs={'class': 'form-control'}),
+            'achievements':    forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'image':           forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'order':           forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'username': 'ФИО выпускника', 'graduation_year': 'Год выпуска',
+            'achievements': 'Достижения после школы', 'image': 'Фото', 'order': 'Порядок',
+        }
+
+
+class GalleryEventForm(forms.ModelForm):
+    class Meta:
+        model = GalleryEvent
+        fields = ['title', 'description', 'date', 'cover_image']
+        widgets = {
+            'title':       forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'date':        forms.DateInput(format='%Y-%m-%d', attrs={'class': 'form-control', 'type': 'date'}),
+            'cover_image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'title': 'Название события', 'description': 'Описание',
+            'date': 'Дата', 'cover_image': 'Обложка',
+        }
+
+
+class GalleryImageForm(forms.ModelForm):
+    class Meta:
+        model = GalleryImage
+        fields = ['image', 'caption', 'order']
+        widgets = {
+            'image':   forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'caption': forms.TextInput(attrs={'class': 'form-control'}),
+            'order':   forms.NumberInput(attrs={'class': 'form-control'}),
+        }
+        labels = {'image': 'Фото', 'caption': 'Подпись', 'order': 'Порядок'}
+
+
+GalleryImageFormSet = forms.inlineformset_factory(
+    GalleryEvent, GalleryImage,
+    form=GalleryImageForm,
+    extra=3, can_delete=True,
+)

@@ -1,0 +1,143 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CMS — Азия Старт{% endblock %}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+  <style>
+    body { background: #f4f6fb; min-height: 100vh; }
+
+    .cms-sidebar {
+      width: 240px; min-height: 100vh;
+      background: linear-gradient(180deg, #1a0a5e 0%, #28156f 100%);
+      position: fixed; top: 0; left: 0; z-index: 100;
+      display: flex; flex-direction: column;
+    }
+    .cms-sidebar .brand {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+    .cms-sidebar .brand .logo {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg,#0d6efd,#6610f2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cms-nav { padding: 12px 0; flex: 1; }
+    .cms-nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 20px; color: rgba(255,255,255,.7);
+      text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: all .2s; border-left: 3px solid transparent;
+    }
+    .cms-nav a:hover, .cms-nav a.active {
+      color: #fff; background: rgba(255,255,255,.08);
+      border-left-color: #0d6efd;
+    }
+    .cms-nav a i { font-size: 16px; width: 20px; }
+    .cms-nav .section-label {
+      padding: 10px 20px 4px; font-size: 10px;
+      color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: 1px;
+    }
+    .cms-sidebar .cms-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,.1);
+    }
+    .cms-main { margin-left: 240px; min-height: 100vh; display: flex; flex-direction: column; }
+    .cms-topbar {
+      background: #fff; border-bottom: 1px solid #e5e9f0;
+      padding: 0 24px; height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .cms-content { padding: 24px; flex: 1; }
+
+    @media (max-width: 768px) {
+      .cms-sidebar { width: 100%; min-height: auto; position: relative; flex-direction: row; flex-wrap: wrap; }
+      .cms-main { margin-left: 0; }
+      .cms-nav { display: flex; flex-wrap: wrap; padding: 8px; }
+      .cms-nav a { padding: 6px 12px; border-left: none; border-bottom: 2px solid transparent; font-size: 13px; }
+      .cms-nav a:hover, .cms-nav a.active { border-left-color: transparent; border-bottom-color: #0d6efd; }
+      .cms-nav .section-label { display: none; }
+    }
+  </style>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<div class="cms-sidebar">
+  <div class="brand d-flex align-items-center gap-2">
+    <div class="logo"><i class="bi bi-pencil-square text-white" style="font-size:16px;"></i></div>
+    <div>
+      <div class="text-white fw-bold" style="font-size:14px; line-height:1.2;">Азия Старт</div>
+      <div style="font-size:11px; color:rgba(255,255,255,.5);">CMS панель</div>
+    </div>
+  </div>
+
+  <nav class="cms-nav">
+    <div class="section-label">Контент</div>
+    <a href="{% url 'cms-dashboard' %}" class="{% if request.resolver_match.url_name == 'cms-dashboard' %}active{% endif %}">
+      <i class="bi bi-grid"></i> Дашборд
+    </a>
+    <a href="{% url 'cms-news-list' %}"
+       class="{% if 'cms-news' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-newspaper"></i> Новости
+    </a>
+    <a href="{% url 'cms-teacher-list' %}"
+       class="{% if 'cms-teacher' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-person-badge"></i> Учителя
+    </a>
+    <a href="{% url 'cms-best-student-list' %}"
+       class="{% if 'cms-best-student' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-star"></i> Лучшие ученики
+    </a>
+    <a href="{% url 'cms-gallery-list' %}"
+       class="{% if 'cms-gallery' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-images"></i> Галерея
+    </a>
+    <a href="{% url 'cms-graduate-list' %}"
+       class="{% if 'cms-graduate' in request.resolver_match.url_name %}active{% endif %}">
+      <i class="bi bi-mortarboard"></i> Выпускники
+    </a>
+  </nav>
+
+  <div class="cms-footer">
+    <a href="{% url 'home' %}" class="d-flex align-items-center gap-2 text-decoration-none mb-2"
+       style="color:rgba(255,255,255,.6); font-size:13px;">
+      <i class="bi bi-box-arrow-left"></i> В систему учёта
+    </a>
+    <a href="{% url 'cms-logout' %}" class="d-flex align-items-center gap-2 text-decoration-none"
+       style="color:rgba(255,99,99,.8); font-size:13px;">
+      <i class="bi bi-power"></i> Выйти
+    </a>
+  </div>
+</div>
+
+<div class="cms-main">
+  <div class="cms-topbar">
+    <span class="fw-semibold text-muted small">{% block page_title %}{% endblock %}</span>
+    <div class="d-flex align-items-center gap-2">
+      <i class="bi bi-person-circle text-muted"></i>
+      <span class="small text-muted">{{ request.user.username }}</span>
+    </div>
+  </div>
+
+  <div class="cms-content">
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2 mb-3" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

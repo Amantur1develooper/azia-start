@@ -1,0 +1,63 @@
+{% extends 'school/cms/base.html' %}
+
+{% block page_title %}Лучшие ученики{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex align-items-center gap-2">
+    <a href="{% url 'cms-dashboard' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i></a>
+    <h5 class="fw-bold mb-0"><i class="bi bi-star me-2 text-warning"></i>Лучшие ученики</h5>
+  </div>
+  <a href="{% url 'cms-best-student-create' %}" class="btn btn-warning btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Добавить ученика
+  </a>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th style="width:60px;">Фото</th>
+          <th>ФИО</th>
+          <th>Класс</th>
+          <th>Порядок</th>
+          <th>На главной</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td>
+            {% if item.image %}
+            <img src="{{ item.image.url }}" class="rounded-circle" style="width:40px;height:40px;object-fit:cover;">
+            {% else %}
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width:40px;height:40px;">
+              <i class="bi bi-person text-muted"></i>
+            </div>
+            {% endif %}
+          </td>
+          <td class="fw-semibold">{{ item.first_name }} {{ item.last_name }}</td>
+          <td class="text-muted small">{{ item.level }}</td>
+          <td class="text-muted small">{{ item.order }}</td>
+          <td>
+            <span class="badge {% if item.is_featured %}bg-success{% else %}bg-secondary{% endif %}">
+              {% if item.is_featured %}Да{% else %}Нет{% endif %}
+            </span>
+          </td>
+          <td>
+            <div class="d-flex gap-1 justify-content-end">
+              <a href="{% url 'cms-best-student-edit' item.pk %}" class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil"></i></a>
+              <a href="{% url 'cms-best-student-delete' item.pk %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">Нет записей</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

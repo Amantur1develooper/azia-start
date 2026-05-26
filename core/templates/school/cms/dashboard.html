@@ -1,0 +1,132 @@
+{% extends 'school/cms/base.html' %}
+
+{% block page_title %}Дашборд{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h4 class="fw-bold mb-0"><i class="bi bi-pencil-square me-2 text-primary"></i>Управление контентом сайта</h4>
+    <small class="text-muted">CMS — редактирование публичных страниц</small>
+  </div>
+</div>
+
+<div class="row g-3">
+
+  <!-- Новости -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center bg-primary bg-opacity-10" style="width:52px;height:52px;">
+            <i class="bi bi-newspaper text-primary fs-4"></i>
+          </div>
+          <div>
+            <div class="fw-bold fs-5">Новости</div>
+            <div class="text-muted small">{{ news_count }} записей</div>
+          </div>
+        </div>
+        {% if recent_news %}
+        <ul class="list-unstyled mb-3 small">
+          {% for n in recent_news %}
+          <li class="d-flex justify-content-between align-items-center py-1 border-bottom">
+            <span class="text-truncate me-2" style="max-width:160px;">{{ n.title }}</span>
+            <span class="badge {% if n.is_published %}bg-success{% else %}bg-secondary{% endif %} rounded-pill">
+              {% if n.is_published %}опубл.{% else %}черн.{% endif %}
+            </span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        <a href="{% url 'cms-news-list' %}" class="btn btn-primary btn-sm w-100">
+          <i class="bi bi-arrow-right me-1"></i>Управлять новостями
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Учителя -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center bg-success bg-opacity-10" style="width:52px;height:52px;">
+            <i class="bi bi-person-badge text-success fs-4"></i>
+          </div>
+          <div>
+            <div class="fw-bold fs-5">Учителя</div>
+            <div class="text-muted small">{{ teacher_count }} записей</div>
+          </div>
+        </div>
+        <p class="text-muted small mb-3">Фотографии и описания учителей на главной странице сайта.</p>
+        <a href="{% url 'cms-teacher-list' %}" class="btn btn-success btn-sm w-100">
+          <i class="bi bi-arrow-right me-1"></i>Управлять учителями
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Лучшие ученики -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center bg-warning bg-opacity-10" style="width:52px;height:52px;">
+            <i class="bi bi-star text-warning fs-4"></i>
+          </div>
+          <div>
+            <div class="fw-bold fs-5">Лучшие ученики</div>
+            <div class="text-muted small">{{ best_student_count }} записей</div>
+          </div>
+        </div>
+        <p class="text-muted small mb-3">Достижения учеников, отображаемые на публичном сайте.</p>
+        <a href="{% url 'cms-best-student-list' %}" class="btn btn-warning btn-sm w-100">
+          <i class="bi bi-arrow-right me-1"></i>Управлять учениками
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Галерея -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center bg-info bg-opacity-10" style="width:52px;height:52px;">
+            <i class="bi bi-images text-info fs-4"></i>
+          </div>
+          <div>
+            <div class="fw-bold fs-5">Галерея</div>
+            <div class="text-muted small">{{ gallery_count }} событий</div>
+          </div>
+        </div>
+        <p class="text-muted small mb-3">Фотоальбомы событий школы с обложками и фотографиями.</p>
+        <a href="{% url 'cms-gallery-list' %}" class="btn btn-info btn-sm w-100 text-white">
+          <i class="bi bi-arrow-right me-1"></i>Управлять галереей
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Выпускники -->
+  <div class="col-md-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center bg-secondary bg-opacity-10" style="width:52px;height:52px;">
+            <i class="bi bi-mortarboard text-secondary fs-4"></i>
+          </div>
+          <div>
+            <div class="fw-bold fs-5">Выпускники</div>
+            <div class="text-muted small">{{ graduate_count }} записей</div>
+          </div>
+        </div>
+        <p class="text-muted small mb-3">Страница выпускников с их достижениями и фотографиями.</p>
+        <a href="{% url 'cms-graduate-list' %}" class="btn btn-secondary btn-sm w-100">
+          <i class="bi bi-arrow-right me-1"></i>Управлять выпускниками
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
