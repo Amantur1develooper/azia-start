@@ -16,6 +16,10 @@ class StudentForm(forms.ModelForm):
             for f in ['contract_amount', 'contract_date', 'contract_file', 'payment_notes']:
                 if f in self.fields:
                     del self.fields[f]
+        # Сумму контракта может менять только суперпользователь
+        elif user and not user.is_superuser:
+            if 'contract_amount' in self.fields:
+                del self.fields['contract_amount']
         # Добавляем классы и placeholder для полей
         for field in self.fields:
             if field not in ['is_active', 'is_graduated', 'pol']:

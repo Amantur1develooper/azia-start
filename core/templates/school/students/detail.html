@@ -179,10 +179,50 @@
               <span class="text-muted small">Дата подписания</span>
               <span class="small fw-semibold">{{ student.contract_date|date:"d.m.Y"|default:"—" }}</span>
             </li>
-            <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
-              <span class="text-muted small">Сумма контракта</span>
-              <span class="small fw-bold">{{ contract_amount|default:0|floatformat:0|intcomma }} сом</span>
+
+            <!-- Сумма контракта за текущий год + inline-редактирование -->
+            <li class="list-group-item py-2 px-3">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="text-muted small">
+                  Сумма контракта
+                  {% if current_year %}<span class="text-primary">({{ current_year.year }})</span>{% endif %}
+                  {% if year_contract %}<i class="bi bi-pencil-fill text-primary ms-1" style="font-size:10px;" title="Индивидуальная сумма на этот год"></i>{% endif %}
+                </span>
+                <div class="d-flex align-items-center gap-1">
+                  <span class="small fw-bold" id="contractAmountDisplay">{{ contract_amount|floatformat:0|intcomma }} сом</span>
+                  {% if request.user.is_superuser %}
+                  <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-muted" style="font-size:12px;"
+                          onclick="document.getElementById('editContractForm').classList.toggle('d-none')">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  {% endif %}
+                </div>
+              </div>
+              {% if request.user.is_superuser %}
+              <form id="editContractForm" method="post" action="{% url 'student-year-contract' student.pk %}"
+                    class="d-none mt-2">
+                {% csrf_token %}
+                <input type="hidden" name="year_id" value="{{ current_year.pk }}">
+                <div class="input-group input-group-sm">
+                  <input type="number" name="amount" class="form-control form-control-sm"
+                         value="{{ contract_amount|floatformat:0 }}" min="1" step="1"
+                         placeholder="Сумма...">
+                  <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-check-lg"></i>
+                  </button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm"
+                          onclick="document.getElementById('editContractForm').classList.add('d-none')">
+                    <i class="bi bi-x"></i>
+                  </button>
+                </div>
+                <div class="text-muted mt-1" style="font-size:10px;">
+                  Базовая: {{ student.contract_amount|default:0|floatformat:0|intcomma }} сом
+                  {% if year_contract %} · Переопределена для {{ current_year.year }}{% endif %}
+                </div>
+              </form>
+              {% endif %}
             </li>
+
             {% if discount_current_year > 0 %}
             <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3 bg-warning bg-opacity-10">
               <span class="text-muted small"><i class="bi bi-tag me-1 text-warning"></i>Скидка ({{ current_year }})</span>

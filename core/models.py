@@ -184,6 +184,30 @@ class Student(models.Model):
         
         
 
+class StudentYearContract(models.Model):
+    """Индивидуальная сумма контракта ученика на конкретный учебный год."""
+    student = models.ForeignKey(
+        Student, on_delete=models.CASCADE,
+        related_name='year_contracts', verbose_name="Ученик"
+    )
+    academic_year = models.ForeignKey(
+        AcademicYear, on_delete=models.CASCADE,
+        verbose_name="Учебный год"
+    )
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        verbose_name="Сумма контракта (сом)"
+    )
+
+    class Meta:
+        verbose_name = "Контракт по году"
+        verbose_name_plural = "Контракты по годам"
+        unique_together = [('student', 'academic_year')]
+
+    def __str__(self):
+        return f"{self.student} — {self.academic_year}: {self.amount} сом"
+
+
 class Discount(models.Model):
     student = models.ForeignKey(
         Student, on_delete=models.CASCADE,

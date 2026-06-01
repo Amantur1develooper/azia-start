@@ -26,7 +26,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from .models import AcademicYear, Discount, Employee, News, SalaryPayment, Student, Grade, Income, Expense, Reservation, AuditLog, Student2, Teacher
+from .models import AcademicYear, Discount, Employee, News, SalaryPayment, Student, StudentYearContract, Grade, Income, Expense, Reservation, AuditLog, Student2, Teacher
 from .forms import DiscountForm, EmployeeForm, SalaryPaymentForm, StudentForm, IncomeForm, ExpenseForm, ReservationForm
 from django.http import HttpResponse
 from openpyxl import Workbook
@@ -203,9 +203,12 @@ class ClassDebtsReportView(LoginRequiredMixin, View):
                     academic_year=current_year,
                 ).aggregate(total=Sum('amount'))['total'] or 0
 
-                contract_amount = student.contract_amount or 0
-                effective = max(contract_amount - discount, 0)
-                remaining = max(effective - payments, 0)
+                from decimal import Decimal as _D
+                contract_amount = get_contract_amount(student, current_year)
+                discount = _D(str(discount))
+                payments = _D(str(payments))
+                effective = max(contract_amount - discount, _D('0'))
+                remaining = max(effective - payments, _D('0'))
 
                 # Добавляем данные в таблицу
                 ws.cell(row=row_num, column=1,
@@ -284,6 +287,17 @@ def is_admin(user):
     return user.is_superuser
 
 
+def get_contract_amount(student, year):
+    """Возвращает сумму контракта ученика на конкретный год.
+    Если для года задана индивидуальная сумма — берёт её, иначе берёт базовую."""
+    from decimal import Decimal
+    if year:
+        yc = StudentYearContract.objects.filter(student=student, academic_year=year).first()
+        if yc:
+            return yc.amount
+    return student.contract_amount or Decimal('0')
+
+
 @login_required
 def set_current_year(request):
     if request.method == 'POST' and (request.user.is_staff or request.user.is_superuser):
@@ -326,7 +340,19 @@ def home(request):
     total_reserve = reserve.count()
     total_expelled = expelled.count()
 
-    total_contract_amount = studying.aggregate(total=Sum('contract_amount'))['total'] or Decimal('0')
+    # Суммируем год-специфичные контракты (если есть) + базовые для остальных
+    if current_year:
+        from django.db.models import OuterRef, Subquery, DecimalField as DF
+        from django.db.models.functions import Coalesce as C2
+        yc_sub = StudentYearContract.objects.filter(
+            student=OuterRef('pk'), academic_year=current_year
+        ).values('amount')[:1]
+        total_contract_amount = studying.annotate(
+            _yc=C2(Subquery(yc_sub, output_field=DF(max_digits=10, decimal_places=2)),
+                   'contract_amount', Decimal('0'))
+        ).aggregate(total=Sum('_yc'))['total'] or Decimal('0')
+    else:
+        total_contract_amount = studying.aggregate(total=Sum('contract_amount'))['total'] or Decimal('0')
     total_paid_amount = Income.objects.filter(
         student__in=studying,
         academic_year=current_year,
@@ -369,6 +395,12 @@ def home(request):
             monthly_labels.append(month_names[m])
             monthly_data.append(float(total))
 
+    # Скидки за текущий год
+    discounts_this_year = Discount.objects.filter(
+        academic_year=current_year,
+        student__in=studying,
+    ).select_related('student', 'student__grade').order_by('-amount')
+
     # Последние расходы
     recent_expenses = Expense.objects.order_by('-date')[:5]
 
@@ -403,6 +435,7 @@ def home(request):
         'recent_expenses': recent_expenses,
         'total_expenses': total_expenses,
         'net_profit': net_profit,
+        'discounts_this_year': discounts_this_year,
     }
 
     return render(request, 'school/home.html', context)
@@ -444,7 +477,7 @@ class StudentListView(ListView):
                 Q(parent_contacts__icontains=search_query)
             )
 
-        # Аннотируем оплаты и скидки за текущий год
+        # Аннотируем оплаты, скидки и год-специфичную сумму контракта
         from django.db.models import ExpressionWrapper, F, Value
         dec_field = DecimalField(max_digits=10, decimal_places=2)
         if current_year:
@@ -457,12 +490,22 @@ class StudentListView(ListView):
                 student=OuterRef('pk'),
                 academic_year=current_year,
             ).values('student').annotate(s=Sum('amount')).values('s')
+            # Год-специфичная сумма контракта (если нет — берём базовую)
+            year_contract_sub = StudentYearContract.objects.filter(
+                student=OuterRef('pk'),
+                academic_year=current_year,
+            ).values('amount')[:1]
             queryset = queryset.annotate(
                 paid_this_year=Coalesce(Subquery(paid_sub, output_field=dec_field), Decimal('0')),
                 discount_this_year=Coalesce(Subquery(discount_sub, output_field=dec_field), Decimal('0')),
+                year_contract_amount=Coalesce(
+                    Subquery(year_contract_sub, output_field=dec_field),
+                    F('contract_amount'),
+                    Decimal('0'),
+                ),
             ).annotate(
                 effective_contract=ExpressionWrapper(
-                    Coalesce(F('contract_amount'), Decimal('0')) - F('discount_this_year'),
+                    F('year_contract_amount') - F('discount_this_year'),
                     output_field=dec_field
                 )
             )
@@ -470,10 +513,8 @@ class StudentListView(ListView):
             queryset = queryset.annotate(
                 paid_this_year=Value(Decimal('0'), output_field=dec_field),
                 discount_this_year=Value(Decimal('0'), output_field=dec_field),
-                effective_contract=ExpressionWrapper(
-                    Coalesce(F('contract_amount'), Decimal('0')),
-                    output_field=dec_field
-                ),
+                year_contract_amount=Coalesce(F('contract_amount'), Value(Decimal('0'), output_field=dec_field)),
+                effective_contract=Coalesce(F('contract_amount'), Value(Decimal('0'), output_field=dec_field)),
             )
 
         return queryset.order_by('grade__number', 'grade__parallel', 'full_name')
@@ -505,7 +546,9 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
         ).order_by('-date')
 
         total_payments = payments.filter(status='paid').aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
-        contract_amount = student.contract_amount or Decimal('0')
+
+        # Сумма контракта: год-специфичная или базовая
+        contract_amount = get_contract_amount(student, current_year)
 
         # Скидка за текущий год
         discount_current_year = Discount.objects.filter(
@@ -519,6 +562,11 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
         if effective_contract > 0:
             payment_percent = min(int((total_payments / effective_contract) * 100), 100)
 
+        # Год-специфичная запись контракта для текущего года (если есть)
+        year_contract = StudentYearContract.objects.filter(
+            student=student, academic_year=current_year
+        ).first()
+
         # Все скидки (сгруппированные по году для отображения в истории)
         discounts = Discount.objects.filter(student=student).select_related('academic_year').order_by('-academic_year__start_date')
 
@@ -531,6 +579,7 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
             'all_payments': all_payments,
             'total_payments': total_payments,
             'contract_amount': contract_amount,
+            'year_contract': year_contract,
             'discount_current_year': discount_current_year,
             'effective_contract': effective_contract,
             'remaining_payment': remaining_payment,
@@ -560,11 +609,19 @@ class StudentCreateView(LoginRequiredMixin, CreateView):
     
     def form_valid(self, form):
         form.instance.created_by = self.request.user
-        messages.success(
-            self.request,
-            f"Ученик {form.instance.full_name} успешно добавлен!"
-        )
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        # При создании фиксируем начальную сумму как год-специфичный контракт
+        contract_amount = form.cleaned_data.get('contract_amount')
+        if contract_amount:
+            current_year = AcademicYear.objects.filter(is_current=True).first()
+            if current_year:
+                StudentYearContract.objects.get_or_create(
+                    student=self.object,
+                    academic_year=current_year,
+                    defaults={'amount': contract_amount},
+                )
+        messages.success(self.request, f"Ученик {self.object.full_name} успешно добавлен!")
+        return response
 
 
 def login_view(request):
@@ -601,6 +658,59 @@ class StudentUpdateView(LoginRequiredMixin, UpdateView):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
         return kwargs
+
+    def form_valid(self, form):
+        from decimal import Decimal
+        new_amount = form.cleaned_data.get('contract_amount')
+        # Запоминаем текущую базовую сумму ДО сохранения
+        original_amount = Student.objects.filter(pk=self.object.pk).values_list('contract_amount', flat=True).first()
+
+        response = super().form_valid(form)  # сохраняет форму (в т.ч. contract_amount в Student)
+
+        if new_amount is not None:
+            current_year = AcademicYear.objects.filter(is_current=True).first()
+            if current_year:
+                # Сохраняем год-специфичный контракт для текущего года
+                StudentYearContract.objects.update_or_create(
+                    student=self.object,
+                    academic_year=current_year,
+                    defaults={'amount': new_amount},
+                )
+            # Восстанавливаем базовую сумму — она не должна меняться при редактировании
+            Student.objects.filter(pk=self.object.pk).update(contract_amount=original_amount)
+
+        messages.success(self.request, f"Данные ученика {self.object.full_name} обновлены.")
+        return response
+
+
+class StudentYearContractUpdateView(LoginRequiredMixin, View):
+    """Устанавливает/обновляет сумму контракта ученика на указанный год."""
+
+    def post(self, request, pk):
+        from decimal import Decimal, InvalidOperation
+        student = get_object_or_404(Student, pk=pk)
+        if not request.user.is_superuser:
+            messages.error(request, "Только суперпользователь может изменять сумму контракта.")
+            return redirect('student-detail', pk=pk)
+
+        year_id = request.POST.get('year_id')
+        amount_raw = request.POST.get('amount', '').strip()
+        try:
+            amount = Decimal(amount_raw)
+            if amount <= 0:
+                raise ValueError
+        except (InvalidOperation, ValueError):
+            messages.error(request, "Укажите корректную сумму контракта.")
+            return redirect('student-detail', pk=pk)
+
+        year = get_object_or_404(AcademicYear, pk=year_id)
+        StudentYearContract.objects.update_or_create(
+            student=student,
+            academic_year=year,
+            defaults={'amount': amount},
+        )
+        messages.success(request, f"Сумма контракта на {year.year} изменена: {amount:,.0f} сом.")
+        return redirect('student-detail', pk=pk)
 
 
 class DiscountCreateView(LoginRequiredMixin, CreateView):

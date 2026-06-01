@@ -199,6 +199,50 @@
 <!-- Нижняя секция -->
 <div class="row g-3">
 
+  <!-- Скидки за текущий год -->
+  {% if discounts_this_year %}
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-bottom-0 pt-3 d-flex justify-content-between align-items-center">
+        <h6 class="fw-bold mb-0"><i class="bi bi-tag me-2 text-warning"></i>Скидки за {{ current_year.year }}</h6>
+        <span class="badge bg-warning text-dark rounded-pill">
+          Итого: {{ total_discounts|floatformat:0|intcomma }} сом · {{ discounts_this_year|length }} уч.
+        </span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+          <thead class="table-light">
+            <tr>
+              <th>Ученик</th>
+              <th>Класс</th>
+              <th>Сумма скидки</th>
+              <th>Причина</th>
+              <th>Дата</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in discounts_this_year %}
+            <tr>
+              <td>
+                <a href="{% url 'student-detail' d.student.pk %}" class="fw-semibold text-decoration-none text-dark">
+                  {{ d.student.full_name }}
+                </a>
+              </td>
+              <td>
+                <span class="badge bg-light text-dark border">{{ d.student.grade.number }}{{ d.student.grade.parallel }}</span>
+              </td>
+              <td class="fw-bold text-warning">−{{ d.amount|floatformat:0|intcomma }} сом</td>
+              <td class="text-muted">{{ d.reason|default:"—" }}</td>
+              <td class="text-muted">{{ d.created_at|date:"d.m.Y" }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
   <!-- Ученики по статусу -->
   <div class="col-md-4">
     <div class="card border-0 shadow-sm h-100">
