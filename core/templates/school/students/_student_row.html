@@ -44,23 +44,24 @@
         {% else %}
             <span class="text-danger small">
                 {{ student.paid_this_year|floatformat:0|intcomma }}
-                / {{ student.contract_amount|floatformat:0|intcomma }} сом
+                / {{ student.effective_contract|floatformat:0|intcomma }} сом
             </span>
+        {% endif %}
+        {% if student.discount_this_year > 0 %}
+        <div class="text-warning" style="font-size:10px;"><i class="bi bi-tag"></i> скидка: {{ student.discount_this_year|floatformat:0|intcomma }} сом</div>
         {% endif %}
     </td>
 
     <td data-label="Прогресс" class="d-none d-md-table-cell">
-        {% if student.contract_amount and student.contract_amount > 0 %}
-            {% with pct=student.paid_this_year|floatformat:0 %}
+        {% if student.effective_contract and student.effective_contract > 0 %}
             <div class="progress rounded-pill" style="height:8px; width:100px;">
                 {% if paid %}
                     <div class="progress-bar bg-success" style="width:100%;"></div>
                 {% else %}
-                    {% widthratio student.paid_this_year student.contract_amount 100 as pct_int %}
+                    {% widthratio student.paid_this_year student.effective_contract 100 as pct_int %}
                     <div class="progress-bar bg-warning" style="width:{{ pct_int }}%;"></div>
                 {% endif %}
             </div>
-            {% endwith %}
         {% else %}
             <span class="text-muted">—</span>
         {% endif %}

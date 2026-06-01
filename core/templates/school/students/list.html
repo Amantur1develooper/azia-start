@@ -72,6 +72,26 @@
                 </div>
             </div>
 
+            <!-- Поиск -->
+            <form method="get" class="mb-3">
+                {% if selected_grade %}<input type="hidden" name="grade" value="{{ selected_grade }}">{% endif %}
+                {% if show_graduated %}<input type="hidden" name="graduated" value="1">{% endif %}
+                <div class="input-group" style="max-width:420px;">
+                    <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}"
+                           class="form-control border-start-0"
+                           placeholder="Поиск по ФИО или контакту..."
+                           autofocus>
+                    {% if search_query %}
+                    <a href="?{% if selected_grade %}grade={{ selected_grade }}&{% endif %}{% if show_graduated %}graduated=1{% endif %}"
+                       class="btn btn-outline-secondary" title="Сбросить">
+                        <i class="bi bi-x"></i>
+                    </a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">Найти</button>
+                </div>
+            </form>
+
             <!-- Легенда -->
             <div class="d-flex gap-3 mb-3 small text-muted">
                 <span><span class="badge bg-success me-1">&nbsp;</span>Полностью оплачено</span>
@@ -95,8 +115,8 @@
                     </thead>
                     <tbody>
                         {% for student in students %}
-                        {% if student.contract_amount and student.contract_amount > 0 %}
-                            {% if student.paid_this_year >= student.contract_amount %}
+                        {% if student.effective_contract and student.effective_contract > 0 %}
+                            {% if student.paid_this_year >= student.effective_contract %}
                                 {% with row_class="table-success" paid=True %}
                                 {% include "school/students/_student_row.html" %}
                                 {% endwith %}
@@ -125,10 +145,10 @@
                 <ul class="pagination justify-content-center flex-wrap">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">&laquo;</a>
+                        <a class="page-link" href="?page=1{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&laquo;</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">&#8249;</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&#8249;</a>
                     </li>
                     {% endif %}
                     <li class="page-item disabled">
@@ -136,10 +156,10 @@
                     </li>
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">&#8250;</a>
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&#8250;</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}">&raquo;</a>
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&raquo;</a>
                     </li>
                     {% endif %}
                 </ul>

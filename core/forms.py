@@ -1,5 +1,5 @@
 from django import forms
-from .models import SalaryPayment, Student, Income, Expense, Reservation, News, Teacher, Student2, Graduate, GalleryEvent, GalleryImage
+from .models import SalaryPayment, Student, Income, Expense, Reservation, News, Teacher, Student2, Graduate, GalleryEvent, GalleryImage, Discount, AcademicYear
 from django.utils import timezone 
 from django.core.exceptions import ValidationError
 import random
@@ -9,7 +9,13 @@ from .models import Employee
 
 class StudentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+        # Скрываем финансовые поля для обычных пользователей
+        if user and not (user.is_staff or user.is_superuser):
+            for f in ['contract_amount', 'contract_date', 'contract_file', 'payment_notes']:
+                if f in self.fields:
+                    del self.fields[f]
         # Добавляем классы и placeholder для полей
         for field in self.fields:
             if field not in ['is_active', 'is_graduated', 'pol']:
@@ -324,3 +330,23 @@ GalleryImageFormSet = forms.inlineformset_factory(
     form=GalleryImageForm,
     extra=3, can_delete=True,
 )
+
+
+class DiscountForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['academic_year'].queryset = AcademicYear.objects.order_by('-start_date')
+
+    class Meta:
+        model = Discount
+        fields = ['academic_year', 'amount', 'reason']
+        widgets = {
+            'academic_year': forms.Select(attrs={'class': 'form-select'}),
+            'amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0', 'min': '1'}),
+            'reason': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Причина скидки...'}),
+        }
+        labels = {
+            'academic_year': 'Учебный год',
+            'amount': 'Сумма скидки (сом)',
+            'reason': 'Причина',
+        }

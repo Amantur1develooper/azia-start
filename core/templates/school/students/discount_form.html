@@ -1,0 +1,39 @@
+{% extends 'school/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'student-detail' student.pk %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h5 class="fw-bold mb-0">Добавить скидку — {{ student.full_name }}</h5>
+</div>
+
+<div class="card border-0 shadow-sm" style="max-width:480px;">
+  <div class="card-body p-4">
+    <div class="alert alert-info py-2 small mb-3">
+      <i class="bi bi-info-circle me-1"></i>
+      Сумма контракта: <strong>{{ student.contract_amount|default:0|floatformat:0|intcomma }} сом</strong>.
+      Скидка уменьшает сумму к оплате за выбранный учебный год.
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="mb-3">
+        <label class="form-label fw-semibold small">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}
+          <div class="text-danger small mt-1">{{ error }}</div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg me-1"></i>Сохранить скидку
+        </button>
+        <a href="{% url 'student-detail' student.pk %}" class="btn btn-outline-secondary">Отмена</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

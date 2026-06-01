@@ -1,0 +1,30 @@
+{% extends 'school/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="d-flex align-items-center gap-2 mb-4">
+  <a href="{% url 'student-detail' object.student.pk %}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-arrow-left"></i>
+  </a>
+  <h5 class="fw-bold mb-0 text-danger">Удалить скидку</h5>
+</div>
+
+<div class="card border-0 shadow-sm" style="max-width:420px;">
+  <div class="card-body p-4 text-center">
+    <i class="bi bi-exclamation-triangle-fill text-danger mb-3 d-block" style="font-size:3rem;"></i>
+    <h6 class="fw-bold mb-2">Вы уверены?</h6>
+    <p class="text-muted mb-1">Ученик: <strong>{{ object.student.full_name }}</strong></p>
+    <p class="text-muted mb-1">Год: <strong>{{ object.academic_year }}</strong></p>
+    <p class="text-muted mb-3">Сумма скидки: <strong>{{ object.amount|floatformat:0|intcomma }} сом</strong>
+      {% if object.reason %} — {{ object.reason }}{% endif %}
+    </p>
+    <form method="post" class="d-flex gap-2 justify-content-center">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">
+        <i class="bi bi-trash me-1"></i>Удалить
+      </button>
+      <a href="{% url 'student-detail' object.student.pk %}" class="btn btn-outline-secondary">Отмена</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

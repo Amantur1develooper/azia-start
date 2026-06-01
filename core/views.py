@@ -26,8 +26,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
-from .models import AcademicYear, Employee, News, SalaryPayment, Student, Grade, Income, Expense, Reservation, AuditLog, Student2, Teacher
-from .forms import EmployeeForm, SalaryPaymentForm, StudentForm, IncomeForm, ExpenseForm, ReservationForm
+from .models import AcademicYear, Discount, Employee, News, SalaryPayment, Student, Grade, Income, Expense, Reservation, AuditLog, Student2, Teacher
+from .forms import DiscountForm, EmployeeForm, SalaryPaymentForm, StudentForm, IncomeForm, ExpenseForm, ReservationForm
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
@@ -168,7 +168,8 @@ class ClassDebtsReportView(LoginRequiredMixin, View):
 
         # Заголовки
         headers = [
-            'Класс', 'Ученик', 'Сумма контракта', 
+            'Класс', 'Ученик', 'Сумма контракта',
+            'Скидка', 'К оплате (с учётом скидки)',
             'Оплачено', 'Остаток', 'Статус'
         ]
         
@@ -196,32 +197,42 @@ class ClassDebtsReportView(LoginRequiredMixin, View):
                     academic_year=current_year,
                     status='paid'
                 ).aggregate(total=Sum('amount'))['total'] or 0
-                
+
+                discount = Discount.objects.filter(
+                    student=student,
+                    academic_year=current_year,
+                ).aggregate(total=Sum('amount'))['total'] or 0
+
                 contract_amount = student.contract_amount or 0
-                remaining = max(contract_amount - payments, 0)
-                
+                effective = max(contract_amount - discount, 0)
+                remaining = max(effective - payments, 0)
+
                 # Добавляем данные в таблицу
-                ws.cell(row=row_num, column=1, 
+                ws.cell(row=row_num, column=1,
                        value=f"{grade.number}{grade.parallel}").border = border
-                ws.cell(row=row_num, column=2, 
+                ws.cell(row=row_num, column=2,
                        value=student.full_name).border = border
-                ws.cell(row=row_num, column=3, 
+                ws.cell(row=row_num, column=3,
                        value=contract_amount).border = border
-                ws.cell(row=row_num, column=4, 
+                ws.cell(row=row_num, column=4,
+                       value=discount).border = border
+                ws.cell(row=row_num, column=5,
+                       value=effective).border = border
+                ws.cell(row=row_num, column=6,
                        value=payments).border = border
-                ws.cell(row=row_num, column=5, 
+                ws.cell(row=row_num, column=7,
                        value=remaining).border = border
-                ws.cell(row=row_num, column=6, 
+                ws.cell(row=row_num, column=8,
                        value=student.get_status_display()).border = border
-                
+
                 # Форматируем числовые ячейки
-                for col in [3,4,5]:
+                for col in [3, 4, 5, 6, 7]:
                     ws.cell(row=row_num, column=col).number_format = '#,##0.00'
                     ws.cell(row=row_num, column=col).alignment = right_aligned
-                
+
                 # Подсветка должников
                 if remaining > 0:
-                    for col in range(1,7):
+                    for col in range(1, 9):
                         ws.cell(row=row_num, column=col).fill = PatternFill(
                             start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
                 
@@ -232,7 +243,9 @@ class ClassDebtsReportView(LoginRequiredMixin, View):
         for col, formula in [
             (3, f"SUM(C2:C{row_num-1})"),
             (4, f"SUM(D2:D{row_num-1})"),
-            (5, f"SUM(E2:E{row_num-1})")
+            (5, f"SUM(E2:E{row_num-1})"),
+            (6, f"SUM(F2:F{row_num-1})"),
+            (7, f"SUM(G2:G{row_num-1})"),
         ]:
             ws.cell(row=row_num, column=col, value=formula)
             ws.cell(row=row_num, column=col).number_format = '#,##0.00'
@@ -306,11 +319,16 @@ def home(request):
         academic_year=current_year,
         status='paid'
     ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
-    total_remaining = max(total_contract_amount - total_paid_amount, Decimal('0'))
+    total_discounts = Discount.objects.filter(
+        student__in=studying,
+        academic_year=current_year,
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+    effective_total_contract = max(total_contract_amount - total_discounts, Decimal('0'))
+    total_remaining = max(effective_total_contract - total_paid_amount, Decimal('0'))
 
     payment_percent = 0
-    if total_contract_amount > 0:
-        payment_percent = int((total_paid_amount / total_contract_amount) * 100)
+    if effective_total_contract > 0:
+        payment_percent = int((total_paid_amount / effective_total_contract) * 100)
 
     # Последние 6 платежей
     recent_payments = Income.objects.filter(
@@ -361,6 +379,8 @@ def home(request):
         'total_reserve': total_reserve,
         'total_expelled': total_expelled,
         'total_contract_amount': total_contract_amount,
+        'total_discounts': total_discounts,
+        'effective_total_contract': effective_total_contract,
         'total_paid_amount': total_paid_amount,
         'total_remaining': total_remaining,
         'payment_percent': payment_percent,
@@ -396,6 +416,7 @@ class StudentListView(ListView):
         queryset = super().get_queryset().select_related('grade')
         grade_filter = self.request.GET.get('grade')
         show_graduated = self.request.GET.get('graduated') == '1'
+        search_query = self.request.GET.get('q', '').strip()
 
         if not show_graduated:
             queryset = queryset.filter(is_graduated=False)
@@ -404,22 +425,43 @@ class StudentListView(ListView):
             number, parallel = grade_filter.split('-')
             queryset = queryset.filter(grade__number=number, grade__parallel=parallel)
 
-        # Аннотируем сумму оплат за текущий год прямо в queryset
+        if search_query:
+            queryset = queryset.filter(
+                Q(full_name__icontains=search_query) |
+                Q(parent_contacts__icontains=search_query)
+            )
+
+        # Аннотируем оплаты и скидки за текущий год
+        from django.db.models import ExpressionWrapper, F, Value
+        dec_field = DecimalField(max_digits=10, decimal_places=2)
         if current_year:
             paid_sub = Income.objects.filter(
                 student=OuterRef('pk'),
                 academic_year=current_year,
                 status='paid'
             ).values('student').annotate(s=Sum('amount')).values('s')
+            discount_sub = Discount.objects.filter(
+                student=OuterRef('pk'),
+                academic_year=current_year,
+            ).values('student').annotate(s=Sum('amount')).values('s')
             queryset = queryset.annotate(
-                paid_this_year=Coalesce(
-                    Subquery(paid_sub, output_field=DecimalField(max_digits=10, decimal_places=2)),
-                    Decimal('0')
+                paid_this_year=Coalesce(Subquery(paid_sub, output_field=dec_field), Decimal('0')),
+                discount_this_year=Coalesce(Subquery(discount_sub, output_field=dec_field), Decimal('0')),
+            ).annotate(
+                effective_contract=ExpressionWrapper(
+                    Coalesce(F('contract_amount'), Decimal('0')) - F('discount_this_year'),
+                    output_field=dec_field
                 )
             )
         else:
-            from django.db.models import Value
-            queryset = queryset.annotate(paid_this_year=Value(Decimal('0'), output_field=DecimalField()))
+            queryset = queryset.annotate(
+                paid_this_year=Value(Decimal('0'), output_field=dec_field),
+                discount_this_year=Value(Decimal('0'), output_field=dec_field),
+                effective_contract=ExpressionWrapper(
+                    Coalesce(F('contract_amount'), Decimal('0')),
+                    output_field=dec_field
+                ),
+            )
 
         return queryset.order_by('grade__number', 'grade__parallel', 'full_name')
 
@@ -429,6 +471,7 @@ class StudentListView(ListView):
         context['selected_grade'] = self.request.GET.get('grade', '')
         context['show_graduated'] = self.request.GET.get('graduated') == '1'
         context['current_year'] = AcademicYear.objects.filter(is_current=True).first()
+        context['search_query'] = self.request.GET.get('q', '')
         return context
 
 
@@ -450,11 +493,21 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
 
         total_payments = payments.filter(status='paid').aggregate(Sum('amount'))['amount__sum'] or Decimal('0')
         contract_amount = student.contract_amount or Decimal('0')
-        remaining_payment = max(contract_amount - total_payments, Decimal('0'))
+
+        # Скидка за текущий год
+        discount_current_year = Discount.objects.filter(
+            student=student, academic_year=current_year
+        ).aggregate(s=Sum('amount'))['s'] or Decimal('0')
+        effective_contract = max(contract_amount - discount_current_year, Decimal('0'))
+
+        remaining_payment = max(effective_contract - total_payments, Decimal('0'))
 
         payment_percent = 0
-        if contract_amount > 0:
-            payment_percent = min(int((total_payments / contract_amount) * 100), 100)
+        if effective_contract > 0:
+            payment_percent = min(int((total_payments / effective_contract) * 100), 100)
+
+        # Все скидки (сгруппированные по году для отображения в истории)
+        discounts = Discount.objects.filter(student=student).select_related('academic_year').order_by('-academic_year__start_date')
 
         # Все платежи по всем годам (для истории)
         all_payments = Income.objects.filter(student=student).select_related('academic_year').order_by('-date')
@@ -464,19 +517,28 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
             'payments': payments,
             'all_payments': all_payments,
             'total_payments': total_payments,
+            'contract_amount': contract_amount,
+            'discount_current_year': discount_current_year,
+            'effective_contract': effective_contract,
             'remaining_payment': remaining_payment,
             'payment_percent': payment_percent,
             'current_year': current_year,
-            'is_fully_paid': remaining_payment <= 0 and contract_amount > 0,
+            'discounts': discounts,
+            'is_fully_paid': remaining_payment <= 0 and effective_contract > 0,
         })
         return context
   
-class StudentCreateView(LoginRequiredMixin, CreateView):  # Убрали UserPassesTestMixin
+class StudentCreateView(LoginRequiredMixin, CreateView):
     model = Student
     form_class = StudentForm
     template_name = 'school/students/form.html'
     success_url = reverse_lazy('student-list')
-    
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Добавление нового ученика'
@@ -516,14 +578,52 @@ class CustomLoginView(LoginView):
 
 
 
-class StudentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class StudentUpdateView(LoginRequiredMixin, UpdateView):
     model = Student
     form_class = StudentForm
     template_name = 'school/students/form.html'
     success_url = reverse_lazy('student-list')
-    
-    def test_func(self):
-        return is_admin(self.request.user)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+
+class DiscountCreateView(LoginRequiredMixin, CreateView):
+    model = Discount
+    form_class = DiscountForm
+    template_name = 'school/students/discount_form.html'
+
+    def get_student(self):
+        return get_object_or_404(Student, pk=self.kwargs['pk'])
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['student'] = self.get_student()
+        return ctx
+
+    def form_valid(self, form):
+        form.instance.student = self.get_student()
+        messages.success(self.request, "Скидка успешно добавлена.")
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('student-detail', kwargs={'pk': self.kwargs['pk']})
+
+
+class DiscountDeleteView(LoginRequiredMixin, DeleteView):
+    model = Discount
+    template_name = 'school/students/discount_confirm_delete.html'
+
+    def get_success_url(self):
+        return reverse_lazy('student-detail', kwargs={'pk': self.object.student.pk})
+
+    def form_valid(self, form):
+        messages.success(self.request, "Скидка удалена.")
+        return super().form_valid(form)
+
+
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 
