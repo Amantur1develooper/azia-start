@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
-from .models import AcademicYear, Application, Grade, Student, Income, Expense, Reservation, AuditLog, Student2, Teacher, TelegramSubscriber
+from .models import AcademicYear, Application, Grade, Student, Income, Expense, Reservation, AuditLog, Student2, Teacher, TelegramSubscriber, UserProfile
 from import_export.admin import ImportExportModelAdmin
 
 from django.contrib import admin
@@ -14,10 +14,22 @@ admin.site.site_header = "Администрирование школы 'Ази�
 admin.site.site_title = "Азия Старт"
 admin.site.index_title = "Панель управления"
 
+class UserProfileInline(admin.StackedInline):
+    model = UserProfile
+    can_delete = False
+    verbose_name_plural = 'Профиль'
+    fields = ('is_cms_user',)
+
+
 class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active')
-    list_filter = ('is_staff', 'is_superuser', 'is_active')
+    inlines = (UserProfileInline,)
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'is_active', 'get_is_cms')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'profile__is_cms_user')
     search_fields = ('username', 'email', 'first_name', 'last_name')
+
+    @admin.display(boolean=True, description='СММ')
+    def get_is_cms(self, obj):
+        return getattr(getattr(obj, 'profile', None), 'is_cms_user', False)
 
 
 @admin.register(Grade)

@@ -33,7 +33,7 @@ class StudentForm(forms.ModelForm):
     class Meta:
         model = Student
         fields = [
-            'full_name', 'birth_date', 'pol', 'parent_contacts',
+            'photo', 'full_name', 'birth_date', 'pol', 'parent_contacts',
             'admission_date', 'enrollment_year', 'number_contract', 'grade', 'status',
             'is_active', 'is_graduated', 'contract_amount', 'contract_date', 'contract_file',
             'payment_notes'
@@ -61,8 +61,10 @@ class StudentForm(forms.ModelForm):
             'status': forms.Select(attrs={'class': 'form-select'}),
             'pol': forms.Select(attrs={'class': 'form-select'}),
             'enrollment_year': forms.Select(attrs={'class': 'form-select'}),
+            'photo': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }
         labels = {
+            'photo': 'Фото ученика',
             'full_name': 'ФИО ученика',
             'birth_date': 'Дата рождения',
             'pol': 'Пол',

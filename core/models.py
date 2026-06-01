@@ -2,6 +2,8 @@ import os
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.core.validators import MinValueValidator
@@ -66,6 +68,12 @@ class Student(models.Model):
         ('female', 'жен'),
     ]
     
+    photo = models.ImageField(
+        upload_to='students/photos/',
+        verbose_name="Фото ученика",
+        null=True,
+        blank=True
+    )
     full_name = models.CharField(max_length=200, verbose_name="ФИО ученика")
     birth_date = models.DateField(verbose_name="Дата рождения")
     pol = models.CharField(max_length=10, choices=pol_choices, default='male', verbose_name="Пол", blank=True, null=True)
@@ -832,3 +840,28 @@ class Graduate(models.Model):
                 self.slug = f"graduate-{self.graduation_year}-{self.order}-{counter}"
                 counter += 1
         super().save(*args, **kwargs)
+
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE,
+        related_name='profile', verbose_name="Пользователь"
+    )
+    is_cms_user = models.BooleanField(
+        default=False,
+        verbose_name="СММ пользователь",
+        help_text="Если включено — пользователь имеет доступ только к CMS, бухгалтерия закрыта."
+    )
+
+    class Meta:
+        verbose_name = "Профиль пользователя"
+        verbose_name_plural = "Профили пользователей"
+
+    def __str__(self):
+        return f"Профиль: {self.user.username}"
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.get_or_create(user=instance)

@@ -1863,15 +1863,22 @@ from .forms import (NewsForm, TeacherForm, BestStudentForm,
                     GraduateForm, GalleryEventForm, GalleryImageFormSet)
 
 
+def _has_cms_access(user):
+    """Доступ к CMS: staff, superuser или СММ-пользователь."""
+    if user.is_staff or user.is_superuser:
+        return True
+    return getattr(getattr(user, 'profile', None), 'is_cms_user', False)
+
+
 def cms_login(request):
-    if request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser):
+    if request.user.is_authenticated and _has_cms_access(request.user):
         return redirect('cms-dashboard')
     error = None
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
         user = authenticate(request, username=username, password=password)
-        if user is not None and (user.is_staff or user.is_superuser):
+        if user is not None and _has_cms_access(user):
             login(request, user)
             return redirect(request.GET.get('next', 'cms-dashboard'))
         else:
@@ -1890,14 +1897,14 @@ class CMSRequiredMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect(f'/cms/login/?next={request.path}')
-        if not (request.user.is_staff or request.user.is_superuser):
+        if not _has_cms_access(request.user):
             return redirect(f'/cms/login/?next={request.path}')
         return super(LoginRequiredMixin, self).dispatch(request, *args, **kwargs)
 
 
 @login_required(login_url='/cms/login/')
 def cms_dashboard(request):
-    if not (request.user.is_staff or request.user.is_superuser):
+    if not _has_cms_access(request.user):
         return redirect('cms-login')
     context = {
         'news_count':         News.objects.count(),
