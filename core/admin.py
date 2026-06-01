@@ -27,6 +27,12 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'profile__is_cms_user')
     search_fields = ('username', 'email', 'first_name', 'last_name')
 
+    def get_inline_instances(self, request, obj=None):
+        # Inline показываем только при редактировании существующего пользователя
+        if obj is None:
+            return []
+        return super().get_inline_instances(request, obj)
+
     @admin.display(boolean=True, description='СММ')
     def get_is_cms(self, obj):
         return getattr(getattr(obj, 'profile', None), 'is_cms_user', False)
