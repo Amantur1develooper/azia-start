@@ -11,15 +11,16 @@ class StudentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
-        # Скрываем финансовые поля для обычных пользователей
+        # Финансовые поля (кроме суммы контракта) скрыты для обычных пользователей
         if user and not (user.is_staff or user.is_superuser):
-            for f in ['contract_amount', 'contract_date', 'contract_file', 'payment_notes']:
+            for f in ['contract_date', 'contract_file', 'payment_notes']:
                 if f in self.fields:
                     del self.fields[f]
-        # Сумму контракта может менять только суперпользователь
-        elif user and not user.is_superuser:
+        # Сумму контракта видят все, но редактирует только суперпользователь
+        if user and not user.is_superuser:
             if 'contract_amount' in self.fields:
-                del self.fields['contract_amount']
+                self.fields['contract_amount'].disabled = True
+                self.fields['contract_amount'].help_text = 'Только суперпользователь может изменять сумму контракта.'
         # Добавляем классы и placeholder для полей
         for field in self.fields:
             if field not in ['is_active', 'is_graduated', 'pol']:
