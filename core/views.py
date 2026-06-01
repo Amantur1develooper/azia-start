@@ -283,6 +283,19 @@ def logout_view(request):
 def is_admin(user):
     return user.is_superuser
 
+
+@login_required
+def set_current_year(request):
+    if request.method == 'POST' and (request.user.is_staff or request.user.is_superuser):
+        year_id = request.POST.get('year_id')
+        if year_id:
+            year = get_object_or_404(AcademicYear, pk=year_id)
+            AcademicYear.objects.filter(is_current=True).update(is_current=False)
+            year.is_current = True
+            year.save()
+            messages.success(request, f"Текущий учебный год изменён на {year.year}.")
+    return redirect(request.POST.get('next', 'home'))
+
 def is_accountant(user):
     return user.groups.filter(name='Бухгалтер').exists()
 

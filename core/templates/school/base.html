@@ -392,7 +392,38 @@
                         <a class="nav-link" href="{% url 'application_list' %}">Заявки</a>
                     </li>
                 </ul>
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if user.is_staff or user.is_superuser %}
+                    <li class="nav-item dropdown me-2">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-1 py-1 px-2 rounded"
+                           style="background:rgba(255,255,255,.12); font-size:13px;"
+                           href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-calendar3"></i>
+                            <span>{{ current_academic_year.year|default:"Год не выбран" }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" style="min-width:200px;">
+                            <li><h6 class="dropdown-header small">Учебный год</h6></li>
+                            {% for yr in all_academic_years %}
+                            <li>
+                                <form method="post" action="{% url 'set-current-year' %}" class="d-contents">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="year_id" value="{{ yr.pk }}">
+                                    <input type="hidden" name="next" value="{{ request.path }}">
+                                    <button type="submit"
+                                            class="dropdown-item d-flex justify-content-between align-items-center {% if yr.is_current %}fw-bold text-primary{% endif %}">
+                                        {{ yr.year }}
+                                        {% if yr.is_current %}
+                                        <i class="bi bi-check2 text-primary ms-2"></i>
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            </li>
+                            {% empty %}
+                            <li><span class="dropdown-item text-muted small">Нет учебных годов</span></li>
+                            {% endfor %}
+                        </ul>
+                    </li>
+                    {% endif %}
                     {% if user.is_authenticated %}
                     <li class="nav-item mt-2">
                         <span class="navbar-text me-2">Привет {{ user.username }}</span>
