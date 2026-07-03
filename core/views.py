@@ -667,7 +667,7 @@ class StudentUpdateView(LoginRequiredMixin, UpdateView):
 
         response = super().form_valid(form)  # сохраняет форму (в т.ч. contract_amount в Student)
 
-        if new_amount is not None:
+        if new_amount is not None and self.request.user.is_superuser:
             current_year = AcademicYear.objects.filter(is_current=True).first()
             if current_year:
                 # Сохраняем год-специфичный контракт для текущего года

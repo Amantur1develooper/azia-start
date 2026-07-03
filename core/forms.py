@@ -16,9 +16,10 @@ class StudentForm(forms.ModelForm):
             for f in ['contract_date', 'contract_file', 'payment_notes']:
                 if f in self.fields:
                     del self.fields[f]
-        # Сумму контракта видят все, но редактирует только суперпользователь
+        # При редактировании сумму контракта может менять только суперпользователь;
+        # при создании нового ученика поле доступно всем
         if user and not user.is_superuser:
-            if 'contract_amount' in self.fields:
+            if 'contract_amount' in self.fields and self.instance and self.instance.pk:
                 self.fields['contract_amount'].disabled = True
                 self.fields['contract_amount'].help_text = 'Только суперпользователь может изменять сумму контракта.'
         # Добавляем классы и placeholder для полей
