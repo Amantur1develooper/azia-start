@@ -609,6 +609,10 @@ class StudentCreateView(LoginRequiredMixin, CreateView):
     
     def form_valid(self, form):
         form.instance.created_by = self.request.user
+        # Для обычных пользователей (у них скрыто поле даты) ставим сегодняшнюю дату
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            from django.utils import timezone
+            form.instance.contract_date = timezone.localdate()
         response = super().form_valid(form)
         # При создании фиксируем начальную сумму как год-специфичный контракт
         contract_amount = form.cleaned_data.get('contract_amount')
