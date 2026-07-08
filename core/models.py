@@ -183,6 +183,8 @@ class Student(models.Model):
   
     def is_fully_paid_for_year(self, year):
         """Проверка полной оплаты за учебный год"""
+        if not self.contract_amount:
+            return False
         return self.get_total_paid_for_year(year) >= self.contract_amount
     
     def update_payment_status(self, year):
@@ -483,6 +485,12 @@ class Expense(models.Model):
         auto_now_add=True,
         verbose_name="Дата создания"
     )
+    academic_year = models.ForeignKey(
+        AcademicYear,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name="Учебный год",
+    )
 
     class Meta:
         verbose_name = "Расход"
@@ -491,6 +499,11 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.category} - {self.amount} - {self.date}"
+
+    def save(self, *args, **kwargs):
+        if not self.academic_year_id:
+            self.academic_year = AcademicYear.objects.filter(is_current=True).first()
+        super().save(*args, **kwargs)
     
     
     def save(self, *args, **kwargs):

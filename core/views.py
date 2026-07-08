@@ -1104,14 +1104,13 @@ class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         # Для обычных пользователей принудительно ставим сегодняшнюю дату
         if not (self.request.user.is_staff or self.request.user.is_superuser):
             form.instance.date = timezone.now().date()
-        self.object = form.save()
-        # Добавляем сообщение об успехе
+        # super() сохраняет форму один раз и устанавливает self.object
+        response = super().form_valid(form)
         messages.success(
             self.request,
             f"Платеж успешно сохранен. Номер транзакции: {self.object.transaction_id}"
         )
-      
-        return super().form_valid(form)
+        return response
     
     def get_success_url(self):
         # После скачивания перенаправляем на страницу ученика
@@ -1225,8 +1224,19 @@ class ExpenseListView(LoginRequiredMixin, ListView):
         return is_admin(self.request.user) or is_accountant(self.request.user)
     
     def get_queryset(self):
-        queryset = super().get_queryset().select_related('created_by')
-        
+        queryset = super().get_queryset().select_related('created_by', 'academic_year')
+
+        # Фильтрация по учебному году (по умолчанию — текущий)
+        year_id = self.request.GET.get('year_id')
+        if year_id == 'all':
+            pass
+        elif year_id:
+            queryset = queryset.filter(academic_year_id=year_id)
+        else:
+            current_year = AcademicYear.objects.filter(is_current=True).first()
+            if current_year:
+                queryset = queryset.filter(academic_year=current_year)
+
         # Фильтрация по дате
         date_from = self.request.GET.get('date_from')
         date_to = self.request.GET.get('date_to')
@@ -1358,7 +1368,7 @@ class ExpenseListView(LoginRequiredMixin, ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
+
         # Параметры фильтрации
         context['date_from'] = self.request.GET.get('date_from', '')
         context['date_to'] = self.request.GET.get('date_to', '')
@@ -1366,21 +1376,29 @@ class ExpenseListView(LoginRequiredMixin, ListView):
         context['payment_method'] = self.request.GET.get('payment_method', '')
         context['search'] = self.request.GET.get('search', '')
         context['sort'] = self.request.GET.get('sort', '-date')
-        
+
+        # Учебный год
+        year_id = self.request.GET.get('year_id', '')
+        context['selected_year_id'] = year_id
+        context['academic_years_list'] = AcademicYear.objects.order_by('-start_date')
+        if not year_id:
+            current = AcademicYear.objects.filter(is_current=True).first()
+            context['selected_year_id'] = str(current.pk) if current else ''
+
         # Варианты для фильтров
         context['category_choices'] = Expense.CATEGORIES
         context['payment_method_choices'] = Expense.PAYMENT_METHODS
-        
+
         # Статистика
         queryset = self.get_queryset()
         context['total_amount'] = queryset.aggregate(Sum('amount'))['amount__sum'] or 0
         context['expenses_count'] = queryset.count()
-        
+
         # Даты по умолчанию (последние 30 дней)
         today = datetime.datetime.now().date()
         context['default_date_from'] = (today - timedelta(days=30)).strftime('%Y-%m-%d')
         context['default_date_to'] = today.strftime('%Y-%m-%d')
-        
+
         return context
  
     
