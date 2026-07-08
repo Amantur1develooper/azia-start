@@ -1101,8 +1101,8 @@ class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
-        # Для обычных пользователей принудительно ставим сегодняшнюю дату
-        if not (self.request.user.is_staff or self.request.user.is_superuser):
+        # Только суперпользователь выбирает дату, остальным ставится сегодня
+        if not self.request.user.is_superuser:
             form.instance.date = timezone.now().date()
         # super() сохраняет форму один раз и устанавливает self.object
         response = super().form_valid(form)

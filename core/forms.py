@@ -135,8 +135,8 @@ class IncomeForm(forms.ModelForm):
             format='%Y-%m-%d',
             attrs={'type': 'date', 'class': 'form-control'}
         )
-        # Обычные пользователи не могут менять дату — скрываем поле, дата ставится в form_valid
-        if user and not (user.is_staff or user.is_superuser):
+        # Только суперпользователь может менять дату — остальным скрываем
+        if user and not user.is_superuser:
             self.fields['date'].widget = forms.HiddenInput()
             self.fields['date'].required = False
 
