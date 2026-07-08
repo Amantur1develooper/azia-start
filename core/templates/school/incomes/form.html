@@ -22,14 +22,24 @@
                         {% csrf_token %}
                         
                         <!-- Основные поля платежа -->
+                        {{ form.date }}
                         <div class="row mb-3">
                             <div class="col-md-6">
+                                {% if request.user.is_staff or request.user.is_superuser %}
                                 <label class="form-label">Дата платежа *</label>
                                 {{ form.date }}
                                 {% if form.date.errors %}
                                     <div class="invalid-feedback d-block">
                                         {{ form.date.errors|first }}
                                     </div>
+                                {% endif %}
+                                {% else %}
+                                <label class="form-label">Дата платежа</label>
+                                <div class="form-control-plaintext">
+                                    <i class="bi bi-calendar-check text-success me-1"></i>
+                                    <strong>Сегодня</strong>
+                                    <small class="text-muted ms-1">(устанавливается автоматически)</small>
+                                </div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
