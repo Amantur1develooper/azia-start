@@ -60,6 +60,11 @@
                     <a href="{% url 'class-debts-report' %}" class="btn btn-sm btn-warning">
                         <i class="bi bi-file-earmark-excel"></i> <span class="d-none d-md-inline">Отчёт по долгам</span>
                     </a>
+                    {% if request.user.is_superuser %}
+                    <a href="{% url 'promote-grades' %}" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-arrow-up-circle"></i> <span class="d-none d-md-inline">Перевод на класс выше</span>
+                    </a>
+                    {% endif %}
                     {% if show_graduated %}
                         <a href="?{% if selected_grade %}grade={{ selected_grade }}&{% endif %}" class="btn btn-sm btn-secondary">
                             <i class="bi bi-eye-slash"></i> <span class="d-none d-md-inline">Скрыть выпускников</span>

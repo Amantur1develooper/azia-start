@@ -128,12 +128,17 @@ class IncomeForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         student_id = kwargs.pop('student_id', None)
+        user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         self.fields['date'].initial = timezone.now().date()
         self.fields['date'].widget = forms.DateInput(
             format='%Y-%m-%d',
             attrs={'type': 'date', 'class': 'form-control'}
         )
+        # Обычные пользователи не могут менять дату — она ставится автоматически
+        if user and not (user.is_staff or user.is_superuser):
+            self.fields['date'].disabled = True
+            self.fields['date'].help_text = 'Дата устанавливается автоматически.'
 
         
         if student_id:

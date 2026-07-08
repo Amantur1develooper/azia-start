@@ -30,7 +30,7 @@ class AcademicYear(models.Model):
         
         
 class Grade(models.Model):
-    GRADE_CHOICES = [(i, str(i)) for i in range(1, 12)]
+    GRADE_CHOICES = [(i, str(i)) for i in range(1, 13)]
     PARALLEL_CHOICES = [('А', 'А'), ('Б', 'Б'), ('В', 'В'), ('Г', 'Г')]
     
     number = models.IntegerField(

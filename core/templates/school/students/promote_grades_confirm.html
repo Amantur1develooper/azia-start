@@ -1,0 +1,136 @@
+{% extends 'school/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex align-items-center mb-4 gap-3">
+        <a href="{% url 'student-list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
+        <h2 class="mb-0"><i class="bi bi-arrow-up-circle"></i> Перевод классов на год выше</h2>
+    </div>
+
+    <div class="alert alert-warning d-flex align-items-start gap-2">
+        <i class="bi bi-exclamation-triangle-fill fs-5 mt-1"></i>
+        <div>
+            <strong>Внимание!</strong> Это действие нельзя отменить автоматически.<br>
+            Все активные ученики со статусом «Обучается» будут переведены в следующий класс.
+            Ученики 12-го класса получат статус выпускника.
+        </div>
+    </div>
+
+    <!-- Сводка -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-primary text-center p-3">
+                <div class="fs-1 fw-bold text-primary">{{ to_promote|length }}</div>
+                <div class="text-muted">будут переведены</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-success text-center p-3">
+                <div class="fs-1 fw-bold text-success">{{ to_graduate|length }}</div>
+                <div class="text-muted">станут выпускниками</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-danger text-center p-3">
+                <div class="fs-1 fw-bold text-danger">{{ no_next_grade|length }}</div>
+                <div class="text-muted">пропущено (нет следующего класса)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Выпускники 12-го класса -->
+    {% if to_graduate %}
+    <div class="card mb-4 border-success">
+        <div class="card-header bg-success text-white">
+            <i class="bi bi-mortarboard"></i> Выпускники (12-й класс → выпускник)
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr><th>ФИО</th><th>Класс</th></tr>
+                </thead>
+                <tbody>
+                    {% for student in to_graduate %}
+                    <tr>
+                        <td>{{ student.full_name }}</td>
+                        <td>{{ student.grade }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Переводимые ученики -->
+    {% if to_promote %}
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <i class="bi bi-arrow-up-circle"></i> Переводятся ({{ to_promote|length }} учеников)
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr><th>ФИО</th><th>Из класса</th><th></th><th>В класс</th></tr>
+                </thead>
+                <tbody>
+                    {% for student, next_grade in to_promote %}
+                    <tr>
+                        <td>{{ student.full_name }}</td>
+                        <td><span class="badge bg-secondary">{{ student.grade }}</span></td>
+                        <td><i class="bi bi-arrow-right text-muted"></i></td>
+                        <td><span class="badge bg-primary">{{ next_grade }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Пропущенные -->
+    {% if no_next_grade %}
+    <div class="card mb-4 border-danger">
+        <div class="card-header bg-danger text-white">
+            <i class="bi bi-x-circle"></i> Пропущены — следующий класс не найден ({{ no_next_grade|length }})
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                    <tr><th>ФИО</th><th>Текущий класс</th><th>Нет класса</th></tr>
+                </thead>
+                <tbody>
+                    {% for student in no_next_grade %}
+                    <tr>
+                        <td>{{ student.full_name }}</td>
+                        <td>{{ student.grade }}</td>
+                        <td><span class="text-danger">{{ student.grade.number|add:1 }}{{ student.grade.parallel }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted small">
+            Создайте нужные классы в разделе администрирования, затем повторите перевод.
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Кнопки действия -->
+    <div class="d-flex gap-3 mt-4">
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-lg"
+                    {% if not to_promote and not to_graduate %}disabled{% endif %}>
+                <i class="bi bi-arrow-up-circle-fill"></i> Подтвердить перевод
+            </button>
+        </form>
+        <a href="{% url 'student-list' %}" class="btn btn-outline-secondary btn-lg">
+            Отмена
+        </a>
+    </div>
+</div>
+{% endblock %}

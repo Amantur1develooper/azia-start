@@ -751,6 +751,64 @@ class DiscountDeleteView(LoginRequiredMixin, DeleteView):
         return super().form_valid(form)
 
 
+class PromoteGradesView(LoginRequiredMixin, UserPassesTestMixin, View):
+    """Переводит всех активных учеников на класс выше. 12-классники становятся выпускниками."""
+    template_name = 'school/students/promote_grades_confirm.html'
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def _build_preview(self):
+        students = (
+            Student.objects
+            .filter(is_active=True, is_graduated=False, status='studying')
+            .select_related('grade')
+            .order_by('grade__number', 'grade__parallel', 'full_name')
+        )
+        to_graduate, to_promote, no_next_grade = [], [], []
+        for student in students:
+            if student.grade.number >= 12:
+                to_graduate.append(student)
+            else:
+                next_grade = Grade.objects.filter(
+                    number=student.grade.number + 1,
+                    parallel=student.grade.parallel,
+                ).first()
+                if next_grade:
+                    to_promote.append((student, next_grade))
+                else:
+                    no_next_grade.append(student)
+        return to_graduate, to_promote, no_next_grade
+
+    def get(self, request):
+        to_graduate, to_promote, no_next_grade = self._build_preview()
+        return render(request, self.template_name, {
+            'to_graduate': to_graduate,
+            'to_promote': to_promote,
+            'no_next_grade': no_next_grade,
+        })
+
+    def post(self, request):
+        to_graduate, to_promote, no_next_grade = self._build_preview()
+
+        for student in to_graduate:
+            Student.objects.filter(pk=student.pk).update(
+                is_graduated=True,
+                is_active=False,
+            )
+
+        for student, next_grade in to_promote:
+            Student.objects.filter(pk=student.pk).update(grade=next_grade)
+
+        messages.success(
+            request,
+            f"Перевод завершён: переведено {len(to_promote)}, "
+            f"выпущено {len(to_graduate)}, "
+            f"пропущено {len(no_next_grade)} (нет следующего класса)."
+        )
+        return redirect('student-list')
+
+
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Q
 
@@ -891,26 +949,37 @@ class IncomeListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related('student', 'academic_year')
-        
+
+        # Фильтрация по учебному году (по умолчанию — текущий)
+        year_id = self.request.GET.get('year_id')
+        if year_id == 'all':
+            pass  # показываем все годы
+        elif year_id:
+            queryset = queryset.filter(academic_year_id=year_id)
+        else:
+            current_year = AcademicYear.objects.filter(is_current=True).first()
+            if current_year:
+                queryset = queryset.filter(academic_year=current_year)
+
         # Фильтрация по дате
         date_from = self.request.GET.get('date_from')
         date_to = self.request.GET.get('date_to')
-        
+
         if date_from:
             queryset = queryset.filter(date__gte=date_from)
         if date_to:
             queryset = queryset.filter(date__lte=date_to)
-            
+
         # Фильтрация по статусу
         status = self.request.GET.get('status')
         if status:
             queryset = queryset.filter(status=status)
-            
+
         # Фильтрация по способу оплаты
         payment_method = self.request.GET.get('payment_method')
         if payment_method:
             queryset = queryset.filter(payment_method=payment_method)
-            
+
         # Фильтрация по ученику (через поиск)
         search = self.request.GET.get('search')
         if search:
@@ -918,28 +987,37 @@ class IncomeListView(LoginRequiredMixin, ListView):
                 Q(student__full_name__icontains=search) |
                 Q(transaction_id__icontains=search)
             )
-            
+
         return queryset.order_by('-date')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        
-        # Добавляем параметры фильтрации в контекст
+
+        # Параметры фильтрации
         context['date_from'] = self.request.GET.get('date_from', '')
         context['date_to'] = self.request.GET.get('date_to', '')
         context['status'] = self.request.GET.get('status', '')
         context['payment_method'] = self.request.GET.get('payment_method', '')
         context['search'] = self.request.GET.get('search', '')
-        
-        # Добавляем choices для фильтров
+
+        # Учебный год
+        year_id = self.request.GET.get('year_id', '')
+        context['selected_year_id'] = year_id
+        context['academic_years_list'] = AcademicYear.objects.order_by('-start_date')
+        if not year_id:
+            context['selected_year_id'] = str(
+                (AcademicYear.objects.filter(is_current=True).first() or AcademicYear()).pk or ''
+            )
+
+        # Choices для фильтров
         context['status_choices'] = Income.STATUS_CHOICES
         context['payment_method_choices'] = Income.PAYMENT_METHODS
-        
+
         # Суммарная информация
         queryset = self.get_queryset()
         context['total_amount'] = queryset.aggregate(Sum('amount'))['amount__sum'] or 0
         context['total_count'] = queryset.count()
-        
+
         return context
     
   
@@ -1018,9 +1096,14 @@ class IncomeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['student_id'] = self.kwargs['student_id']
+        kwargs['user'] = self.request.user
         return kwargs
+
     def form_valid(self, form):
         form.instance.created_by = self.request.user
+        # Для обычных пользователей принудительно ставим сегодняшнюю дату
+        if not (self.request.user.is_staff or self.request.user.is_superuser):
+            form.instance.date = timezone.now().date()
         self.object = form.save()
         # Добавляем сообщение об успехе
         messages.success(

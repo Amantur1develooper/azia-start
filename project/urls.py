@@ -22,7 +22,7 @@ from django.urls import path
 from core import views
 from django.urls import path
 from django.views.generic import TemplateView
-from core.views import ApplicationListView, CustomLoginView, DocumentListView, GalleryDetailView, GalleryListView, application_view, best_student, login_view, logout_view, ClassDebtsReportView, DiscountCreateView, DiscountDeleteView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, StudentYearContractUpdateView, student_search, teacher_view1, set_current_year
+from core.views import ApplicationListView, CustomLoginView, DocumentListView, GalleryDetailView, GalleryListView, application_view, best_student, login_view, logout_view, ClassDebtsReportView, DiscountCreateView, DiscountDeleteView, DownloadReceiptView, IncomeCreateView, ReceiptPrintView, StudentListView, StudentDetailView, StudentCreateView, StudentUpdateView, StudentYearContractUpdateView, student_search, teacher_view1, set_current_year, PromoteGradesView
 from core.views import (
     EmployeeListView, EmployeeCreateView,
     EmployeeUpdateView, EmployeeDetailView,
@@ -72,6 +72,7 @@ urlpatterns = [
     path('expenses/add/', views.ExpenseCreateView.as_view(), name='expense-create'),
     path('students/search/', student_search, name='student-search'),
     path('set-current-year/', set_current_year, name='set-current-year'),
+    path('students/promote-grades/', PromoteGradesView.as_view(), name='promote-grades'),
     path('students/<int:pk>/year-contract/', StudentYearContractUpdateView.as_view(), name='student-year-contract'),
     path('students/<int:pk>/discounts/add/', DiscountCreateView.as_view(), name='student-add-discount'),
     path('discounts/<int:pk>/delete/', DiscountDeleteView.as_view(), name='discount-delete'),

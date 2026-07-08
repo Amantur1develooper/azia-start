@@ -27,13 +27,24 @@
         <div class="card-body">
             <form method="get" class="row g-3">
                 <div class="col-md-3">
+                    <label class="form-label">Учебный год</label>
+                    <select name="year_id" class="form-select">
+                        <option value="all" {% if selected_year_id == 'all' %}selected{% endif %}>Все годы</option>
+                        {% for year in academic_years_list %}
+                            <option value="{{ year.pk }}" {% if selected_year_id == year.pk|stringformat:"s" %}selected{% endif %}>
+                                {{ year }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">Дата от</label>
-                    <input type="date" name="date_from" class="form-control" 
+                    <input type="date" name="date_from" class="form-control"
                            value="{{ date_from }}">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label">Дата до</label>
-                    <input type="date" name="date_to" class="form-control" 
+                    <input type="date" name="date_to" class="form-control"
                            value="{{ date_to }}">
                 </div>
                 <div class="col-md-2">
