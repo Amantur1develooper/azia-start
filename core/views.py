@@ -521,7 +521,12 @@ class StudentListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['grades'] = Grade.objects.all().order_by('number', 'parallel')
+        context['grades'] = Grade.objects.annotate(
+            active_count=Count(
+                'student',
+                filter=Q(student__is_graduated=False) & ~Q(student__status='expelled')
+            )
+        ).order_by('number', 'parallel')
         context['selected_grade'] = self.request.GET.get('grade', '')
         context['show_graduated'] = self.request.GET.get('graduated') == '1'
         context['current_year'] = AcademicYear.objects.filter(is_current=True).first()

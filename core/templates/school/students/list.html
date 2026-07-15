@@ -22,7 +22,7 @@
                            href="?grade={{ grade.number }}-{{ grade.parallel }}">
                             {{ grade.number }}{{ grade.parallel }}
                             <span class="badge bg-primary rounded-pill float-end">
-                                {{ grade.student_set.count }}
+                                {{ grade.active_count }}
                             </span>
                         </a>
                     </li>
@@ -41,7 +41,7 @@
                     {% for grade in grades %}
                     <option value="?grade={{ grade.number }}-{{ grade.parallel }}"
                             {% if selected_grade == grade.number|stringformat:'i'|add:'-'|add:grade.parallel %}selected{% endif %}>
-                        {{ grade.number }}{{ grade.parallel }} ({{ grade.student_set.count }})
+                        {{ grade.number }}{{ grade.parallel }} ({{ grade.active_count }})
                     </option>
                     {% endfor %}
                 </select>
