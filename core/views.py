@@ -465,7 +465,7 @@ class StudentListView(ListView):
         search_query = self.request.GET.get('q', '').strip()
 
         if not show_graduated:
-            queryset = queryset.filter(is_graduated=False)
+            queryset = queryset.filter(is_graduated=False).exclude(status='expelled')
 
         if grade_filter and '-' in grade_filter:
             number, parallel = grade_filter.split('-')
