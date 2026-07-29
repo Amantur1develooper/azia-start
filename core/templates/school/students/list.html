@@ -150,10 +150,10 @@
                 <ul class="pagination justify-content-center flex-wrap">
                     {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&laquo;</a>
+                        <a class="page-link" href="?page=1{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if show_graduated %}&graduated=1{% endif %}">&laquo;</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&#8249;</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if show_graduated %}&graduated=1{% endif %}">&#8249;</a>
                     </li>
                     {% endif %}
                     <li class="page-item disabled">
@@ -161,10 +161,10 @@
                     </li>
                     {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&#8250;</a>
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if show_graduated %}&graduated=1{% endif %}">&#8250;</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&raquo;</a>
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if selected_grade %}&grade={{ selected_grade }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}{% if show_graduated %}&graduated=1{% endif %}">&raquo;</a>
                     </li>
                     {% endif %}
                 </ul>

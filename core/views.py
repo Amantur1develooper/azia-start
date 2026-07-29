@@ -452,6 +452,12 @@ class StudentListView(ListView):
     context_object_name = 'students'
     paginate_by = 20
 
+    def get_paginate_by(self, queryset):
+        # При выборе конкретного класса показываем всех без пагинации
+        if self.request.GET.get('grade'):
+            return None
+        return self.paginate_by
+
     def get_queryset(self):
         from django.db.models import OuterRef, Subquery, DecimalField
         from django.db.models.functions import Coalesce
