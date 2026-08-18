@@ -61,6 +61,7 @@
                         <th>Дата выплаты</th>
                         <th>Тип</th>
                         <th>Примечания</th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -71,10 +72,20 @@
                         <td>{{ payment.payment_date|date:"d.m.Y" }}</td>
                         <td>{% if payment.is_bonus %}Премия{% else %}Зарплата{% endif %}</td>
                         <td>{{ payment.notes|default:"-" }}</td>
+                        <td>
+                            {% if payment.expense_id %}
+                            <a href="{% url 'expense_receipt_pdf' payment.expense_id %}"
+                               class="btn btn-sm btn-outline-secondary"
+                               target="_blank"
+                               title="Скачать квитанцию">
+                                <i class="bi bi-file-earmark-pdf"></i> Квитанция
+                            </a>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5">Нет данных о выплатах</td>
+                        <td colspan="6">Нет данных о выплатах</td>
                     </tr>
                     {% endfor %}
                 </tbody>

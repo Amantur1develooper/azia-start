@@ -503,23 +503,16 @@ class Expense(models.Model):
     def save(self, *args, **kwargs):
         if not self.academic_year_id:
             self.academic_year = AcademicYear.objects.filter(is_current=True).first()
-        super().save(*args, **kwargs)
-    
-    
-    def save(self, *args, **kwargs):
-        # Генерируем уникальный номер квитанции при создании
         if not self.receipt_number:
             current_year = timezone.now().strftime('%Y')
             last_receipt = Expense.objects.filter(
                 receipt_number__startswith=f'RK-{current_year}-'
             ).order_by('-receipt_number').first()
-            
             if last_receipt:
                 last_num = int(last_receipt.receipt_number.split('-')[-1])
                 new_num = last_num + 1
             else:
                 new_num = 1
-                
             self.receipt_number = f'RK-{current_year}-{str(new_num).zfill(4)}'
         super().save(*args, **kwargs)
 
@@ -740,19 +733,26 @@ class SalaryPayment(models.Model):
         auto_now_add=True,
         verbose_name="Дата создания"
     )
-    
+    expense = models.OneToOneField(
+        'Expense',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='salary_payment',
+        verbose_name="Связанный расход",
+    )
+
     class Meta:
         verbose_name = "Зарплатная выплата"
         verbose_name_plural = "Зарплатные выплаты"
         ordering = ['-payment_date']
-    
+
     def __str__(self):
         return f"Выплата {self.employee} - {self.amount} за {self.for_month.strftime('%B %Y')}"
-    
+
     def save(self, *args, **kwargs):
         # Автоматически создаем связанный расход при создании выплаты
         if not self.pk:
-            Expense.objects.create(
+            expense = Expense.objects.create(
                 date=self.payment_date,
                 category='salary',
                 supplier=f"Зарплата {self.employee.full_name}",
@@ -761,6 +761,7 @@ class SalaryPayment(models.Model):
                 notes=f"Зарплатная выплата за {self.for_month.strftime('%B %Y')}. {self.notes}",
                 created_by=self.created_by
             )
+            self.expense = expense
         super().save(*args, **kwargs)
         
 from django.db import models
